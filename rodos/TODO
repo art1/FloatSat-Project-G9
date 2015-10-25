@@ -1,0 +1,24 @@
+
+
+
+long getNodeNumber -> int32_t getNodeNumber()
+extern long myNodeNr;  (-1 ist undef)
+long getNodeNumber() ....
+
+middlewaer_distributed -> middleware-distributed
+
+beauftragt:---------
+
+Class GenericMsgRef Eliminieren
+
+gatewas interface ohne rodos 
+	-> networkmessage, linkinterface & hal müssn von rest unabhägngig sein
+
+getNumberOfReceivedMsgsFromNetwork() soll zählen
+
+
+------------------
+
+dokumentation für VIDANA & VIDANA format
+
+
