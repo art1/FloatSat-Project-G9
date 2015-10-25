@@ -55,7 +55,7 @@ all: DALEK_OBC.elf secondary-outputs
 DALEK_OBC.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross ARM C++ Linker'
-	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g3 -T "/Users/arthur/Desktop/temp/DALEK_OBC/rodos/src/bare-metal/stm32f4/scripts/stm32_flash.ld" -nostartfiles -nodefaultlibs -nostdlib -Xlinker --gc-sections -L"/Users/arthur/Desktop/temp/DALEK_OBC/rodos/Debug_STM32F4" -L"/Users/arthur/Desktop/temp/DALEK_OBC/support_libs/Debug_STM32F4" -Wl,-Map,"DALEK_OBC.map" -o "DALEK_OBC.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections  -g3 -T "/Users/arthur/Documents/Coding/CanSat/workspace_cansat/rodos/src/bare-metal/stm32f4/scripts/stm32_flash.ld" -nostartfiles -nodefaultlibs -nostdlib -Xlinker --gc-sections -L"/Users/arthur/Documents/Coding/CanSat/workspace_cansat/rodos/Debug_STM32F4" -L"/Users/arthur/Documents/Coding/CanSat/workspace_cansat/support_libs/Debug_STM32F4" -Wl,-Map,"DALEK_OBC.map" -o "DALEK_OBC.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
