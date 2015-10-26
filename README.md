@@ -9,5 +9,8 @@ As said before, this repository contains everything to compile RODOS for a STM32
 eclipse-installation. File -> Import -> General -> Existing Project into Workspace -> Next -> Select repository directory as root directory.
 Then just select all Projects and click Finish.
 
+To compile for ARM an appropriate toolchain is necessary, download the 4.8 2014q3 at https://launchpad.net/gcc-arm-embedded/+download for your OS.
+
+
 To build the Dalek OBC, you have to build rodos first, then the support libs, then the STM32F4 Template, and only after all those have been compiled without errors (ignore the warnings :P)
 you can build the DalekOBC 
