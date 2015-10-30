@@ -7,6 +7,8 @@
 
 #ifndef I2CCONNECTOR_H_
 #define I2CCONNECTOR_H_
+#include "rodos.h"
+
 
 class i2c_connector {
 public:
