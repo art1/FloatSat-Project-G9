@@ -13,14 +13,13 @@
 #include "hal.h"
 #include "math.h"
 
-//class Telemetry: public Thread {
-//
-//public:
-//	Telemetry(const char* name);
-//	void init();
-//	void run();
-//};
-//
-//
-//
+class Telemetry: public Thread {
+
+public:
+	Telemetry(const char* name);
+	void init();
+	void run();
+};
+
+
 #endif /* TEMPLATE_H_ */

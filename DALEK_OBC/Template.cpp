@@ -39,21 +39,21 @@ CommBuffer<SensorData> SensorDataBuffer;
 Subscriber SensorDataSubscriber(SensorDataTopic, SensorDataBuffer);
 
 
-class Telemetry: public Thread {
-//
-public:
+//class Telemetry: public Thread {
+////
+//public:
 
-	Telemetry(const char* name) : Thread(name) {
+	Telemetry::Telemetry(const char* name) : Thread(name) {
 	}
 
-	void init() {
+	void Telemetry::init() {
 		GreenLED.init(true, 1, 0);
 		RedLED.init(true,1,0);
 		BlueLED.init(true,1,0);
 		Orange.init(true,1,0);
 	}
 
-	void run() {
+	void Telemetry::run() {
 
 		while (1) {
 			if(SECONDS_NOW() < RUNNING_SECS){
@@ -107,11 +107,15 @@ public:
 			RedLED.setPins(1);
 			Orange.setPins(1);
 			BlueLED.setPins(1);
+			while(1){
+				PRINTF("penis\r\n");
+				suspendCallerUntil(NOW()+1000*MILLISECONDS);
+			}
 			suspendCallerUntil(END_OF_TIME);
 			}
 		}
 	}
-};
-Telemetry Telemetry("Telemetry");
+//};
+//Telemetry Telemetry("Telemetry");
 
 /***********************************************************************/
