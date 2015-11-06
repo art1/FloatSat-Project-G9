@@ -2,6 +2,7 @@
 #include "hal/hal_i2c.h"
 #include "timemodel.h"
 
+
 #include "hal/hw_hal_i2c.h" // bare-metal/stm32f4/hal
 
 #include "stm32f4xx_rcc.h"

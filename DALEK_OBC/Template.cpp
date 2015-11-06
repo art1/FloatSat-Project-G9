@@ -8,6 +8,7 @@
 
 #include "Template.h"
 
+
 static Application module01("Template", 2001);
 
 #define LED_GREEN GPIO_060
@@ -39,11 +40,17 @@ CommBuffer<SensorData> SensorDataBuffer;
 Subscriber SensorDataSubscriber(SensorDataTopic, SensorDataBuffer);
 
 
+
+
+
+
 //class Telemetry: public Thread {
 ////
 //public:
 
 	Telemetry::Telemetry(const char* name) : Thread(name) {
+//		PRINTF("huh, my name is, huh, my name is");
+//		PRINTF(name);
 	}
 
 	void Telemetry::init() {
@@ -51,6 +58,8 @@ Subscriber SensorDataSubscriber(SensorDataTopic, SensorDataBuffer);
 		RedLED.init(true,1,0);
 		BlueLED.init(true,1,0);
 		Orange.init(true,1,0);
+		PRINTF("should now init imu\n\r");
+
 	}
 
 	void Telemetry::run() {
@@ -89,8 +98,9 @@ Subscriber SensorDataSubscriber(SensorDataTopic, SensorDataBuffer);
 				default:
 					break;
 			}
-			PRINTF("cnt is %d \r\n",cnt);
-			PRINTF("Hello Rodos, the time now is %f \r\n",SECONDS_NOW());
+//			PRINTF("cnt is %d \r\n",cnt);
+//			PRINTF("Hello Rodos, the time now is %f \r\n",SECONDS_NOW());
+
             suspendCallerUntil(NOW()+100*MILLISECONDS);
 			} else{
 				wahr = false;
@@ -107,10 +117,11 @@ Subscriber SensorDataSubscriber(SensorDataTopic, SensorDataBuffer);
 			RedLED.setPins(1);
 			Orange.setPins(1);
 			BlueLED.setPins(1);
-			while(1){
-				PRINTF("penis\r\n");
-				suspendCallerUntil(NOW()+1000*MILLISECONDS);
-			}
+//			while(1){
+//				PRINTF("should have initialized IMU now\n\r");
+//				suspendCallerUntil(NOW()+10000*MILLISECONDS);
+//			}
+			PRINTF("suspending LEDs...\n\r");
 			suspendCallerUntil(END_OF_TIME);
 			}
 		}

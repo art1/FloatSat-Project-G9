@@ -1,5 +1,6 @@
 #include <new>
 #include "rodos.h"
+#include <stdio.h>
 #include "hal/hal_spi.h"
 extern "C" {
 #include "stm32f4xx_rcc.h"
@@ -397,6 +398,7 @@ bool HAL_SPI::isReadFinished(){
  * DMA write, busy waiting
  */
 int32_t HAL_SPI::write(const uint8_t* sendBuf, uint32_t len) {
+	PRINTF("got to send: %d",sendBuf[0]);
 
 	if(!context->initialized) return -1;
 

@@ -1172,6 +1172,7 @@ ErrorStatus I2C_CheckEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT)
   flag2 = I2Cx->SR2;
   flag2 = flag2 << 16;
 
+
   /* Get the last event value from I2C status register */
   lastevent = (flag1 | flag2) & FLAG_MASK;
 
