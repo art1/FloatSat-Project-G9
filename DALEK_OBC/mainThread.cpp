@@ -26,11 +26,12 @@ void mainThread::init(){
 
 
 void mainThread::run(){
-	imu.init();
+//	imu.init();
+	imu.setTime(500*MILLISECONDS);
 	while(1){
 //		telemetry.run();
-		imu.readIMU_Data();
-		suspendCallerUntil(NOW()+500*MILLISECONDS);
+//		imu.readIMU_Data();
+		suspendCallerUntil(NOW()+5000*MILLISECONDS);
 	}
 }
 

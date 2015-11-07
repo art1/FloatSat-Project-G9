@@ -72,6 +72,7 @@ enum IMU_DATA_REG_ADD{
 	INT1_DURATION_G = 0x38,
 
 	//!! SET APPROPRIATE SLAVE ADRESS FOR READING FOLLOWING REGISTER! -> see Datasheet
+	// set Appropriate pins for chaning Lsb of adress
 	WHO_AM_I_MAGNACC = 0x0F,	//-> set appropriate slave adress!
 	//output temperature
 	TEMP_L = 0x05,
@@ -153,16 +154,20 @@ enum IMU_OFFSET_REG{
 };
 
 
-class IMU {
+class IMU : public Thread{
 public:
 	IMU();
 	virtual ~IMU();
-	int init();
+	void init();
+	void run();
 	int resetIMU();
 	IMU_DATA readIMU_Data();
+	//set period time between executions
+	void setTime(int time);
 
 private:
 //	const char *name;
+	uint8_t time;
 	uint8_t read_Register(int cs, uint8_t reg);
 	uint8_t recBuf[512];
 	uint8_t transBuf[512];
