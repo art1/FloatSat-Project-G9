@@ -8,8 +8,6 @@
 #ifndef HARDWARE_IMU_H_
 #define HARDWARE_IMU_H_
 
-#include "../Communication/spiconnector.h"
-#include "../Communication/i2cconnector.h"
 #include "../basic.h"
 #include "hal.h"
 
