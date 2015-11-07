@@ -9,8 +9,8 @@
 #define MAINTHREAD_H_
 
 #include "basic.h"
+#include "Hardware/GPIO_LED.h"
 #include "Hardware/IMU.h"
-#include "Template.h"
 
 class mainThread : public Thread {
 public:

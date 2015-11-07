@@ -11,33 +11,39 @@
 #include "../basic.h"
 #include "hal.h"
 
-#define GYRO_ADDRESS 	0x6B
-#define ACC_MAG_ADDRESS		0x1D
+#define GYRO_ADDRESS 				0x6B
+#define ACC_MAG_ADDRESS				0x1D
+
+#define GYRO_245DPS_SENSITIVITY		0.00875f
+#define GYRO_500DPS_SENSITIVITY		0.0175f
+#define GYRO_2000DPS_SENSITIVITY	0.07f
+
+#define ACCL_2G_SENSITIVITY			0.000061f
+#define ACCL_4G_SENSITIVITY			0.000122f
+#define ACCL_6G_SENSITIVITY			0.000183f
+#define ACCL_8G_SENSITIVITY			0.000244f
+#define ACCL_16G_SENSITIVITY		0.000732f
+
+#define MAGN_2GAUSS_SENSITIVITY		0.00008f
+#define MAGN_4GAUSS_SENSITIVITY		0.00016f
+#define MAGN_8GAUSS_SENSITIVITY		0.00032f
+#define MAGN_12GAUSS_SENSITIVITY	0.00048f
+
 
 struct IMU_DATA{
-	uint8_t X_ANGULAR_L;	//28		two's complement
-	uint8_t X_ANGULAR_H;	//29
-	uint8_t Y_ANGULAR_L;	//2A
-	uint8_t Y_ANGULAR_H;	//2B
-	uint8_t Z_ANGULAR_L;	//2C
-	uint8_t Z_ANGULAR_H;	//2D
+	float ANGULAR_RAW_X;
+	float ANGULAR_RAW_Y;
+	float ANGULAR_RAW_Z;
 
-	uint8_t X_MAGNETIC_L;	//08		16-bit two's complement, left justified
-	uint8_t X_MAGNETIC_H;	//09
-	uint8_t Y_MAGNETIC_L;	//0A
-	uint8_t Y_MAGNETIC_H;	//0B
-	uint8_t Z_MAGNETIC_L;	//0C
-	uint8_t Z_MAGNETIC_H;	//0D
+	float MAGNETIC_RAW_X;
+	float MAGNETIC_RAW_Y;
+	float MAGNETIC_RAW_Z;
 
-	uint8_t X_ACCEL_L;
-	uint8_t X_ACCEL_H;
-	uint8_t Y_ACCEL_L;
-	uint8_t Y_ACCEL_H;
-	uint8_t Z_ACCEL_L;
-	uint8_t Z_ACCEL_H;
+	float ACCEL_RAW_X;
+	float ACCEL_RAW_Y;
+	float ACCEL_RAW_Z;
 
-	uint8_t TEMP_L;			//05		-> see section 4.4 for configuration in LSM9DS0 Datasheet
-	uint8_t TEMP_H;			//06
+	float TEMP_RAW;
 };
 
 // Data register adresses
@@ -141,6 +147,21 @@ enum IMU_DATA_REG_ADD{
 
 };
 
+enum IMU_RANGES{
+	GYRO_245DPS = 0x00,		// continuous update, no self-test, 245DPS
+	GYRO_500DPS	= 0x10, 	// continuous update, no self-test, 500DPS
+	GYRO_2000DPS = 0x20,	// continuous update, no self-test, 200DPS
+	ACCL_2G	= 0x00,			// continuous update, no self test, 2G range, anti alias filter bandwidth 773Hz 0b00000000
+	ACCL_4G = 0x08,			// continuous update, no self test, 4G range, anti alias filter bandwidth 773Hz 0b00001000
+	ACCL_6G = 0x10,			// continuous update, no self test, 6G range, anti alias filter bandwidth 773Hz 0b00010000
+	ACCL_8G = 0x18,			// continuous update, no self test, 8G range, anti alias filter bandwidth 773Hz 0b00011000
+	ACCL_16G= 0x20,			// continuous update, no self test, 16G range, anti alias filter bandwidth 773Hz 0b00100000
+	MAGN_2GAUSS = 0x00,		// Magnetic resolution 2 Gauss 0b00000000
+	MAGN_4GAUSS = 0x20,		// Magnetic resolution 4 Gauss 0b00100000
+	MAGN_8GAUSS = 0x40,		// Magnetic resolution 4 Gauss 0b01000000
+	MAGN_12GAUSS = 0x60,	// Magnetic resolution 4 Gauss 0b01100000
+};
+
 struct IMU_OFFSETS{
 	uint8_t X_OFFSET_MAG_L;	//16h
 	uint8_t X_OFFSET_MAG_H;	//17h
@@ -164,13 +185,27 @@ public:
 	IMU_DATA readIMU_Data();
 	//set period time between executions
 	void setTime(int time);
+	void setGyroScale(int scale);
+	void calibrateSensors();
 
 private:
 //	const char *name;
 	uint8_t time;
-	uint8_t read_Register(int cs, uint8_t reg);
+	int read_multiple_Register(int cs, uint8_t reg,int valuesToRead,int16_t *dest);
+	IMU_DATA scaleData();
+	float gyroSensitivity;
+	float acclSensitivity;
+	float magnSensitivity;
+	float gyroOffset;
+	float acclOffset;
+	float magnOffset;
 	uint8_t recBuf[512];
 	uint8_t transBuf[512];
+	int16_t gyro_raw[3];
+	int16_t accl_raw[3];
+	int16_t magn_raw[3];
+	int16_t temp_raw[1];
+	IMU_DATA newData;
 };
 
 #endif /* HARDWARE_IMU_H_ */

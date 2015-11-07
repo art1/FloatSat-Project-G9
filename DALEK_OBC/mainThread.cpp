@@ -11,7 +11,7 @@
 static Application mainThread("mainThread",20);
 
 // load all appropriate thingies
-Telemetry telemetry("test");
+GPIO_LED telemetry("test");
 
 //extern Telemetry telemetry("test");
 IMU imu;
