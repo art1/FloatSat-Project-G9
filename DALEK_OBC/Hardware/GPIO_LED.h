@@ -9,9 +9,12 @@
 #define GPIO_LED_H_
 
 #include "rodos.h"
-#include <stdio.h>
-#include "hal.h"
-#include "math.h"
+#include "../basic.h"
+#include "GPIO_LED.h"
+
+//#include <stdio.h>
+//#include "hal.h"
+//#include "math.h"
 //#include "Hardware/IMU.h"
 
 class GPIO_LED: public Thread {
@@ -23,7 +26,11 @@ public:
 	void switchLED(HAL_GPIO led,int on);
 	void blinkAll(int speedInMsec, int stayOn);
 	void crossblink(int speedInMSec, int stayOn);
+	void runAround(int speedInMsec,int maxduration,int stayOn);
+	void setNextMode(LED_SWITCH led);
 
+private:
+	LED_SWITCH ledMode;
 };
 
 

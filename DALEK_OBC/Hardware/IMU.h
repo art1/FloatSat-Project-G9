@@ -10,6 +10,7 @@
 
 #include "../basic.h"
 #include "hal.h"
+#include "GPIO_LED.h"
 
 #define GYRO_ADDRESS 				0x6B
 #define ACC_MAG_ADDRESS				0x1D
@@ -30,21 +31,7 @@
 #define MAGN_12GAUSS_SENSITIVITY	0.00048f
 
 
-struct IMU_DATA{
-	float ANGULAR_RAW_X;
-	float ANGULAR_RAW_Y;
-	float ANGULAR_RAW_Z;
 
-	float MAGNETIC_RAW_X;
-	float MAGNETIC_RAW_Y;
-	float MAGNETIC_RAW_Z;
-
-	float ACCEL_RAW_X;
-	float ACCEL_RAW_Y;
-	float ACCEL_RAW_Z;
-
-	float TEMP_RAW;
-};
 
 // Data register adresses
 enum IMU_DATA_REG_ADD{
@@ -182,30 +169,35 @@ public:
 	void init();
 	void run();
 	int resetIMU();
-	IMU_DATA readIMU_Data();
+	IMU_DATA_RAW readIMU_Data();
 	//set period time between executions
 	void setTime(int time);
+//	void setLEDs(GPIO_LED *led);
 	void setGyroScale(int scale);
 	void calibrateSensors();
 
 private:
 //	const char *name;
+//	GPIO_LED leds;
+	LED_SWITCH led;
 	uint8_t time;
 	int read_multiple_Register(int cs, uint8_t reg,int valuesToRead,int16_t *dest);
-	IMU_DATA scaleData();
+	IMU_DATA_RAW scaleData();
+	void setLEDMask(int command,int green,int red,int orange,int blue);
 	float gyroSensitivity;
 	float acclSensitivity;
 	float magnSensitivity;
-	float gyroOffset;
-	float acclOffset;
-	float magnOffset;
+	float gyroOffset[3];
+	float acclOffset[3];
+	float magnOffset[3];
 	uint8_t recBuf[512];
 	uint8_t transBuf[512];
 	int16_t gyro_raw[3];
 	int16_t accl_raw[3];
 	int16_t magn_raw[3];
 	int16_t temp_raw[1];
-	IMU_DATA newData;
+	IMU_DATA_RAW newData;
+
 };
 
 #endif /* HARDWARE_IMU_H_ */
