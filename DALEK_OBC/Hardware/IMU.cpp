@@ -348,6 +348,7 @@ void IMU::calibrateSensors(){
 	int timeout = 1000; //in msec
 	while(timeout < ((NOW() * MILLISECONDS)) -current){
 		suspendCallerUntil(100*MILLISECONDS);
+
 	}
 
 	// calibrate accelerometer
