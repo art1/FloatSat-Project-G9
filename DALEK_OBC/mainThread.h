@@ -11,6 +11,7 @@
 //#include "basic.h"
 #include "Hardware/GPIO_LED.h"
 #include "Hardware/IMU.h"
+#include "Communication/TTnC.h"
 
 class mainThread : public Thread {
 public:

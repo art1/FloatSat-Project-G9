@@ -7,14 +7,20 @@
 
 #ifndef COMMUNICATION_TTNC_H_
 #define COMMUNICATION_TTNC_H_
-#include "../basic.h"
+//#include "../basic.h"
+#include "rodos.h"
 
 
 
-class TTnC {
+class TTnC : public Thread {
 public:
 	TTnC();
 	virtual ~TTnC();
+	void init();
+	void run();
+private:
+	uint8_t recBuf[512];
+	uint8_t transBuf[512];
 };
 
 #endif /* COMMUNICATION_TTNC_H_ */

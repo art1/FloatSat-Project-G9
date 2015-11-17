@@ -293,7 +293,7 @@ void IMU::convertToRPY(){
 	angleRPY.GYRO_YAW += (deltaYaw*sampleDiff);
 	angleRPY.GYRO_PITCH += (deltaPitch*sampleDiff);
 	angleRPY.GYRO_ROLL += (deltaRoll*sampleDiff);
-	PRINTF("\ndifference sample:   %f   \n",sampleDiff);
+//	PRINTF("\ndifference sample:   %f   \n",sampleDiff);
 	oldSamplerateTime = samplerateTime;
 	PRINTF("\nYAW:  %f  PITCH:   %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
 //	PRINTF("\ndeltaYaw:   %f   deltaPitch:   %f   deltaRoll:   %f   \n",deltaYaw,deltaPitch,deltaRoll);
@@ -302,7 +302,7 @@ void IMU::convertToRPY(){
 	angleRPY.ACCL_YAW = atan(newData.ACCEL_RAW_Z/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_PITCH = atan(newData.ACCEL_RAW_X/(sqrt((newData.ACCEL_RAW_Y*newData.ACCEL_RAW_Y) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_ROLL = atan(newData.ACCEL_RAW_Y/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
-	PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   ",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+	PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 }
 
 /**

@@ -14,7 +14,7 @@ static Application mainThread("mainThread",20);
 // load all appropriate classes (-> must be public, initializing classes within a class is not working... ?)
 GPIO_LED leds("LEDs");
 IMU imu;
-
+TTnC ttnc;
 
 
 
