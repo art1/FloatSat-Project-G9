@@ -9,6 +9,7 @@
 #define HARDWARE_IMU_H_
 
 #include "../basic.h"
+#include "math.h"
 #include "hal.h"
 #include "GPIO_LED.h"
 
@@ -160,7 +161,14 @@ struct IMU_OFFSETS{
 enum IMU_OFFSET_REG{
 
 };
-
+struct IMU_RPY_RAW{
+	float GYRO_YAW;
+	float GYRO_ROLL;
+	float GYRO_PITCH;
+	float ACCL_YAW;
+	float ACCL_ROLL;
+	float ACCL_PITCH;
+};
 
 class IMU : public Thread{
 public:
@@ -183,6 +191,7 @@ private:
 	uint8_t time;
 	int read_multiple_Register(int cs, uint8_t reg,int valuesToRead,int16_t *dest);
 	IMU_DATA_RAW scaleData();
+	void convertToRPY();
 	void setLEDMask(int command,int green,int red,int orange,int blue);
 	float gyroSensitivity;
 	float acclSensitivity;
@@ -196,7 +205,18 @@ private:
 	int16_t accl_raw[3];
 	int16_t magn_raw[3];
 	int16_t temp_raw[1];
+	IMU_DATA_RAW oldData;
 	IMU_DATA_RAW newData;
+	// gyro integration things
+	IMU_RPY_RAW angleRPY;
+	float samplerateTime;
+	float oldSamplerateTime;
+	float cosFactor;
+	float deltaYaw;
+	float deltaPitch;
+	float deltaRoll;
+	//more stuff
+	int cnt_failedReads;
 
 };
 

@@ -7,6 +7,10 @@
 
 #include "TTnC.h"
 
+
+HAL_SPI spi2(SPI_IDX1);
+
+
 TTnC::TTnC() {
 	// TODO Auto-generated constructor stub
 

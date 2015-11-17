@@ -7,6 +7,9 @@
 
 #ifndef COMMUNICATION_TTNC_H_
 #define COMMUNICATION_TTNC_H_
+#include "../basic.h"
+
+
 
 class TTnC {
 public:

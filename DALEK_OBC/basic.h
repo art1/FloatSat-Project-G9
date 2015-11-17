@@ -10,6 +10,12 @@
 
 #include "rodos.h"
 
+#define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
+#define M_PI					3.1415926535897932385f	// Pi, 20 digits
+#define TO_RAD					(M_PI/180.0)
+#define TO_DEG					(180.0/M_PI)
+
+// IMU Stuff
 #define IMU_RESET_PIN			GPIO_055
 #define IMU_G_CS_PIN			GPIO_018
 #define IMU_XM_CS_PIN			GPIO_032
@@ -23,7 +29,9 @@
 #define IMU_MAGN_DEFAULT_OFFSET	1
 
 #define CALIBRAION_SAMPLES		1000.0f			// calibration samples for gyro
-
+#define IMU_SAMPLERATE			100				// read and fuse IMU data every XX milliseconds
+#define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
+#define RESET_IMU_AFTER			100				// resets the IMU if reading data failed for 100 times (e.g. same data is read, or IMU hangs)
 
 
 
