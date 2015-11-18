@@ -14,7 +14,7 @@ public:
 	static const uint32_t WRITE_BLOCK_SIZE = 512;
 	static const uint32_t NUMBER_OF_PAGES = 256;
 	static const uint32_t TOTAL_USER_SIZE = NUMBER_OF_PAGES * PAGE_USER_SIZE;
-	static const uint32_t TIME_TO_ERASE_PAGE = 250; // Time in Milliseconds
+	static const uint32_t MIN_TIME_TO_ERASE_PAGE = 250; // Time in Milliseconds
 
 private:
 	HAL_GPIO *cs;

@@ -1,6 +1,6 @@
 
 #include "rodos.h"
-
+#include "misc_support.h"
 
 #ifndef NO_RODOS_NAMESPACE
 namespace RODOS {

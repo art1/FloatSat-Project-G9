@@ -60,8 +60,6 @@ int32_t randomTT800() {
 }
 
 
-uint32_t  randomTT800Positive() { return randomTT800() & 0x7fffffff; }
-
 #ifndef NO_RODOS_NAMESPACE
 }
 #endif

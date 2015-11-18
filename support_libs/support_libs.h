@@ -1,5 +1,5 @@
 #pragma once
-#include "macros_bits_bytes.h"
+// #include "macros_bits_bytes.h" warning: confglicts with SET_BIT, and MIN, plase include by yourself
 #include "matlib.h"
 #include "misc_support.h"
 #include "monitoringMsg.h"

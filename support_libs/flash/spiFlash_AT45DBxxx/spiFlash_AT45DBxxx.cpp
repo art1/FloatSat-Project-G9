@@ -34,7 +34,7 @@ int32_t SPIFlash_AT45DBxxx::getNumberOfPages() {
 
 
 int32_t SPIFlash_AT45DBxxx::getPageSize(uint32_t pageIdx) {
-    if (pageIdx>NUMBER_OF_PAGES) return InvalidPage;
+    if (pageIdx>=NUMBER_OF_PAGES) return InvalidPage;
 	return PAGE_TOTAL_SIZE;
 }
 
@@ -67,7 +67,7 @@ void SPIFlash_AT45DBxxx::setTimeout(uint32_t _timeoutInMs) {
 //           -----------------------------------------------------------------------------------
 //
 bool SPIFlash_AT45DBxxx::busy() {
-	if (!initialized) return NoInit;
+	if (!initialized) return false;
 
 	uint8_t result[2];
 	uint8_t send[2];

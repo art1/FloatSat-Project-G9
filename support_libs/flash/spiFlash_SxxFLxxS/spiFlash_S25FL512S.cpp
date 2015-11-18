@@ -159,7 +159,7 @@ int32_t SPIFlash_S25FL512S::writePage(uint32_t pageIdx, void *source, uint32_t l
 int32_t SPIFlash_S25FL512S::writePageOffset(uint32_t pageIdx, uint32_t offsetInPage, void* source, uint32_t len) {
 	if (!initialized) return -1;
 
-	if (offsetInPage + offsetInPage > PAGE_USER_SIZE) {
+	if (offsetInPage + len > PAGE_USER_SIZE) {
 		ERROR("offset and/or len is higher than page's last byte\n");
 		return -1;
 	}
@@ -205,9 +205,13 @@ int32_t SPIFlash_S25FL512S::writePageOffset(uint32_t pageIdx, uint32_t offsetInP
 }
 
 int32_t SPIFlash_S25FL512S::eraseAndWritePage(uint32_t pageIdx, void* source,uint32_t maxLen) {
-	erasePage(pageIdx);
-	Thread::suspendCallerUntil(NOW()+ TIME_TO_ERASE_PAGE * MILLISECONDS);
-	writePage(pageIdx, source, maxLen);
+	int32_t result;
+	result=erasePage(pageIdx);
+	if(result < 0){
+		return result;
+	}
+	Thread::suspendCallerUntil(NOW()+ MIN_TIME_TO_ERASE_PAGE * MILLISECONDS);
+	return writePage(pageIdx, source, maxLen);
 }
 
 int32_t SPIFlash_S25FL512S::readID(uint8_t* rdBuf, uint16_t size) {

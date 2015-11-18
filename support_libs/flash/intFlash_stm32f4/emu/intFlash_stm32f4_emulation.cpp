@@ -68,7 +68,7 @@ int32_t INTFlash_STM32F4::writePage(uint32_t pageIdx, void* source, uint32_t max
    
 
 int32_t INTFlash_STM32F4::readPageOffset(uint32_t pageIdx,  uint32_t offsetInPage, void* destination, uint32_t maxLen){
-  if(pageIdx > NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return -1; }
+  if(pageIdx >= NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return -1; }
   // Stay in Page Boundaries  
   if((int32_t)(maxLen + offsetInPage) > getPageSize(pageIdx))
     maxLen = getPageSize(pageIdx)-offsetInPage;
@@ -77,7 +77,7 @@ int32_t INTFlash_STM32F4::readPageOffset(uint32_t pageIdx,  uint32_t offsetInPag
  
 
 int32_t INTFlash_STM32F4::writePageOffset(uint32_t pageIdx, uint32_t offsetInPage, void* source, uint32_t maxLen) {
-  if(pageIdx > NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return -1; }
+  if(pageIdx >= NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return -1; }
   // Stay in Page Boundaries  
   if((int32_t)(maxLen + offsetInPage) > getPageSize(pageIdx))
     maxLen = getPageSize(pageIdx)-offsetInPage;

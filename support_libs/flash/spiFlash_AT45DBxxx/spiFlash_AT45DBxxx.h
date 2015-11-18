@@ -12,42 +12,6 @@
 
 #include "hal.h"
 
-/*
- * !!! Tested with AT45DB321D only !!!
- */
-
-/* Opcodes for AT45DBxxx
- * not all instructions of the chip are here,
- * only the used ones and some extra from the protection section*/
-
-//control,protection,status...
-#define RDSR		0xD7	//read status register
-#define RDID		0x9F	//read jedec ID
-#define RDSPR		0x32	//read sector protection register
-#define SP1			0x3D	//sector protection opcodes
-#define SP2			0x2A
-#define SP3			0x7F
-#define SP4_EN		0xA9	//enable sector protection
-#define	 SP4_DIS	0x9A	//disable sector protection
-#define SP4_ERASE	0xCF	//erase sector protection register
-#define	 SP4_PROG	0xFC	//program sector protection	register
-//read
-#define PAGE_READ	0xD2	//direct read from main memory
-//write/program
-#define BUF1_WR		0x84	//write to buffer 1
-#define BUF2_WR		0x87	//write to buffer 2
-#define BF1_MM		0x88	//write buffer 1 to main memory (without built in erase)
-#define BF2_MM		0x89	//write buffer 2 to main memory (without built in erase)
-//erase
-#define ER_PAGE		0x81 	//erase page
-#define ER_BLOCK	0x50	//erase block
-
-
-#define MANUFACTURER_ID 0x1F
-#define FAMILY_CODE 0x01
-#define DENSITY_CODE 0x07
-
-
 class SPIFlash_AT45DBxxx: public Flash {
 public:
 	/** parameters of the external flash*/

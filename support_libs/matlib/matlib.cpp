@@ -34,6 +34,12 @@ Vector3D::Vector3D (double* arr) {
     z = arr[2];
 }
 
+bool Vector3D::resetIfNAN() {
+    bool error = !isfinite(x) || !isfinite(y) || !isfinite(z);
+    if(error) x = y = z = 0.0;
+    return error;
+}
+
 //_________________________________________________________________
 
 Vector3D Vector3D::vecAdd(const Vector3D& other) const {
@@ -86,6 +92,13 @@ double Vector3D::getLen() const {
 }
 //_________________________________________________________________
 
+double Vector3D::distance(const Vector3D& other) const {
+    Vector3D diff = *this - other;
+    return diff.getLen();
+}
+
+//_________________________________________________________________
+
 Vector3D Vector3D::normalize() const {
     Vector3D norm;
     double len = this->getLen();
@@ -108,6 +121,8 @@ bool Vector3D::equals(const Vector3D& other) const {
 }
 //_________________________________________________________________
 
+
+//TODO if isAlmost0(len) ??
 double Vector3D::getAngle( const Vector3D& other) const {
     double angle,product,len;
     len = this->getLen() * other.getLen() ;
@@ -123,6 +138,7 @@ bool Vector3D::isOrthogonal(const Vector3D& other) const {
 }
 //_________________________________________________________________
 
+//TODO if isAlmost0(r)
 Polar Vector3D::carToPolar() const {  // polar(r,phi,theta)
     double r     = this->getLen();
     double phi   = atan2(y, x);
@@ -132,13 +148,16 @@ Polar Vector3D::carToPolar() const {  // polar(r,phi,theta)
 }
 //_________________________________________________________________
 
-Vector3D Vector3D::polarToCar() const { 
+#if 0
+Vector3D Vector3D::polarToCar() const {
     double x = this->x * sin(this->z)*cos(this->y);
     double y = this->x * sin(this->z)*sin(this->y);
     double z = this->x * cos(this->z);
     Vector3D car(x, y, z);
     return car;
 }
+#endif
+
 //_________________________________________________________________
 
 Vector3D Vector3D::matVecMult(const Matrix3D& r) const { // M*v
@@ -166,12 +185,17 @@ Vector3D Vector3D::mRotate(const Matrix3D& r) const { // w = M*v
     return w;
 }
 
-Vector3D Vector3D::yprRotate(const YPR& ypr) const { // w = M*v
+Vector3D Vector3D::yprRotate(const YPR& ypr) const { //  DEPRECATED
     Matrix3D rotor = ypr.toMatrix3D();
     Vector3D w(this->matVecMult(rotor));
     return w;
 }
 
+Vector3D Vector3D::rpyRotate(const RPY& rpy) const { // w = M*v
+    Matrix3D rotor = rpy.toMatrix3D();
+    Vector3D w(this->matVecMult(rotor));
+    return w;
+}
 
 //_________________________________________________________________
 
@@ -223,6 +247,8 @@ Vector3D elementWiseProduct(const Vector3D &left, const Vector3D &right) {
     return res;
 }
 
+
+//TODO if isAlmost0()  x,y,z ??
 Vector3D elementWiseDivision(const Vector3D &left, const Vector3D &right) {
 
     Vector3D res;
@@ -235,7 +261,169 @@ Vector3D elementWiseDivision(const Vector3D &left, const Vector3D &right) {
 }
 
 
+void Rotor::print(){
+    PRINTF("[%f (%f, %f, %f)]\n", cosAngle, axis.x, axis.y, axis.z);
+}
 
+
+Rotor::Rotor(const Vector3D& fromVector, const Vector3D& toVector) {
+    Vector3D from = fromVector.normalize();
+    Vector3D to   = toVector.normalize();
+    cosAngle = dotProduct  (from, to);
+    axis     = crossProduct(from, to);
+    if(isAlmost0(axis.getLen())) { cosAngle = axis.x = axis.y = axis.z = 1.0; }
+    axis = axis.normalize();
+}
+
+bool Rotor::resetIfNAN() {
+    bool error = !isfinite(cosAngle) || !isfinite(axis.x) || !isfinite(axis.y) || !isfinite(axis.z);
+    if(error) cosAngle = axis.x = axis.y = axis.z = 1.0;
+    return error;
+}
+//================  R(oll) P(itch) Y(aw) as subclas of Vector3D  ============
+
+RPY::RPY(const Quaternion& q) {
+    double m21 = 2*q.q.x*q.q.y + 2*q.q0*q.q.z;
+    double m11 = 2*q.q0*q.q0-1 + 2*q.q.x*q.q.x;
+    double m31 = 2*q.q.x*q.q.z - 2*q.q0*q.q.y;
+    double m32 = 2*q.q.y*q.q.z + 2*q.q0*q.q.x;
+    double m33 = 2*q.q0*q.q0-1 + 2*q.q.z*q.q.z;
+
+    this->x = atan2(m32, m33);                      // roll
+    this->y = atan2(-m31, sqrt(m11*m11 + m21*m21)); // pitch
+    this->z = atan2(m21, m11);                      // yaw
+}
+
+//_________________________________________________________________
+
+RPY::RPY(const Matrix3D& M) {
+    double m21 = M.r[1][0];
+    double m11 = M.r[0][0];
+    double m31 = M.r[2][0];
+    double m32 = M.r[2][1];
+    double m33 = M.r[2][2];
+
+    this->x = atan2(m32, m33);                      // roll
+    this->y = atan2(-m31, sqrt(m11*m11 + m21*m21)); // pitch
+    this->z = atan2(m21, m11);                      // yaw
+}
+
+//_________________________________________________________________
+
+RPY::RPY(const AngleAxis& other) {
+
+    Vector3D u = other.u;
+    double phi = other.phi;
+    double cp  = cos(phi);
+    double sp  = sin(phi);
+
+
+    double m21 = u.x * u.y *(1-cp) + u.z*sp;
+    double m11 = u.x * u.x *(1-cp) + cp;
+    double m31 = u.x * u.z *(1-cp) - u.y*sp;
+    double m32 = u.y * u.z *(1-cp) + u.x*sp;
+    double m33 = u.z * u.z *(1-cp) + cp;
+
+    this->x = atan2(m32, m33);                      // roll
+    this->y = atan2(-m31, sqrt(m11*m11 + m21*m21)); // pitch
+    this->z = atan2(m21, m11);                      // yaw
+
+}
+
+//_________________________________________________________________
+
+RPY::RPY(const Rotor& rot) {
+
+    Vector3D u = rot.axis;
+    double cp  = rot.cosAngle;
+    double sp  = sqrt(1 - cp*cp);
+
+    double m21 = u.x * u.y *(1-cp) + u.z*sp;
+    double m11 = u.x * u.x *(1-cp) + cp;
+    double m31 = u.x * u.z *(1-cp) - u.y*sp;
+    double m32 = u.y * u.z *(1-cp) + u.x*sp;
+    double m33 = u.z * u.z *(1-cp) + cp;
+
+    this->x = atan2(m32, m33);                      // roll
+    this->y = atan2(-m31, sqrt(m11*m11 + m21*m21)); // pitch
+    this->z = atan2(m21, m11);                      // yaw
+
+}
+
+//_________________________________________________________________
+
+Matrix3D RPY::toMatrix3D() const {
+    Matrix3D M;
+    double cr = cos(x);
+    double cp = cos(y);
+    double cy = cos(z);
+
+    double sr = sin(x);
+    double sp = sin(y);
+    double sy = sin(z);
+
+    M.r[0][0]= cy*cp;
+    M.r[0][1]= cy*sp*sr - sy*cr;
+    M.r[0][2]= cy*sp*cr + sy*sr;
+
+    M.r[1][0]= sy*cp;
+    M.r[1][1]= sy*sp*sr + cy*cr;
+    M.r[1][2]= sy*sp*cr - cy*sr;
+
+    M.r[2][0]= -sp;
+    M.r[2][1]= cp*sr;
+    M.r[2][2]= cp*cr;
+
+    return M;
+}
+//_________________________________________________________________
+
+Quaternion RPY::toQuaternion() const {
+    Quaternion q;
+    double cr2 = cos(x/2);
+    double cp2 = cos(y/2);
+    double cy2 = cos(z/2);
+
+    double sr2 = sin(x/2);
+    double sp2 = sin(y/2);
+    double sy2 = sin(z/2);
+
+    q.q0  = cr2*cp2*cy2 + sr2*sp2*sy2;
+    q.q.x = sr2*cp2*cy2 - cr2*sp2*sy2;
+    q.q.y = cr2*sp2*cy2 + sr2*cp2*sy2;
+    q.q.z = cr2*cp2*sy2 - sr2*sp2*cy2;
+
+    return q;
+}
+
+RPY RPY::accumulateRotation(RPY& increment) {
+    Quaternion orig(*this);
+    Quaternion inc(increment);
+    orig = orig * inc;
+    return orig.toRPY();
+}
+
+
+//_________________________________________________________________
+
+AngleAxis RPY::toAngleAxis() const {
+    double r = this->x;
+    double p = this->y;
+    double y = this->z;
+
+    double phi = acos(0.5*(-1 + cos(p)*cos(y) + cos(r)*cos(y) + sin(r)*sin(p)*sin(y) + cos(r)*cos(p) ));
+
+    double u_x = 1/(2*sin(phi))* (sin(r)*cos(p) -cos(r)*sin(p)*sin(y) +sin(r)*cos(y));
+    double u_y = 1/(2*sin(phi))* (sin(r)*sin(y) +cos(r)*sin(p)*cos(y) +sin(p));
+    double u_z = 1/(2*sin(phi))* (cos(p)*sin(y) -sin(r)*sin(p)*cos(y) + cos(r)*sin(y));
+
+    Vector3D u(u_x, u_y, u_z);
+    AngleAxis u_phi(phi, u);
+
+    return u_phi;
+}
+
+ 
 //======================Implementierung Vector4D==============================
 
 Vector4D::Vector4D() {
@@ -253,12 +441,15 @@ Vector4D::Vector4D (const double &x, const double &y, const double &z, const dou
     this->scale=scale;
 }
 
-Vector4D::Vector4D(const Vector4D& other) {
-    this->x=other.x;
-    this->y=other.y;
-    this->z=other.z;
-    this->scale=other.scale;
-}
+Vector4D::Vector4D(const Vector4D& other) : Vector3D(other.x, other.y, other.z), scale(other.scale) { }
+
+// base class 'class RODOS::Vector3D' should be explicitly initialized in the copy constructor [-Wextra]
+//Vector4D::Vector4D(const Vector4D& other) {
+//    this->x=other.x;
+//    this->y=other.y;
+//    this->z=other.z;
+//    this->scale=other.scale;
+//}
 
 Vector4D::Vector4D (double* arr) {
     this->x = arr[0];
@@ -337,6 +528,13 @@ Quaternion::Quaternion(const AngleAxis& other) {
 }
 
 
+Quaternion::Quaternion(const Rotor& rot) {
+    double angle = acos(rot.cosAngle);
+    this->q0 = cos(angle/2);
+    this->q  = rot.axis.normalize().scale(sin(angle/2));
+}
+
+
 Quaternion::Quaternion(const Matrix3D& other) {  //Algorithmus 1
 
     double q0,q1,q2,q3;
@@ -389,10 +587,10 @@ Quaternion::Quaternion(const Matrix3D& other) {  //Algorithmus 1
 }
 
 
-Quaternion::Quaternion(const YPR& other) {
-    double a = other.yaw/2;
+Quaternion::Quaternion(const YPR& other) { // DEPRECATED
+    double a = other.roll/2;
     double b = other.pitch/2;
-    double c = other.roll/2;
+    double c = other.yaw/2;
 
     double cdx = cos(a);
     double sdx = sin(a);
@@ -424,6 +622,50 @@ Quaternion::Quaternion(const YPR& other) {
     this->q  = q;
 
 }
+
+Quaternion::Quaternion(const RPY& other) {
+
+    double a = other.x/2;
+    double b = other.y/2;
+    double c = other.z/2;
+
+    double cdx = cos(a);
+    double sdx = sin(a);
+    double cdy = cos(b);
+    double sdy = sin(b);
+    double cdz = cos(c);
+    double sdz = sin(c);
+
+    //% Transforms RPY EulerAngles into Quaternion
+    //% dx angle of rotation about x-axis (using RAD) | cdx = cos(dx) etc.
+    //% dy angle of rotation about y-axis
+    //% dz angle of rotation about z-axis
+
+    double q0 = cdz*cdy*cdx + sdz*sdy*sdx;
+    double q1 = cdz*cdy*sdx - sdz*sdy*cdx;
+    double q2 = cdz*sdy*cdx + sdz*cdy*sdx;
+    double q3 = sdz*cdy*cdx - cdz*sdy*sdx;
+
+    double len  = sqrt(q0*q0 + q1*q1 + q2*q2 + q3*q3);
+
+    q0 = q0 / len;
+    q1 = q1 / len;
+    q2 = q2 / len;
+    q3 = q3 / len;
+
+    Vector3D q(q1, q2, q3);
+
+    this->q0 = q0;
+    this->q  = q;
+}
+
+
+bool Quaternion::resetIfNAN() {
+    bool error = !isfinite(q0) || !isfinite(q.x) || !isfinite(q.y) || !isfinite(q.z);
+    if(error) { q0 = 1;   q.x = q.y = q.z = 0; }
+    return error;
+}
+
 //_________________________________________________________________
 
 //====getter====
@@ -482,7 +724,7 @@ Quaternion Quaternion::qMult(const Quaternion& other) const {
 
     mult.q  = left.q  * right.q0 + // Warning: vectro ops
               right.q * left.q0  + // warning: operator +, * etc
-	      crossProduct(left.q, right.q);
+              crossProduct(left.q, right.q);
     return mult;
 }
 //_________________________________________________________________
@@ -526,7 +768,7 @@ Quaternion Quaternion::normalize() const {
 
 bool Quaternion::isNormalized() const {
     double len=this->getLen();
-    return isAlmost0(len-1); 
+    return isAlmost0(len-1);
 }
 //_________________________________________________________________
 
@@ -561,7 +803,7 @@ Matrix3D Quaternion::toMatrix3D() const { // return matrix representation of qua
     return R;
 }
 
-YPR Quaternion::toYPR() const {
+YPR Quaternion::toYPR() const { // DEPRECATED
     YPR ypr;
     double m21 = 2*this->q.x * this->q.y  + 2*this->q0 *this->q.z;
     double m11 = 2*this->q0  * this->q0-1 + 2*this->q.x*this->q.x;
@@ -577,19 +819,21 @@ YPR Quaternion::toYPR() const {
 }
 
 
-YPR Quaternion::toYPRnils() const {
-    YPR ypr;
+RPY Quaternion::toRPY() const {
+    RPY rpy;
+    double m21 = 2*this->q.x * this->q.y  + 2*this->q0 *this->q.z;
+    double m11 = 2*this->q0  * this->q0-1 + 2*this->q.x*this->q.x;
+    double m31 = 2*this->q.x * this->q.z  - 2*this->q0 *this->q.y;
+    double m32 = 2*this->q.y * this->q.z  + 2*this->q0 *this->q.x;
+    double m33 = 2*this->q0  * this->q0-1 + 2*this->q.z*this->q.z;
 
-    double x = atan2( (2*(q0*q.x + q.y*q.z)), (1-2*(q.x*q.x + q.y*q.y)) ); 
-    double y = asin ( (2*(q0*q.y - q.z*q.x)) );
-    double z = atan2( (2*(q0*q.z + q.x*q.y)), (1-2*(q.y*q.y + q.z*q.z)) );
+    rpy.x  = atan2(m32, m33);
+    rpy.y  = atan2(-m31, sqrt(m11*m11 + m21*m21));
+    rpy.z  = atan2(m21, m11);
 
-    ypr.yaw   = z;
-    ypr.pitch = y;
-    ypr.roll  = x;
-
-    return ypr;
+    return rpy;
 }
+
 
 
 //_________________________________________________________________
@@ -687,16 +931,38 @@ Matrix3D::Matrix3D(const Vector3D& init) { //diagonalmatrix aus vektor
     r[0][2] = 0.0;
     r[1][2] = 0.0;
     r[2][2] = init.z;
-}  
+}
 //_________________________________________________________________
 
-Matrix3D::Matrix3D(const YPR& ypr) { //YPR-Matrix
+Matrix3D::Matrix3D(const YPR& ypr) { // DEPRECATED
     double cy = cos(ypr.yaw);
     double cp = cos(ypr.pitch);
     double cr = cos(ypr.roll);
     double sy = sin(ypr.yaw);
     double sp = sin(ypr.pitch);
     double sr = sin(ypr.roll);
+
+    this->r[0][0]= cy*cp;
+    this->r[0][1]= cy*sp*sr - sy*cr;
+    this->r[0][2]= cy*sp*cr + sy*sr;
+
+    this->r[1][0]= sy*cp;
+    this->r[1][1]= sy*sp*sr + cy*cr;
+    this->r[1][2]= sy*sp*cr - cy*sr;
+
+    this->r[2][0]= -sp;
+    this->r[2][1]= cp*sr;
+    this->r[2][2]= cp*cr;
+}
+
+Matrix3D::Matrix3D(const RPY& rpy) { 
+    double cr = cos(rpy.x);
+    double cp = cos(rpy.y);
+    double cy = cos(rpy.z);
+
+    double sr = sin(rpy.x);
+    double sp = sin(rpy.y);
+    double sy = sin(rpy.z);
 
     this->r[0][0]= cy*cp;
     this->r[0][1]= cy*sp*sr - sy*cr;
@@ -1077,7 +1343,7 @@ Quaternion Matrix3D::toQuaternion() const {
 }
 //_________________________________________________________________
 
-YPR Matrix3D::toYPR() const {
+YPR Matrix3D::toYPR() const { // DEPRECATED
     YPR y;
     double m21 = this->r[1][0];
     double m11 = this->r[0][0];
@@ -1090,6 +1356,21 @@ YPR Matrix3D::toYPR() const {
 
     return y;
 }
+
+RPY Matrix3D::toRPY() const { 
+    RPY rpy;
+    double m21 = this->r[1][0];
+    double m11 = this->r[0][0];
+    double m31 = this->r[2][0];
+    double m32 = this->r[2][1];
+    double m33 = this->r[2][2];
+    rpy.x     = atan2(m32, m33);
+    rpy.y     = atan2(-m31, sqrt(m11*m11 + m21*m21)); // WARNING: are y and z worng? please check
+    rpy.z     = atan2(m21, m11);
+
+    return rpy;
+}
+
 //_________________________________________________________________
 
 AngleAxis Matrix3D::toAngleAxis() const {
@@ -1185,6 +1466,16 @@ YPR::YPR(const AngleAxis& other) {
     this->yaw   = atan2(m21, m11);
     this->roll  = atan2(m32, m33);
 }
+//_________________________________________________________________
+
+YPR  YPR::scale(const double &factor) const {
+    YPR scale;
+    scale.pitch = pitch * factor;
+    scale.yaw   = yaw   * factor;
+    scale.roll  = roll  * factor;
+    return scale;
+}
+
 //_________________________________________________________________ BIS HIER ---
 
 Matrix3D YPR::toMatrix3D() const {
@@ -1260,7 +1551,7 @@ void YPR::print() const {
 
 //==== Konstruktoren=====
 AngleAxis::AngleAxis() {
-    Vector3D u;
+    Vector3D u(1,0,0);
     this->u   = u;
     this->phi = 0;
 }
@@ -1305,7 +1596,7 @@ AngleAxis::AngleAxis(const Matrix3D& M) {
 }
 //_________________________________________________________________
 
-AngleAxis::AngleAxis(const YPR& ypr) {
+AngleAxis::AngleAxis(const YPR& ypr) { // DEPRECATED
     double y = ypr.yaw;
     double p = ypr.pitch;
     double r = ypr.roll;
@@ -1319,6 +1610,21 @@ AngleAxis::AngleAxis(const YPR& ypr) {
     this->phi = phi;
     this->u = u.normalize();
 
+}
+
+AngleAxis::AngleAxis(const RPY& rpy) {
+    double r = rpy.x;
+    double p = rpy.y;
+    double y = rpy.z;
+
+    double phi = acos(0.5*(-1 + cos(p)*cos(y) + cos(r)*cos(y) + sin(r)*sin(p)*sin(y) + cos(r)*cos(p) ));
+    double u_x = 1/(2*sin(phi))* (sin(r)*cos(p) -cos(r)*sin(p)*sin(y) +sin(r)*cos(y));
+    double u_y = 1/(2*sin(phi))* (sin(r)*sin(y) +cos(r)*sin(p)*cos(y) +sin(p));
+    double u_z = 1/(2*sin(phi))* (cos(p)*sin(y) -sin(r)*sin(p)*cos(y) + cos(r)*sin(y));
+    Vector3D u(u_x,u_y,u_z);
+
+    this->phi = phi;
+    this->u = u.normalize();
 }
 //_________________________________________________________________
 
@@ -1354,7 +1660,7 @@ Matrix3D AngleAxis::toMatrix3D() const { // allgemeine Rotataionsmatrix
 }
 //_________________________________________________________________
 
-YPR AngleAxis::toYPR() const {
+YPR AngleAxis::toYPR() const { // DEPRECATED
     YPR ypr;
     Vector3D u = this->u;
     double phi = this->phi;
@@ -1371,6 +1677,26 @@ YPR AngleAxis::toYPR() const {
     return ypr;
 
 }
+
+RPY AngleAxis::toRPY() const { 
+    RPY rpy;
+    Vector3D u = this->u;
+    double phi = this->phi;
+    double m21 = u.x *u.y *(1-cos(phi)) + u.z*sin(phi);
+    double m11 = u.x *u.x *(1-cos(phi)) + cos(phi);
+    double m31 = u.x *u.z *(1-cos(phi)) - u.y*sin(phi);
+    double m32 = u.y *u.z *(1-cos(phi)) + u.x*sin(phi);
+    double m33 = u.z *u.z *(1-cos(phi)) + cos(phi);
+
+    rpy.x = atan2(m32 , m33);
+    rpy.y = atan2(-m31,sqrt(m11*m11+m21*m21)); // WARNING: SInd veileicht x und y vertauscht???
+    rpy.z = atan2(m21 , m11);
+
+    return rpy;
+}
+
+
+
 //_________________________________________________________________
 
 void AngleAxis::print() const {
@@ -1557,12 +1883,18 @@ Matrix4D operator/(const Matrix4D &left, const double   &right) {
 
 
 //====Konstruktoren====
-CoordinateFrame3D::CoordinateFrame3D() {
-    Vector3D x;
+
+//changed to orthogonal normalized coordinate system
+CoordinateFrame3D::CoordinateFrame3D(){
+    Vector3D x(1,0,0);
+    Vector3D y(0,1,0);
+    Vector3D z(0,0,1);
+    Vector3D o;
+
     this->x=x;
-    this->y=x;
-    this->z=x;
-    this->origin=x;
+    this->y=y;
+    this->z=z;
+    this->origin = o;
 }
 //_________________________________________________________________
 
@@ -1777,8 +2109,8 @@ void Polar::print() const {
 
 //=====================================================Implementierung Globale Methoden============================================
 
-long long faculty(const int &x) {
-    unsigned long long faculty = 1;
+int64_t faculty(const int &x) {
+    uint64_t faculty = 1;
     for (int i = 2; i <= x; i++)
         faculty *= i;
     return faculty;
@@ -1786,7 +2118,6 @@ long long faculty(const int &x) {
 //_________________________________________________________________
 
 double FMod2p( const double &x) {
-
     double rval = fmod(x, 2*M_PI);
     if(rval < 0.0) rval+= 2*M_PI;
     return rval;
@@ -1794,7 +2125,7 @@ double FMod2p( const double &x) {
 
 double fabs(const double &value) {
     double dval = value; 
-    if (dval < 0) dval = dval*-1;
+    if (dval < 0) dval = -dval;
     return dval;
 }
 
@@ -1828,44 +2159,196 @@ Vector3D rotateZ(const Vector3D& s,const double &angle) {
 
 
 //===Rn nach WGS84
-double R_n(const double &angle) {
-    double a,b,e,f;
+// angle in rad
+double R_n(const double angle) {
+    double a,e2,f;
     double Rn;
-    a = 6378137; //m
-    f = 1/298.257223563;
-    b = a*(1-f);
-    e = sqrt(1-(b*b)/(a*a));
+    a = A_WGS84; //m
+    f = F_WGS84;
+    
+    e2 =1-(1-f)*(1-f);
 
-    double phi = angle/180*M_PI;
-
-    double tmp = sqrt(1-e*e*sin(phi)*sin(phi));
+    double phi = angle;
+    double sinp = sin(phi);
+ 
+    double tmp = sqrt(1-e2*sinp*sinp);
     Rn = a/tmp;
     return Rn;
 
 }
 //_________________________________________________________________
 
-
-Vector3D geodeticToECEF(const Vector3D& other) {
-    double x,y,z;
-    double Re,b,e,f;
-    Re = 6378137; //km
-    f = 1/298.257223563;
-    b = Re*(1-f);
-    e = sqrt(1-(b*b)/(Re*Re));
-
-    double h = other.z;
-    double phi = other.x*M_PI/180;
-    double lambda = other.y*M_PI/180;
-
-    x = (R_n(phi)-h)*cos(phi)*cos(lambda);
-    y = (R_n(phi)-h)*cos(phi)*sin(lambda);
-    z = (R_n(phi)*(1-e*e)-h) *sin(phi);
-
-    Vector3D ecf(x,y,z);
-    return ecf;
-
+double daysSinceY2k(int year,int month,int day,int hour,int minute,double second) {
+    double days2k;
+    double temp1,temp2;
+    temp1 = -floor(0.25*7*(year+floor(1.0/12*(month+9))));
+    temp2 = floor(275*month/9.0)+(1.0/24*(hour+minute/60.0+second/3600.0));
+    days2k = 367* year +temp1 + temp2 + day - 730531.5;
+    return days2k;
 }
+
+//===ECEF2ECI
+
+double utcToJD(int year, int month, int date, int hour, int minute, double second){
+	double JD;
+	double d2k = daysSinceY2k(year,month,date,hour,minute,second);
+	JD = d2k + JD2000;
+	return JD;
+}
+
+/*
+* Sidereal Time differs from solar time because of earth's precession
+* GMST means Greenwhich Mean Sidereal Time defined as the hour angle of the vernal equinox
+* GAST means Greenwhich Apparent Sidereal Time
+* Both angles differ as the true vernal equinox' position is not uniformly but varies with nutation
+*/
+
+/*
+* The functions jd2GMST and jd2GAST are borrowed
+* from matlab versions
+* http://de.mathworks.com/matlabcentral/fileexchange/28176-julian-date-to-greenwich-mean-sidereal-time
+* http://de.mathworks.com/matlabcentral/fileexchange/28232-convert-julian-date-to-greenwich-apparent-sidereal-time
+* Copyright (c) 2010, Darin Koblick
+* All rights reserved.
+*/
+
+double jd2GMST(double jd){
+	double gmst;
+	double jdmin = floor(jd) - 0.5;
+	double jdmax = floor(jd) + 0.5;
+	double jd0 = jd;
+	if(jd > jdmax) jd0 = jdmax;
+	else jd0 = jdmin;
+	double h = (jd - jd0) * 24;
+    double d = jd - JD2000;
+	double d0 = jd0 - JD2000;
+	double t = d/36525;
+	gmst = fmod(6.697374558 + 0.06570982441908*d0 
+					+ 1.00273790935*h + 0.000026*(t*t),24);
+	gmst = grad2Rad(gmst * 15);
+	return gmst;
+}
+
+double jd2GAST(double jd){
+	double gast;
+	double thetam = jd2GMST(jd);
+	double t = (jd-JD2000)/36525;
+	
+	double epsilonm = grad2Rad(23.439291-0.0130111*t - 1.64E-07*(t*t) + 5.04E-07*(t*t*t));
+	double l = grad2Rad(280.4665 + 36000.7698 * t);
+	double dL = grad2Rad(218.3165 + 481267.8813*t);
+	double omega = grad2Rad(125.04452 - 1934.136261*t);
+	
+	double dPSI = -17.20*sin(omega) - 1.32*sin(2*l) - 0.23*sin(2*dL)
+			+ 0.21*sin(2*omega);
+	double dEPSILON = 9.20*cos(omega) + 0.57*cos(2*l) + 0.10*cos(2*dL) 
+			-0.09*cos(2*omega);
+			
+	dPSI = grad2Rad(dPSI*(1./3600));
+	dEPSILON = grad2Rad(dEPSILON*(1./3600));
+	gast = fmod(thetam+dPSI*cos(epsilonm+dEPSILON),2*M_PI);
+	return gast;
+}
+
+Matrix3D eciToECEFrotmat(double jd){
+	double theta = jd2GAST(jd);
+	Matrix3D rot;
+    rot.rotationZ(theta);
+	return rot;
+}
+
+//====ECEF (meter, meter, meter) to ECI (meter, meter, meter)
+Vector3D ecefToECI(const Vector3D ecef, int64_t utcNanoseconds){
+	double jd =  ((double)utcNanoseconds / (double)DAYS) + JD2000;
+	Matrix3D rot = eciToECEFrotmat(jd);
+	return  ecef.matVecMult(rot);
+}
+
+//====ECI (meter, meter, meter) to ECEF (meter, meter, meter)
+Vector3D eciToECEF(const Vector3D eci, int64_t utcNanoseconds){
+	double jd =  ((double)utcNanoseconds / (double)DAYS) + JD2000;
+	Matrix3D rot = eciToECEFrotmat(jd);
+	return eci.matVecMult(rot.transpose());
+}
+
+
+double eciToECEF(int64_t utcNanoseconds) {  //DEPRECATED
+
+    double days2k = (double)utcNanoseconds / (double)DAYS;
+    double angle  = (280.46061837+360.98564736628*days2k)/180*M_PI;
+    angle         = FMod2p(angle);
+    return angle;
+}
+
+//===Geodetic (height, longitude, latitude) to ECEF
+Vector3D geodeticToECEF(const Polar& polar) {
+    double x,y,z;
+    double e2,f;
+    f = F_WGS84;
+    e2 = 1-(1-f)*(1-f);
+
+    double h      = polar.r;
+    double phi    = polar.phi;
+    double lambda = polar.theta;
+    double rn = R_n(phi);
+
+    x = (rn+h) * cos(phi) * cos(lambda);
+    y = (rn+h) * cos(phi) * sin(lambda);
+    z = (rn*(1-e2)+h) * sin(phi);
+
+    Vector3D ecef(x,y,z);
+    return ecef;
+}
+
+//====ECEF to Geodetic===  latitude longitude height (phi,lambda,h)from x,y,z
+
+Polar ecefToGeodetic(const Vector3D& other) {
+    double lambda,phi,h;
+    double a,b,e2,f;
+    a = A_WGS84; //m
+    f = F_WGS84;
+    b = a*(1-f);
+    e2 = 1-(b*b)/(a*a);
+
+    double x,y,z;
+    x = other.x;
+    y = other.y;
+    z = other.z;
+
+    double p = sqrt(x*x+y*y);
+    double phi0 = atan2(z,(p*(1-e2)));
+    double n0 = R_n(phi0);
+    double h0 = (p / cos(phi0)) - n0;
+
+    double eht = 1e-5;
+    double ephi = 1e-12;
+
+    h = 0;
+    phi = 0;
+    double dh = 1;
+    double dphi = 1;
+    double n = 0;
+	
+    while((dh>eht) | (dphi > ephi)){
+		phi = phi0;
+		n = n0;
+		h = h0;
+		phi0 = atan2(z,p*(1-e2*(n/(n+h))));
+		n0 = R_n(phi);
+		h0 = p/cos(phi) - n;
+		dh = fabs(h0-h);
+		dphi = fabs(phi0-phi);
+    }
+	
+    lambda = atan2(y,x);   
+
+    Polar llh(h, phi,lambda);
+
+    return llh;
+}
+
+
+//_________________________________________________________________
 
 //=====================================================Vector6D============================================
 
@@ -1908,8 +2391,7 @@ Vector6D::Vector6D( const Vector3D &upper, const Vector3D &lower ) {
 }
 
 double Vector6D::getLen() const {
-
-  return sqrt(dotProduct(*this,*this));
+    return sqrt(dotProduct(*this,*this));
 }
 
 Vector6D Vector6D::vecAdd(const Vector6D& other) const {
@@ -1959,7 +2441,7 @@ double dotProduct(const Vector6D& left, const Vector6D& right) {
     for (int i=0; i<6; i++) {
         Sum+=left.v[i]*right.v[i];
     }
-  return Sum;
+    return Sum;
 }
 
 //=====================================================Vector6D============================================
@@ -2227,9 +2709,9 @@ Matrix6D Matrix6D::mMult(const Matrix6D& other) const {
 Matrix6D dyadic(const Vector6D& left, const Vector6D& right) {
 
     Matrix6D Mat;
-    for (int i=0;i<6;i++) {
-        for (int j=0;j<6;j++) {
-            Mat.r[i][j] = left.v[i]*right.v[j]; 
+    for (int i=0; i<6; i++) {
+        for (int j=0; j<6; j++) {
+            Mat.r[i][j] = left.v[i]*right.v[j];
         }
     }
     return Mat;
@@ -2242,14 +2724,14 @@ Matrix6D dyadic(const Vector6D& left, const Vector6D& right) {
  * \param d +/-1 depending on whether the number of row interchanges was even or odd
  * \return LU-decomposed matrix
  *
- * Given the matrix a[0..n-1][0..n-1], this routine replaces it by the LU decomposition 
- * of a rowwise permutation of itself. a is input. On Output, it is arranged as in Equation 
- * (2.3.14) of Ref. [1]; indx [0..n-1] is an output vector that records the row permutation 
+ * Given the matrix a[0..n-1][0..n-1], this routine replaces it by the LU decomposition
+ * of a rowwise permutation of itself. a is input. On Output, it is arranged as in Equation
+ * (2.3.14) of Ref. [1]; indx [0..n-1] is an output vector that records the row permutation
  * effected by the partial pivoting; d is output as +/-1 depending on whether ther number of
- * row interchanges was even or odd, respectively. This routine is used in combination with 
- * lubksb to solve linear equations or invert a matrix. 
+ * row interchanges was even or odd, respectively. This routine is used in combination with
+ * lubksb to solve linear equations or invert a matrix.
  *
- * Reference: [1] Press, W., Teukolsky, S., Vetterling, W., Flannery, B.: Numerical Recipes in C++, Second Edition, 
+ * Reference: [1] Press, W., Teukolsky, S., Vetterling, W., Flannery, B.: Numerical Recipes in C++, Second Edition,
  * Cambridge University Press, 1992
  */
 bool ludcmp(Matrix6D &a, Vector6D &indx, double &d) {
@@ -2263,7 +2745,7 @@ bool ludcmp(Matrix6D &a, Vector6D &indx, double &d) {
     d = 1.0; // no row interchanges yet
     // loop over rows to get the implicit scaling information
     for (i = 0; i < n; i++) {
-        big = 0.0; 
+        big = 0.0;
         for (j = 0; j < n; j++) {
             if ( (temp = fabs(a.r[i][j])) > big ) {
                 big = temp;
@@ -2276,7 +2758,7 @@ bool ludcmp(Matrix6D &a, Vector6D &indx, double &d) {
         vv.v[i] = 1.0/big; // save the scaling
 
     };	//end for i
-    // this is the loop over columns of Crout's method 
+    // this is the loop over columns of Crout's method
     for (j = 0; j < n; j++) {
         for(i = 0; i < j; i++) {
             // this is equation (2.3.13) of Ref. [1] except i == j
@@ -2293,7 +2775,7 @@ bool ludcmp(Matrix6D &a, Vector6D &indx, double &d) {
             for (k = 0; k < j; k++) {
                 sum -= a.r[i][k]*a.r[k][j];
             }
-            a.r[i][j] = sum; 
+            a.r[i][j] = sum;
             if ( (dum = vv.v[i]*fabs(sum)) >= big ) {
                 // is the figure of merit for the pivot better than the best so far?
                 big = dum;
@@ -2312,7 +2794,7 @@ bool ludcmp(Matrix6D &a, Vector6D &indx, double &d) {
         }; // end if
         indx.v[j] = static_cast<double> (imax);
         if ( a.r[j][j] == 0.0 ) {
-            // if the pivot element is zero the matrix is singular (at least to the 
+            // if the pivot element is zero the matrix is singular (at least to the
             // precision of the algorithm). For some applications on singular matrices,
             // it is desirable to substitute TINY for zero
             a.r[j][j] = TINY;
@@ -2331,17 +2813,17 @@ bool ludcmp(Matrix6D &a, Vector6D &indx, double &d) {
 /*! \brief solves a set of linear equations A*X = B with a LU decomposition of the matrix a
  * \param a the LU decomposition of the matrix A
  * \param indx permutation vector
- * \param b right-hand side vector B for 
+ * \param b right-hand side vector B for
  * \return solution X for the set of linear equations
  *
  * Solves the set of n linear equations A*X = B. Here a[0..n-1][0..n-1] is input, not as the matrix a
- * but rather as its LU decomposition, determined ny tje routine ludcmp. b[0..n-1] is the 
- * input as the right-hand side vector B, and returns with the solution vector X. a and indx are 
+ * but rather as its LU decomposition, determined ny tje routine ludcmp. b[0..n-1] is the
+ * input as the right-hand side vector B, and returns with the solution vector X. a and indx are
  * not modified by this routine and can ne left in place for successive calls with different right-hand sides b.
- * This routine takes into account the possibility that b will begin with many zero elements, so it is efficient for 
+ * This routine takes into account the possibility that b will begin with many zero elements, so it is efficient for
  * use in matrix inversion
  *
- * Reference: [1] Press, W., Teukolsky, S., Vetterling, W., Flannery, B.: Numerical Recipes in C++, Second Edition, 
+ * Reference: [1] Press, W., Teukolsky, S., Vetterling, W., Flannery, B.: Numerical Recipes in C++, Second Edition,
  * Cambridge University Press, 1992
  */
 void lubksb(Matrix6D &a, Vector6D &indx, Vector6D &b) {

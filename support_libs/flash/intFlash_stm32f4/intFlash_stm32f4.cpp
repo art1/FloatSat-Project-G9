@@ -9,7 +9,7 @@ INTFlash_STM32F4::INTFlash_STM32F4() {
 
 
 void * INTFlash_STM32F4::getMemoryPointerOffset(uint32_t pageIdx,uint32_t offsetInPage) {
-  if(pageIdx > NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return NULL; }
+  if(pageIdx >= NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return NULL; }
   return (void*)(stm32f4_flash_startAddress[pageIdx] + offsetInPage);
 }
 
@@ -70,7 +70,12 @@ int32_t INTFlash_STM32F4::write(uint32_t address, void* source, uint32_t maxLen)
  */
 int32_t INTFlash_STM32F4::erasePage(uint32_t pageIdx) {
   // Move PageID to right bit position for Flash Control Register
-  pageIdx *= 8;
+  if (pageIdx > 11) {
+      pageIdx = pageIdx*8 + 0x20;
+  }
+  else {
+      pageIdx *= 8;
+  }
 
   if(!IS_FLASH_SECTOR(pageIdx)) { ERROR("invalid page\n\n"); return InvalidPage; }
   FLASH_Unlock();
@@ -92,13 +97,13 @@ int32_t INTFlash_STM32F4::getNumberOfPages() {
  * @param pageIdx the page id
  */
 int32_t INTFlash_STM32F4::getPageSize(uint32_t pageIdx){
-  if(pageIdx > NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return InvalidPage; }
+  if(pageIdx >= NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return InvalidPage; }
   return stm32f4_flash_pageSize[pageIdx];
 }
 
 
 int32_t INTFlash_STM32F4::readPageOffset(uint32_t pageIdx,  uint32_t offsetInPage, void* destination, uint32_t maxLen){
-  if(pageIdx > NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return InvalidPage; }
+  if(pageIdx >= NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return InvalidPage; }
   // Stay in Page Boundaries
   if((int32_t)(maxLen + offsetInPage) > getPageSize(pageIdx))
     maxLen = getPageSize(pageIdx)-offsetInPage;
@@ -107,7 +112,7 @@ int32_t INTFlash_STM32F4::readPageOffset(uint32_t pageIdx,  uint32_t offsetInPag
 }
 
 int32_t INTFlash_STM32F4::writePageOffset(uint32_t pageIdx, uint32_t offsetInPage, void* source, uint32_t maxLen) {
-  if(pageIdx > NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return InvalidPage; }
+  if(pageIdx >= NUMBER_OF_PAGES) { ERROR("invalid page\n\n"); return InvalidPage; }
   // Stay in Page Boundaries
   if((int32_t)(maxLen + offsetInPage) > getPageSize(pageIdx))
     maxLen = getPageSize(pageIdx)-offsetInPage;

@@ -126,7 +126,7 @@ public:
         len -= curSize;
 
         // Passed the page boarders -> use next page
-        if(thisPageOffset > (uint32_t)getPageSize(fromPageIdx)) { // we can cast, because it is already checked, that page is valid
+        if(thisPageOffset >= (uint32_t)getPageSize(fromPageIdx)) { // we can cast, because it is already checked, that page is valid
           len += thisPageOffset - getPageSize(fromPageIdx);
           curSize -= thisPageOffset - getPageSize(fromPageIdx);
           thisPageOffset = 0;
@@ -139,7 +139,7 @@ public:
         otherPageOffset += curSize;
 
         // Passsed the page boarders -> use next page
-        if(otherPageOffset > (uint32_t)otherFlash->getPageSize(toPageIdx)){ // we can cast, because it is already checked, that page is valid
+        if(otherPageOffset >= (uint32_t)otherFlash->getPageSize(toPageIdx)){ // we can cast, because it is already checked, that page is valid
           uint32_t pos = curSize-(otherPageOffset-otherFlash->getPageSize(toPageIdx));
           toPageIdx++;
           otherFlash->eraseAndWritePage(toPageIdx,(data+pos),curSize-pos);

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "flash.h"
-
-#define MIN(a,b) ( (a)<(b)? (a) : (b) )
+#include "macros_bits_bytes.h"
+// #define MIN(a,b) ( (a)<(b)? (a) : (b) )
 
 static FILE *flashSimulator=0;
 
@@ -69,7 +69,7 @@ int32_t SPIFlash_AT45DBxxx::writePageOffset(uint32_t pageIdx, uint32_t offsetInP
 
 int32_t SPIFlash_AT45DBxxx::eraseAndWritePage (uint32_t pageIdx, void* source, uint32_t maxLen) {
   int32_t retVal = erasePage(pageIdx);
-  if ( retVal == 0){
+  if ( retVal >= 0){
     Thread::suspendCallerUntil(NOW() + TIME_PAGE_ERASE * MILLISECONDS);
     return writePage(pageIdx, source, maxLen);
   } else {
