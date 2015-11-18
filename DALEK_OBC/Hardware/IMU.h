@@ -136,9 +136,9 @@ enum IMU_DATA_REG_ADD{
 };
 
 enum IMU_RANGES{
-	GYRO_245DPS = 0x00,		// continuous update, no self-test, 245DPS
-	GYRO_500DPS	= 0x10, 	// continuous update, no self-test, 500DPS
-	GYRO_2000DPS = 0x20,	// continuous update, no self-test, 200DPS
+	GYRO_245DPS = 0x00,		// continuous update, no self-test, 245DPS (for msb 0x40)
+	GYRO_500DPS	= 0x10, 	// continuous update, no self-test, 500DPS (for msb 0x50)
+	GYRO_2000DPS = 0x20,	// continuous update, no self-test, 200DPS (for msb 0x60)
 	ACCL_2G	= 0x00,			// continuous update, no self test, 2G range, anti alias filter bandwidth 773Hz 0b00000000
 	ACCL_4G = 0x08,			// continuous update, no self test, 4G range, anti alias filter bandwidth 773Hz 0b00001000
 	ACCL_6G = 0x10,			// continuous update, no self test, 6G range, anti alias filter bandwidth 773Hz 0b00010000
@@ -180,14 +180,10 @@ public:
 	IMU_DATA_RAW readIMU_Data();
 	//set period time between executions
 	void setTime(int time);
-//	void setLEDs(GPIO_LED *led);
 	void setGyroScale(int scale);
 	void calibrateSensors();
 
 private:
-//	const char *name;
-//	GPIO_LED leds;
-	LED_SWITCH led;
 	uint8_t time;
 	int read_multiple_Register(int cs, uint8_t reg,int valuesToRead,int16_t *dest);
 	IMU_DATA_RAW scaleData();

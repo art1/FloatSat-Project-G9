@@ -9,18 +9,42 @@
 #define BASIC_H_
 
 #include "rodos.h"
+#include "stm32f4xx.h"
+//#include "stm32f4xx_misc.h"
+//#include "stm32f4xx_gpio.h"
+#include "stm32f4xx_conf.h"
+
 
 #define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
 #define M_PI					3.1415926535897932385f	// Pi, 20 digits
 #define TO_RAD					(M_PI/180.0)
 #define TO_DEG					(180.0/M_PI)
 
-// IMU Stuff
+/****************************** LED STUFF ************************************************/
+#define LED_GREEN 				GPIO_Pin_12
+#define LED_ORANGE 				GPIO_Pin_13
+#define LED_RED 				GPIO_Pin_14
+#define LED_BLUE 				GPIO_Pin_15
+// took the function from GPIO_SetBits etc; see stm32f4xx_gpio.h
+#define GREEN_ON				GPIOD->BSRRL = LED_GREEN
+#define GREEN_OFF				GPIOD->BSRRH = LED_GREEN
+#define GREEN_TOGGLE      		GPIOD->ODR ^= LED_GREEN
+#define ORANGE_ON				GPIOD->BSRRL = LED_ORANGE
+#define ORANGE_OFF				GPIOD->BSRRH = LED_ORANGE
+#define ORANGE_TOGGLE			GPIOD->ODR ^= LED_ORANGE
+#define RED_ON					GPIOD->BSRRL = LED_RED
+#define RED_OFF					GPIOD->BSRRH = LED_RED
+#define RED_TOGGLE				GPIOD->ODR ^= LED_RED
+#define BLUE_ON					GPIOD->BSRRL = LED_BLUE
+#define BLUE_OFF				GPIOD->BSRRH = LED_BLUE
+#define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
+
+/****************************** IMU STUFF ************************************************/
 #define IMU_RESET_PIN			GPIO_055
 #define IMU_G_CS_PIN			GPIO_018
 #define IMU_XM_CS_PIN			GPIO_032
 
-#define IMU_GYRO_RANGE			2000			// in DPS, select 245, 500 or 2000 sensitivity is set according to chosen value here
+#define IMU_GYRO_RANGE			245				// in DPS, select 245, 500 or 2000 sensitivity is set according to chosen value here
 #define IMU_ACCL_RANGE			2				// value in g, select 2,4,6,8 or 16; sensitivity is set according to chosen value
 #define IMU_MAGN_RANGE			2				//value in gauss, select 2,4,8 or 13; sensitivity is set according to chosen value
 
@@ -29,9 +53,10 @@
 #define IMU_MAGN_DEFAULT_OFFSET	1
 
 #define CALIBRAION_SAMPLES		1000.0f			// calibration samples for gyro
-#define IMU_SAMPLERATE			100				// read and fuse IMU data every XX milliseconds
+#define IMU_SAMPLERATE			20				// read and fuse IMU data every XX milliseconds
+#define IMU_PRINT_VALUES		500				// print values over UART USB every XX  ms
 #define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
-#define RESET_IMU_AFTER			100				// resets the IMU if reading data failed for 100 times (e.g. same data is read, or IMU hangs)
+#define RESET_IMU_AFTER			200				// resets the IMU if reading data failed for XXX times (e.g. same data is read, or IMU hangs)
 
 
 
@@ -51,15 +76,7 @@ struct IMU_DATA_RAW{
 	float TEMP_RAW;
 };
 
-struct LED_SWITCH{
-	int COMMAND;
-	int GREEN;
-	int RED;
-	int ORANGE;
-	int BLUE;
-};
 #endif /* BASIC_H_ */
 
 // now define the topics stuff for the RODOS middleware
 extern Topic<IMU_DATA_RAW>	imu_rawData;
-extern Topic<LED_SWITCH>	led_switch;

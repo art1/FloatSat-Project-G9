@@ -9,7 +9,6 @@
 #include "IMU.h"
 #include <inttypes.h>
 
-//#include <unistd.h>
 
 #define IMU_GYRO	0
 #define IMU_ACCMAG	1
@@ -24,7 +23,7 @@ HAL_GPIO imu_x_cs(IMU_XM_CS_PIN);
 HAL_GPIO reset(IMU_RESET_PIN);
 HAL_I2C i2c2(I2C_IDX2);
 
-int samples = 0;
+uint16_t samples = 0;
 
 
 
@@ -48,14 +47,7 @@ void IMU::init(){
 	deltaYaw = 0.0;
 	deltaPitch = 0.0;
 	deltaRoll = 0.0;
-	//	uint8_t time = 500*MILLISECONDS;
 
-	/** SPI STUFF */
-	//	k = spi2.init(1250000);
-	//	PRINTF("init: %d\n",k);
-	// setting SPI Mode:
-	//	k = spi2.config(SPI_PARAMETER_MODE,1);
-	//	PRINTF("config: %d\n",k);
 	//init i2c
 	i2c2.init(400000);
 
@@ -81,13 +73,11 @@ void IMU::init(){
 	PRINTF("IMU G CS PIN:%d\n",k);
 	transBuf[0] = (0x80 | (WHO_AM_I_GYRO));
 	k = i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,1);
-	//	k = spi2.writeRead(transBuf,1,recBuf,30);
 	PRINTF("whois gyro: k=%d -  %d\n",k,recBuf[0]); // should be 212 ,0xD4
 	imu_g_cs.setPins(0);
 	imu_x_cs.setPins(1);
 	transBuf[0] = ( 0x80 | WHO_AM_I_MAGNACC);
 	k = i2c2.writeRead(ACC_MAG_ADDRESS,transBuf,1,recBuf,1);
-	//	k = spi2.writeRead(transBuf,1,recBuf,2);
 	PRINTF("whois accMag: k=%d  -  %d\n",k,recBuf[0]); // should be 73 ,0x49
 	imu_x_cs.setPins(0);
 
@@ -97,14 +87,12 @@ void IMU::init(){
 	transBuf[0] = (CTRL_REG5_XM);
 	transBuf[1] = 0x94; // -> enable temp readings, set high resolution magnetometer, read frequency mag 100Hz
 	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
-	//	k = spi2.write(transBuf,2);
-	//	PRINTF("k-val: %d\n",k);
+
 	//enable Accelerometer
 	transBuf[0] = (CTRL_REG1_XM);
 	transBuf[1] = 0xA7;//0b10100111 -> 1600Hz, continuous reading, all axes enabled
 	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
-	//	k = spi2.write(transBuf,2);
-	//	PRINTF("k-val 2: %d\n",k);
+
 	// setting Magnetic sensor mode to continuous conversion mode
 	transBuf[0] = CTRL_REG7_XM;
 	transBuf[1] = 0x00; //0b00000000 -> continuous conversion mode and rest as default
@@ -177,7 +165,7 @@ void IMU::init(){
 	transBuf[1] = 0xCF; //0b11001111 Normal power mode, all axes enabled,  760Hz, 30 cutoff
 	i2c2.write(GYRO_ADDRESS,transBuf,2);
 	transBuf[0] = CTRL_REG4_G;
-	PRINTF("Setting Gyro Scale to %d\n",IMU_GYRO_RANGE);
+	PRINTF("Setting Gyro Scale to %d DPS \n",IMU_GYRO_RANGE);
 	switch(IMU_GYRO_RANGE){
 	case 245:
 		transBuf[1] = GYRO_245DPS;
@@ -199,16 +187,13 @@ void IMU::init(){
 
 	i2c2.write(GYRO_ADDRESS,transBuf,2);
 	imu_g_cs.setPins(1);
-	//
-	//
+
 	//	//check data
 	imu_g_cs.setPins(1);
 	transBuf[0] =(0x80 | CTRL_REG1_G);
 	k = i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,1);
-	//	k = spi2.writeRead(transBuf,1,recBuf,2);
 	PRINTF("got k=%d  -  GYRO REG1:%d\n",k,recBuf[0]); // should be 0xCf -> 207
 	imu_g_cs.setPins(0);
-
 
 
 
@@ -240,7 +225,6 @@ IMU_DATA_RAW IMU::scaleData(){
 	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;
-	//convert gyro data to rad per seconds (for later caluclation stuff...)
 	tmp.ANGULAR_RAW_X *= TO_RAD;
 	tmp.ANGULAR_RAW_Y *= TO_RAD;
 	tmp.ANGULAR_RAW_Z *= TO_RAD;
@@ -257,16 +241,15 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 	k = read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,magn_raw);
 	k = read_multiple_Register(IMU_ACCMAG,TEMP_L,2,temp_raw);
 
-//	PRINTF("\nraw Magdata  %f  %f  %f",magn_raw[0],magn_raw[1],magn_raw[2]);
+	//	PRINTF("\nraw Magdata  %f  %f  %f",magn_raw[0],magn_raw[1],magn_raw[2]);
 
 	newData = scaleData();
 	samples++;
 	samplerateTime = SECONDS_NOW();
-	PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
+//		PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 
 #ifdef AUTO_RESET_IMU
 	//check for hangs on each channel -> if hang, try to reset IMU
-	/** TODO Check how to properly compare floating point values! */
 	if((fabsf(oldData.ACCEL_RAW_X - newData.ACCEL_RAW_X) < EPSILON_COMPARISON) &&
 			(fabsf(oldData.ACCEL_RAW_Y - newData.ACCEL_RAW_Y) <EPSILON_COMPARISON)&&
 			(fabsf(oldData.ACCEL_RAW_Z - newData.ACCEL_RAW_Z) < EPSILON_COMPARISON)) cnt_failedReads++;
@@ -284,25 +267,31 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 #endif
 }
 
+/**
+ * converts gyro angles to RPY
+ */
 void IMU::convertToRPY(){
 	cosFactor = 1/(cosf(angleRPY.GYRO_PITCH));
 	deltaPitch = cosFactor * ((cosf(angleRPY.GYRO_ROLL) * cosf(angleRPY.GYRO_PITCH)*newData.ANGULAR_RAW_Y) - (sinf(angleRPY.GYRO_ROLL)*cosf(angleRPY.GYRO_PITCH)*(newData.ANGULAR_RAW_Z )));
 	deltaRoll = cosFactor * ((cosf(angleRPY.GYRO_PITCH) * (newData.ANGULAR_RAW_X)) + (sinf(angleRPY.GYRO_ROLL)*sinf(angleRPY.GYRO_PITCH)*(newData.ANGULAR_RAW_Y)) + (cosf(angleRPY.GYRO_ROLL)*sin(angleRPY.GYRO_PITCH)*(newData.ANGULAR_RAW_Z )));
 	deltaYaw = cosFactor * ((sinf(angleRPY.GYRO_ROLL) * (newData.ANGULAR_RAW_Y )) + (cosf(angleRPY.GYRO_ROLL)*(newData.ANGULAR_RAW_Z )));
+
 	float sampleDiff = samplerateTime - oldSamplerateTime;
+
 	angleRPY.GYRO_YAW += (deltaYaw*sampleDiff);
 	angleRPY.GYRO_PITCH += (deltaPitch*sampleDiff);
 	angleRPY.GYRO_ROLL += (deltaRoll*sampleDiff);
-//	PRINTF("\ndifference sample:   %f   \n",sampleDiff);
-	oldSamplerateTime = samplerateTime;
-	PRINTF("\nYAW:  %f  PITCH:   %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
-//	PRINTF("\ndeltaYaw:   %f   deltaPitch:   %f   deltaRoll:   %f   \n",deltaYaw,deltaPitch,deltaRoll);
+	//	PRINTF("\ndifference sample:   %f   \n",sampleDiff);
 
-	// acclererometer convert to RPY
+	oldSamplerateTime = samplerateTime;
+	//	PRINTF("\nYAW:  %f  PITCH:   %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
+	//	PRINTF("\ndeltaYaw:   %f   deltaPitch:   %f   deltaRoll:   %f   \n",deltaYaw,deltaPitch,deltaRoll);
+
+	// acclererometer convert to RPY -> yaw angle can not be get by accl!
 	angleRPY.ACCL_YAW = atan(newData.ACCEL_RAW_Z/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_PITCH = atan(newData.ACCEL_RAW_X/(sqrt((newData.ACCEL_RAW_Y*newData.ACCEL_RAW_Y) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_ROLL = atan(newData.ACCEL_RAW_Y/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
-	PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+	//	PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 }
 
 /**
@@ -326,9 +315,9 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 		imu_g_cs.setPins(1);
 		i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,valuesToRead);
 		for(int i=0;i<valuesToRead;i+=2){
-			//			PRINTF("recBufGyro %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
+//									PRINTF("recBufGyro %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
 			dest[j] =(int16_t)(recBuf[i] | (recBuf[i+1] << 8));
-			//			PRINTF("converted:%d",(int16_t)(recBuf[i] | (recBuf[i+1] << 8)));
+//									PRINTF("converted:%d",(int16_t)(recBuf[i] | (recBuf[i+1] << 8)));
 			j++;
 		}
 
@@ -343,7 +332,7 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 			temp_raw[0] = (((int16_t) recBuf[1] << 12) | recBuf[0] << 4 ) >> 4; // temperature is signed 12bit integer
 		}else {
 			for(int i=0;i<valuesToRead;i+=2){
-//							PRINTF("recBufMag %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
+				//							PRINTF("recBufMag %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
 				dest[j] =(int16_t)(recBuf[i] | (recBuf[i+1] << 8));
 				j++;
 			}
@@ -369,17 +358,7 @@ void IMU::setGyroScale(int scale){
 
 
 void IMU::calibrateSensors(){
-	// led command -1 nothing, 0 rotate, 1 blink, 2 on (given LEDs)
-//	suspendCallerUntil(NOW()+100*MILLISECONDS);
-//	setLEDMask(1,1,1,1,1);
-//	led_switch.publish(led);
-//	suspendCallerUntil(NOW()+100*MILLISECONDS);
-//
-//	setLEDMask(2,1,0,0,0);
-//	led_switch.publish(led);
-//	suspendCallerUntil(NOW()+100*MILLISECONDS);
-
-
+	GREEN_ON;
 	// calibrate Gyro
 	int16_t temp[3];
 	int16_t gyro_temp[3];
@@ -397,14 +376,6 @@ void IMU::calibrateSensors(){
 	gyroOffset[2] = (gyro_temp[2] / CALIBRAION_SAMPLES);
 	PRINTF("CAL: %f, %f, %f",gyroOffset[0],gyroOffset[1],gyroOffset[2]);
 
-//	setLEDMask(2,0,1,0,0);
-//	led_switch.publish(led);
-	//	int current = NOW()*MILLISECONDS;
-//	int timeout = 1000; //in msec
-	//	while(timeout < ((NOW() * MILLISECONDS)) -current){
-//	suspendCallerUntil(100*MILLISECONDS);
-
-	//	}
 
 	// calibrate accelerometer
 	/** WRONG! NEED TO CALIBRATE EACH AXIS SEPARATE ************TODO****************/
@@ -420,36 +391,37 @@ void IMU::calibrateSensors(){
 	acclOffset[2] = (accl_temp[2] / CALIBRAION_SAMPLES);
 	PRINTF("CAL: %f, %f, %f",acclOffset[0],acclOffset[1],acclOffset[2]);
 
-//	setLEDMask(2,0,0,0,0);
-//	led_switch.publish(led);
 
-
+	GREEN_OFF;
 }
 
 
 
 void IMU::run(){
 	PRINTF("run called\n");
-//	calibrateSensors();
+	int tmp = 0;
+
+	calibrateSensors();
+	int printValues = IMU_PRINT_VALUES/IMU_SAMPLERATE;
+	int cnt =0;
+
 	while(1){
+		cnt++;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
 		this->readIMU_Data();
 		this->convertToRPY();
-//		read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,magn_raw);
+		if(cnt>printValues){
+			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
+			PRINTF("\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
+			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 
+			cnt =0;
+			GREEN_TOGGLE;
+		}
 
 	}
 }
 
 
 
-
-// HELPER FUNCTOINS
-void IMU::setLEDMask(int command,int green,int red,int orange,int blue){
-	this->led.COMMAND = command;
-	this->led.GREEN = green;
-	this->led.RED = red;
-	this->led.ORANGE = orange;
-	this->led.BLUE = blue;
-}
 

@@ -7,9 +7,9 @@
 
 #include "basic.h"
 
+
 //declaring topics for RODOS middleware inter-Thread Communication
 Topic<IMU_DATA_RAW> imu_rawData(1,"IMU Raw Data");
-Topic<LED_SWITCH>	led_switch(2,"LED Switch Control");
 
 
 
