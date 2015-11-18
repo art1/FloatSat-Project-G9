@@ -30,7 +30,7 @@ WF121::RecvThread::RecvThread(WF121 *_wf121, HAL_UART *_uart) : Thread("WF121 Re
 }
 
 void WF121::RecvThread::run() {
-	this->suspendCallerUntil(END_OF_TIME);
+//	this->suspendCallerUntil(END_OF_TIME);
 	while(true) {
 
 		uart->suspendUntilDataReady();
@@ -130,7 +130,11 @@ int WF121::init(const char *_ssid, const char *_pw) {
 		#endif
 		wifi_cmd_system_hello();
 		AT(NOW()+300*MILLISECONDS);
+#ifdef WIFI_DEBUG
+			PRINTF("current state is %d\n",this->internal_state);
+#endif
 	}
+	PRINTF("got out of the loop\n");
 
 	return 0;
 

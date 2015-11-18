@@ -26,10 +26,15 @@ CPP_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 . \
+filesystem/bare-metal/stm32f4 \
 filesystem/bare-metal-generic \
 filesystem/bare-metal-generic/fatfs \
 flash/intFlash_stm32f4 \
 flash/spiFlash_AT45DBxxx \
+flash/spiFlash_N25Q00AA/emu \
+flash/spiFlash_N25Q00AA \
+flash/spiFlash_SxxFLxxS/emu \
 flash/spiFlash_SxxFLxxS \
 matlib \
+wifi \
 

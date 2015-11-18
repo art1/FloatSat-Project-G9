@@ -9,7 +9,9 @@
 
 
 HAL_SPI spi2(SPI_IDX3);
+HAL_UART uart3(UART_IDX3);
 
+WF121 wifi(&uart3);
 
 TTnC::TTnC() {
 	// TODO Auto-generated constructor stub
@@ -21,26 +23,20 @@ TTnC::~TTnC() {
 }
 
 void TTnC::init(){
-	int k=0;
-	k = spi2.init(1250000);
-	PRINTF("init: %d\n",k);
-	//	 setting SPI Mode:
-	k = spi2.config(SPI_PARAMETER_MODE,1);
-	PRINTF("config: %d\n",k);
-	transBuf[0] = 0x08;
-	transBuf[1] = 0x00;
-	transBuf[2] = 0x01;
-	transBuf[3] = 0x02;
-	spi2.write(transBuf,4);
-	spi2.read(recBuf,4);
-	PRINTF("received bytes: ");
-	for(int i = 0;i< 4;i++){
-		PRINTF(" %d ",recBuf[i]);
-	}
-	PRINTF("\n");
+	retStat = 0;
+
 }
 
 void TTnC::run(){
+	PRINTF("init wifi\n");
+	retStat = wifi.init(TTNC_SSID,TTNC_SSID_PW);
+	PRINTF("restat wifi: %d",retStat);
+	RED_ON;
+	while(1){
+		PRINTF("current adress: %d.%d.%d.%d\n",wifi.getAdress().a[0],wifi.getAdress().a[1],wifi.getAdress().a[2],wifi.getAdress().a[3]);
+		suspendCallerUntil(NOW()+1000*MILLISECONDS);
+	}
+
 
 }
 

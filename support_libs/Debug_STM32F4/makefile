@@ -8,10 +8,15 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include wifi/subdir.mk
 -include matlib/subdir.mk
+-include flash/spiFlash_SxxFLxxS/emu/subdir.mk
 -include flash/spiFlash_SxxFLxxS/subdir.mk
+-include flash/spiFlash_N25Q00AA/emu/subdir.mk
+-include flash/spiFlash_N25Q00AA/subdir.mk
 -include flash/spiFlash_AT45DBxxx/subdir.mk
 -include flash/intFlash_stm32f4/subdir.mk
+-include filesystem/bare-metal/stm32f4/subdir.mk
 -include filesystem/bare-metal-generic/fatfs/subdir.mk
 -include filesystem/bare-metal-generic/subdir.mk
 -include subdir.mk

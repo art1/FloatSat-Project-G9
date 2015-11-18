@@ -14,8 +14,12 @@ static Application mainThread("mainThread",20);
 
 // load all appropriate classes (-> must be public, initializing classes within a class is not working... ?)
 //GPIO_LED leds("LEDs");
+#ifdef IMU_ENABLE
 IMU imu;
+#endif
+#ifdef TTNC_ENABLE
 TTnC ttnc;
+#endif
 
 
 
@@ -63,7 +67,9 @@ void mainThread::init(){
 
 void mainThread::run(){
 //	imu.init();
+#ifdef IMU_ENABLE
 	imu.setTime(500*MILLISECONDS);
+#endif
 //	imu.setLEDs(&leds);
 	while(1){
 //		imu.readIMU_Data();

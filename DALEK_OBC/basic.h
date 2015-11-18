@@ -10,15 +10,19 @@
 
 #include "rodos.h"
 #include "stm32f4xx.h"
-//#include "stm32f4xx_misc.h"
-//#include "stm32f4xx_gpio.h"
 #include "stm32f4xx_conf.h"
+#include "support_libs.h"
+
 
 
 #define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
 #define M_PI					3.1415926535897932385f	// Pi, 20 digits
 #define TO_RAD					(M_PI/180.0)
 #define TO_DEG					(180.0/M_PI)
+
+/***************************** ENABLE AND DISABLE SHIT ***********************************/
+//#define IMU_ENABLE
+#define TTNC_ENABLE
 
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
@@ -38,6 +42,10 @@
 #define BLUE_ON					GPIOD->BSRRL = LED_BLUE
 #define BLUE_OFF				GPIOD->BSRRH = LED_BLUE
 #define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
+
+/****************************** WIFI STUFF ***********************************************/
+#define TTNC_SSID				"YETENet"
+#define TTNC_SSID_PW			"yeteyete"
 
 /****************************** IMU STUFF ************************************************/
 #define IMU_RESET_PIN			GPIO_055

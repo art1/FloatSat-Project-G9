@@ -7,7 +7,6 @@
 
 #ifndef HARDWARE_FILTER_SENSORFUSION_H_
 #define HARDWARE_FILTER_SENSORFUSION_H_
-#include "../../basic.h"
 
 class sensorFusion {
 public:
