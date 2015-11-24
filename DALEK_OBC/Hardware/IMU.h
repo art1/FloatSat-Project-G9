@@ -213,6 +213,7 @@ private:
 	float deltaRoll;
 	//more stuff
 	int cnt_failedReads;
+	bool calibrationFinished;
 
 };
 

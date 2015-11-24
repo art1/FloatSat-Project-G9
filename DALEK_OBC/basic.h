@@ -16,13 +16,13 @@
 
 
 #define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
-#define M_PI					3.1415926535897932385f	// Pi, 20 digits
+//#define M_PI					3.1415926535897932385f	// Pi, 20 digits 14159265358979323846 -> M_PI already defined in math.h of toolchain
 #define TO_RAD					(M_PI/180.0)
 #define TO_DEG					(180.0/M_PI)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
-#define TTNC_ENABLE
+#define IMU_ENABLE
+//#define TTNC_ENABLE
 
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
@@ -60,13 +60,11 @@
 #define IMU_ACCL_DEFAULT_OFFSET	1
 #define IMU_MAGN_DEFAULT_OFFSET	1
 
-#define CALIBRAION_SAMPLES		1000.0f			// calibration samples for gyro
+#define CALIBRAION_SAMPLES		500				// calibration samples for gyro and accl and mag
 #define IMU_SAMPLERATE			20				// read and fuse IMU data every XX milliseconds
 #define IMU_PRINT_VALUES		500				// print values over UART USB every XX  ms
 #define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
 #define RESET_IMU_AFTER			200				// resets the IMU if reading data failed for XXX times (e.g. same data is read, or IMU hangs)
-
-
 
 struct IMU_DATA_RAW{
 	float ANGULAR_RAW_X;
@@ -86,5 +84,7 @@ struct IMU_DATA_RAW{
 
 #endif /* BASIC_H_ */
 
+
+/***************************************** TOPICS ***************************************************/
 // now define the topics stuff for the RODOS middleware
 extern Topic<IMU_DATA_RAW>	imu_rawData;
