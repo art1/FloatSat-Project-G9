@@ -66,11 +66,11 @@ void mainThread::init(){
 
 
 void mainThread::run(){
-//	imu.init();
-#ifdef IMU_ENABLE
+
+	#ifdef IMU_ENABLE
 	imu.setTime(500*MILLISECONDS);
 #endif
-//	imu.setLEDs(&leds);
+
 	while(1){
 //		imu.readIMU_Data();
 		suspendCallerUntil(NOW()+5000*MILLISECONDS);

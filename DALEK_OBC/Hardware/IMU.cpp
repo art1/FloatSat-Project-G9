@@ -91,8 +91,9 @@ void IMU::init(){
 
 	//enable Accelerometer
 	transBuf[0] = (CTRL_REG1_XM);
-	transBuf[1] = 0xA7;//0b10100111 -> 1600Hz, continuous reading, all axes enabled
+	transBuf[1] = 0x7F;//0b01111111 -> 200Hz, block update reading, all axes enabled
 	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
+	PRINTF("accl enable: %d\n",k);
 
 	// setting Magnetic sensor mode to continuous conversion mode
 	transBuf[0] = CTRL_REG7_XM;
@@ -163,7 +164,7 @@ void IMU::init(){
 	/** GYRO SETTINGS *********************************************** */
 	imu_g_cs.setPins(1);
 	transBuf[0] = CTRL_REG1_G;
-	transBuf[1] = 0xCF; //0b11001111 Normal power mode, all axes enabled,  760Hz, 30 cutoff
+	transBuf[1] = 0x6F; //0b01101111 Normal power mode, all axes enabled,  190Hz, 50 cutoff
 	i2c2.write(GYRO_ADDRESS,transBuf,2);
 	transBuf[0] = CTRL_REG4_G;
 	PRINTF("Setting Gyro Scale to %d DPS \n",IMU_GYRO_RANGE);
@@ -321,7 +322,7 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 		imu_g_cs.setPins(1);
 		i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,valuesToRead);
 		for(int i=0;i<valuesToRead;i+=2){
-//									PRINTF("recBufGyro %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
+									PRINTF("recBufGyro %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
 			dest[j] =(int16_t)(recBuf[i] | (recBuf[i+1] << 8));
 //									PRINTF("converted:%d",(int16_t)(recBuf[i] | (recBuf[i+1] << 8)));
 			j++;
@@ -338,7 +339,7 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 			temp_raw[0] = (((int16_t) recBuf[1] << 12) | recBuf[0] << 4 ) >> 4; // temperature is signed 12bit integer
 		}else {
 			for(int i=0;i<valuesToRead;i+=2){
-				//							PRINTF("recBufMag %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
+											PRINTF("recBufMag %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
 				dest[j] =(int16_t)(recBuf[i] | (recBuf[i+1] << 8));
 				j++;
 			}
@@ -401,10 +402,10 @@ void IMU::calibrateSensors(){
 	for(int i=0;i<CALIBRAION_SAMPLES;i++){
 		read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
 		accl_temp[0] += temp[0];
-//		PRINTF("accltemp 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
+		PRINTF("accltemp 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
 		read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
 		accl_temp[1] += temp[0];
-//		PRINTF("accltemp2 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
+		PRINTF("accltemp2 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
 		suspendCallerUntil(NOW()+1*MILLISECONDS);
 	}
 	GREEN_OFF; RED_OFF;
