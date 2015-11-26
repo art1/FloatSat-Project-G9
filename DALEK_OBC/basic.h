@@ -23,7 +23,7 @@
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
 #define IMU_ENABLE
 //#define TTNC_ENABLE
-
+#define FUSION_ENABLE
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
 #define LED_ORANGE 				GPIO_Pin_13

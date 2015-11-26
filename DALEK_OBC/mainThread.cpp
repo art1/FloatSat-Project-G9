@@ -20,6 +20,9 @@ IMU imu;
 #ifdef TTNC_ENABLE
 TTnC ttnc;
 #endif
+#ifdef FUSION_ENABLE
+sensorFusion fusion;
+#endif
 
 
 
@@ -38,6 +41,16 @@ TTnC ttnc;
 //  void run () { }
 //} gpio_receiver_thread;
 /**************************** IMU MESSAGES **************************************/
+struct receiver_Fusion : public Subscriber, public Thread {
+	receiver_Fusion() : Subscriber(imu_rawData,"IMU Raw Data") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		fusion.newData(*(IMU_DATA_RAW*)data);
+		fusion.resume();
+//		PRINTF("some stuff there!\n\n");
+		return 1;
+	}
+	void run(){}
+} fusion_receiver_thread;
 
 mainThread::mainThread(const char* name) : Thread(name){
 
@@ -72,7 +85,6 @@ void mainThread::run(){
 #endif
 
 	while(1){
-//		imu.readIMU_Data();
 		suspendCallerUntil(NOW()+5000*MILLISECONDS);
 	}
 }
