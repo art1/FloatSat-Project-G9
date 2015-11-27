@@ -54,6 +54,16 @@ struct receiver_Fusion : public Subscriber, public Thread {
 	}
 	void run(){}
 } fusion_receiver_thread;
+/**************************** LIGHT MESSAGES ************************************/
+struct receiver_light : public Subscriber, public Thread {
+	receiver_light() : Subscriber(lux_data,"Lux Data") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		light.setActive(*(LUX_DATA*)data);
+		light.resume();
+		return 1;
+	}
+	void run(){}
+} light_receiver_thread;
 
 mainThread::mainThread(const char* name) : Thread(name){
 
@@ -85,7 +95,10 @@ void mainThread::run(){
 
 	#ifdef IMU_ENABLE
 	imu.setTime(500*MILLISECONDS);
-#endif
+	#endif
+	LUX_DATA temp;
+	temp.activated = true;
+	lux_data.publish(temp);
 
 	while(1){
 		suspendCallerUntil(NOW()+5000*MILLISECONDS);

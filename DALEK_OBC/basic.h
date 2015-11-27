@@ -84,9 +84,20 @@ struct IMU_DATA_RAW{
 };
 /* ***************************************** LIGHT SENSOR STUFF **********************************************/
 #define LIGHT_SAMPLERATE		100			// Samplerate in milliseconds
-#endif /* BASIC_H_ */
+struct LUX_DATA{
+	bool activated;
+	uint16_t LUX;
+};
+
+
+
+
 
 
 /***************************************** TOPICS ***************************************************/
 // now define the topics stuff for the RODOS middleware
 extern Topic<IMU_DATA_RAW>	imu_rawData;
+extern Topic<LUX_DATA> lux_data;
+
+#endif /* BASIC_H_ */
+

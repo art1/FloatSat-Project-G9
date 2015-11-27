@@ -9,6 +9,7 @@
 #include "inttypes.h"
 
 HAL_I2C i2c1(I2C_IDX1);
+static Application senderName("Lux_Data_Publisher",500);
 
 
 
@@ -26,7 +27,8 @@ void lightSensor::init(){
 	activated =false;
 	memset(transBuf,0,sizeof(transBuf));
 	memset(recBuf,0,sizeof(recBuf));
-
+	pub_data.LUX = 0;
+	pub_data.activated = false;
 
 	k = i2c1.init(400000);
 	PRINTF("init i2c1 successful: %d\n",k);
@@ -70,13 +72,21 @@ bool lightSensor::isActive(){
 	return activated;
 }
 
+void lightSensor::setActive(LUX_DATA val){
+	pub_data.activated = val.activated;
+//	activated = val;
+}
+
 void lightSensor::run(){
 	if(!activated)init();
 	while(1){
 		suspendCallerUntil(NOW()+LIGHT_SAMPLERATE*MILLISECONDS);
+		if(pub_data.activated){
 		//		calculateLux();
 		readRawData();
 		PRINTF("lux: %"PRIu32" \n",calculateLux());
+		lux_data.publish(pub_data);
+		} else suspendCallerUntil(END_OF_TIME);
 	}
 }
 
@@ -142,7 +152,7 @@ uint32_t lightSensor::calculateLux(){
 	temp += (1 << (LUX_SCALE -1 ));
 	// strip off fractional portion
 	uint32_t lux = temp >> LUX_SCALE;
-
+	pub_data.LUX = lux;
 	return lux;
 }
 

@@ -10,6 +10,6 @@
 
 //declaring topics for RODOS middleware inter-Thread Communication
 Topic<IMU_DATA_RAW> imu_rawData(1,"IMU Raw Data");
-
+Topic<LUX_DATA> lux_data(2,"LUX Data");
 
 

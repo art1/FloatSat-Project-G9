@@ -70,6 +70,7 @@ public:
 	virtual ~lightSensor();
 	void init();
 	void run();
+	void setActive(LUX_DATA val);
 private:
 	float lux;
 	bool isActive();
@@ -82,6 +83,7 @@ private:
 	uint8_t lowByte;
 	uint16_t ch0;
 	uint16_t ch1;
+	LUX_DATA pub_data;
 };
 
 #endif /* HARDWARE_LIGHTSENSOR_H_ */
