@@ -23,6 +23,9 @@ TTnC ttnc;
 #ifdef FUSION_ENABLE
 sensorFusion fusion;
 #endif
+#ifdef LIGHT_ENABLE
+lightSensor light;
+#endif
 
 
 

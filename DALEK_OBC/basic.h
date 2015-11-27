@@ -24,6 +24,7 @@
 #define IMU_ENABLE
 //#define TTNC_ENABLE
 #define FUSION_ENABLE
+#define LIGHT_ENABLE
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
 #define LED_ORANGE 				GPIO_Pin_13
@@ -81,7 +82,8 @@ struct IMU_DATA_RAW{
 
 	float TEMP_RAW;
 };
-
+/* ***************************************** LIGHT SENSOR STUFF **********************************************/
+#define LIGHT_SAMPLERATE		100			// Samplerate in milliseconds
 #endif /* BASIC_H_ */
 
 
