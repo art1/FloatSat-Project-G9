@@ -21,7 +21,7 @@ HAL_GPIO imu_x_cs(IMU_XM_CS_PIN);
 
 
 HAL_GPIO reset(IMU_RESET_PIN);
-HAL_I2C i2c2(I2C_IDX2);
+//HAL_I2C i2c2(I2C_IDX2);
 
 uint16_t samples = 0;
 
@@ -50,6 +50,7 @@ void IMU::init(){
 	calibrationFinished = false;
 
 	//init i2c
+//	if(i2c2.context)
 	i2c2.init(400000);
 
 	//init array

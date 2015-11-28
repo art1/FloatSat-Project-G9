@@ -26,6 +26,9 @@ sensorFusion fusion;
 #ifdef LIGHT_ENABLE
 lightSensor light;
 #endif
+#ifdef CAMERA_ENABLE
+Camera camera;
+#endif
 
 
 

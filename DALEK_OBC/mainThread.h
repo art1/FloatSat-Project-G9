@@ -12,6 +12,7 @@
 //#include "Hardware/GPIO_LED.h"
 #include "Hardware/IMU.h"
 #include "Communication/TTnC.h"
+#include "Hardware/Camera/Camera.h"
 #include "Hardware/Filter/sensorFusion.h"
 #include "Hardware/lightSensor.h"
 

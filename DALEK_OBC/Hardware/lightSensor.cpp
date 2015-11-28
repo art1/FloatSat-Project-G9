@@ -8,7 +8,6 @@
 #include "lightSensor.h"
 #include "inttypes.h"
 
-HAL_I2C i2c1(I2C_IDX1);
 static Application senderName("Lux_Data_Publisher",500);
 
 

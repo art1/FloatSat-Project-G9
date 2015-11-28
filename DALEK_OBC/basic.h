@@ -14,6 +14,12 @@
 #include "support_libs.h"
 
 
+/************* BASIC STUFF AND I2C/SPI/UART Things **************************************/
+extern "C" HAL_I2C i2c1;
+extern "C" HAL_I2C i2c2;
+
+
+
 
 #define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
 //#define M_PI					3.1415926535897932385f	// Pi, 20 digits 14159265358979323846 -> M_PI already defined in math.h of toolchain
@@ -25,6 +31,7 @@
 //#define TTNC_ENABLE
 #define FUSION_ENABLE
 #define LIGHT_ENABLE
+#define CAMERA_ENABLE
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
 #define LED_ORANGE 				GPIO_Pin_13
