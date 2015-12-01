@@ -17,6 +17,9 @@
 /************* BASIC STUFF AND I2C/SPI/UART Things **************************************/
 //extern "C" HAL_I2C i2c1;
 extern "C" HAL_I2C i2c2;
+extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
+
+#define ADC1_RESOLUTION			12				// Resolution for ADC Channel 1
 
 #define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
 #define TO_RAD					(M_PI/180.0)
@@ -29,6 +32,7 @@ extern "C" HAL_I2C i2c2;
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 #define MOTOR_ENABLE
+#define SOLAR_ADC_ENABLE
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
 #define LED_ORANGE 				GPIO_Pin_13
@@ -98,11 +102,20 @@ struct LUX_DATA{
 
 
 
+/* ***************************************** SolarPanel STUFF **********************************************/
+#define SolarVoltageADC			ADC_CH_001	//PA1 Pin
+#define SOLAR_SAMPLERATE		100			//Samplerate in milliseconds
+struct SOLAR_DATA{
+	bool activated;
+	int32_t Voltage;
+};
+
 
 /***************************************** TOPICS ***************************************************/
 // now define the topics stuff for the RODOS middleware
 extern Topic<IMU_DATA_RAW>	imu_rawData;
 extern Topic<LUX_DATA> lux_data;
+extern Topic<SOLAR_DATA> solar_data;
 
 #endif /* BASIC_H_ */
 

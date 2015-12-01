@@ -26,6 +26,9 @@ sensorFusion fusion;
 #ifdef LIGHT_ENABLE
 lightSensor light;
 #endif
+#ifdef SOLAR_ADC_ENABLE
+SolarPanels solar;
+#endif
 #ifdef CAMERA_ENABLE
 Camera camera;
 #endif
@@ -74,6 +77,19 @@ struct receiver_light : public Subscriber, public Thread {
 	void run(){}
 } light_receiver_thread;
 #endif
+/**************************** Solar Panel MESSAGES ************************************/
+#ifdef SOLAR_ADC_ENABLE
+struct receiver_solar : public Subscriber, public Thread {
+	receiver_solar() : Subscriber(solar_data,"Solar Data") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		solar.setActive(*(SOLAR_DATA*)data);
+		solar.resume();
+		return 1;
+	}
+	void run(){}
+} solar_receiver_thread;
+#endif
+
 
 mainThread::mainThread(const char* name) : Thread(name){
 
@@ -102,6 +118,9 @@ void mainThread::init(){
 
 
 void mainThread::run(){
+
+	//enable ADC1 channel with 12 Bit Resolution
+	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);
 
 	#ifdef IMU_ENABLE
 	imu.regInit();
