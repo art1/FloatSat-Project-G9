@@ -8,7 +8,7 @@
 #include "TTnC.h"
 
 
-HAL_SPI spi2(SPI_IDX3);
+//HAL_SPI spi2(SPI_IDX3);
 HAL_UART uart3(UART_IDX3);
 
 WF121 wifi(&uart3);

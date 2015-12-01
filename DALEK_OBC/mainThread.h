@@ -15,6 +15,7 @@
 #include "Hardware/Camera/Camera.h"
 #include "Hardware/Filter/sensorFusion.h"
 #include "Hardware/lightSensor.h"
+#include "Hardware/Motor/MotorControlThread.h"
 
 class mainThread : public Thread {
 public:

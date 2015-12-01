@@ -175,6 +175,7 @@ public:
 	IMU();
 	virtual ~IMU();
 	void init();
+	void regInit();
 	void run();
 	int resetIMU();
 	IMU_DATA_RAW readIMU_Data();
@@ -214,6 +215,7 @@ private:
 	//more stuff
 	int cnt_failedReads;
 	bool calibrationFinished;
+	int k =0;
 
 };
 

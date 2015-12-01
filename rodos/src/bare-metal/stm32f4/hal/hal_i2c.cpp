@@ -130,7 +130,8 @@ int32_t HAL_I2C::init(uint32_t speed) {
 	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStructure.I2C_OwnAddress1 = context->I2C_SLAVE_ADDRESS7;
-	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
+	/*if(context->I2Cx == I2C1) I2C_InitStructure.I2C_Ack = I2C_Ack_Disable;
+	else */I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
 	I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
 	I2C_InitStructure.I2C_ClockSpeed = context->I2C_SPEED;
 	I2C_Init(context->I2Cx, &I2C_InitStructure);

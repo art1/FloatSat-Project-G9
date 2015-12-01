@@ -15,23 +15,20 @@
 
 
 /************* BASIC STUFF AND I2C/SPI/UART Things **************************************/
-extern "C" HAL_I2C i2c1;
+//extern "C" HAL_I2C i2c1;
 extern "C" HAL_I2C i2c2;
 
-
-
-
 #define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
-//#define M_PI					3.1415926535897932385f	// Pi, 20 digits 14159265358979323846 -> M_PI already defined in math.h of toolchain
 #define TO_RAD					(M_PI/180.0)
 #define TO_DEG					(180.0/M_PI)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-#define IMU_ENABLE
+//#define IMU_ENABLE
 //#define TTNC_ENABLE
-#define FUSION_ENABLE
-#define LIGHT_ENABLE
-#define CAMERA_ENABLE
+//#define FUSION_ENABLE
+//#define LIGHT_ENABLE
+//#define CAMERA_ENABLE
+#define MOTOR_ENABLE
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
 #define LED_ORANGE 				GPIO_Pin_13
@@ -62,7 +59,7 @@ extern "C" HAL_I2C i2c2;
 
 #define IMU_GYRO_RANGE			245				// in DPS, select 245, 500 or 2000 sensitivity is set according to chosen value here
 #define IMU_ACCL_RANGE			2				// value in g, select 2,4,6,8 or 16; sensitivity is set according to chosen value
-#define IMU_MAGN_RANGE			2				//value in gauss, select 2,4,8 or 13; sensitivity is set according to chosen value
+#define IMU_MAGN_RANGE			2				// value in gauss, select 2,4,8 or 13; sensitivity is set according to chosen value
 
 #define IMU_GYRO_DEFAULT_OFFSET	1
 #define IMU_ACCL_DEFAULT_OFFSET	1
@@ -72,7 +69,7 @@ extern "C" HAL_I2C i2c2;
 #define IMU_SAMPLERATE			20				// read and fuse IMU data every XX milliseconds
 #define IMU_PRINT_VALUES		500				// print values over UART USB every XX  ms
 #define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
-#define RESET_IMU_AFTER			200				// resets the IMU if reading data failed for XXX times (e.g. same data is read, or IMU hangs)
+#define RESET_IMU_AFTER			5				// resets the IMU if reading data failed for XXX times (e.g. same data is read, or IMU hangs)
 
 struct IMU_DATA_RAW{
 	float ANGULAR_RAW_X;
@@ -97,6 +94,7 @@ struct LUX_DATA{
 };
 
 
+/* ***************************************** Camera STUFF **********************************************/
 
 
 

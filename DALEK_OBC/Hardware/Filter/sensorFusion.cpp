@@ -47,7 +47,9 @@ void sensorFusion::init(){
 void sensorFusion::run(){
 	int printValues = IMU_PRINT_VALUES/IMU_SAMPLERATE;
 	int cnt = 0;
+//	PRINTF("Fusion An!\n");
 	while(1){
+
 		suspendCallerUntil(END_OF_TIME);
 //		PRINTF("\nFUSIOOOOOOON\n\n");
 		dataFusion(&gyro,&accl,&magn);

@@ -29,6 +29,16 @@ uint16_t samples = 0;
 
 IMU::IMU() {
 	//TODO: insert correct baudrate
+	cnt_failedReads = 0;
+	samples = 0;
+	k =0;
+	oldSamplerateTime = 0.0;
+	samplerateTime = 0.0;
+	cosFactor = 0.0;
+	deltaYaw = 0.0;
+	deltaPitch = 0.0;
+	deltaRoll = 0.0;
+	calibrationFinished = false;
 }
 
 IMU::~IMU() {
@@ -37,20 +47,15 @@ IMU::~IMU() {
 
 
 void IMU::init(){
+
+}
+
+void IMU::regInit(){
 	PRINTF("IMU Constructor called!\n");
-	cnt_failedReads = 0;
-	samples = 0;
-	int k =0;
-	oldSamplerateTime = 0.0;
-	samplerateTime = 0.0;
-	cosFactor = 0.0;
-	deltaYaw = 0.0;
-	deltaPitch = 0.0;
-	deltaRoll = 0.0;
-	calibrationFinished = false;
+
 
 	//init i2c
-//	if(i2c2.context)
+	//	if(i2c2.context)
 	i2c2.init(400000);
 
 	//init array
@@ -68,6 +73,12 @@ void IMU::init(){
 	memset(gyroOffset,IMU_GYRO_DEFAULT_OFFSET,sizeof(gyroOffset));
 	memset(acclOffset,IMU_ACCL_DEFAULT_OFFSET,sizeof(acclOffset));
 	memset(magnOffset,IMU_MAGN_DEFAULT_OFFSET,sizeof(magnOffset));
+	gyroOffset[0] = -241.0f;
+	gyroOffset[1] = 104.0f;
+	gyroOffset[2] = 208.0f;
+	acclOffset[0] = -4800.500f;
+	acclOffset[1] = 339.500f;
+	acclOffset[2] = -393.0f;
 
 	/** WHOIS CHECKS *************************************************************** */
 	imu_g_cs.setPins(1);
@@ -197,10 +208,6 @@ void IMU::init(){
 	k = i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,1);
 	PRINTF("got k=%d  -  GYRO REG1:%d\n",k,recBuf[0]); // should be 0xCf -> 207
 	imu_g_cs.setPins(0);
-
-
-
-
 }
 
 
@@ -212,8 +219,11 @@ int IMU::resetIMU(){
 
 	// reset I2C lines
 	i2c2.reset();
-	//	reset.setPins(0);
-	//	reset.setPins(1);
+	reset.setPins(0);
+	reset.setPins(1);
+	suspendCallerUntil(NOW()+200*MILLISECONDS);
+	regInit();
+
 	cnt_failedReads =0;
 	return 0;
 }
@@ -269,11 +279,12 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 			(fabsf(oldData.MAGNETIC_RAW_Z - newData.MAGNETIC_RAW_Z) < EPSILON_COMPARISON)) cnt_failedReads++;
 	if(cnt_failedReads > RESET_IMU_AFTER){
 		PRINTF("IMU Hang detected! Resetting IMU\n");
-		suspendCallerUntil(END_OF_TIME);
+		RED_ON;
+		//		suspendCallerUntil(END_OF_TIME);
 		this->resetIMU();
 		//		init();
-		//		i2c2.reset();
-		//		cnt_failedReads = 0;
+		//				i2c2.reset();
+		//				cnt_failedReads = 0;
 	}
 #endif
 }
@@ -558,12 +569,17 @@ void IMU::run(){
 		cnt++;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
 		this->readIMU_Data();
+#ifdef FUSION_ENABLE
 		imu_rawData.publish(newData);
-//		this->convertToRPY();
+#else
+		this->convertToRPY();
+#endif
 		if(cnt>printValues){
+#ifndef FUSION_ENABLE
 //			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
-//			PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
-//			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+			PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
+			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+#endif
 			cnt =0;
 			GREEN_TOGGLE;
 		}

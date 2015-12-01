@@ -29,6 +29,9 @@ lightSensor light;
 #ifdef CAMERA_ENABLE
 Camera camera;
 #endif
+#ifdef MOTOR_ENABLE
+MotorControlThread motorControl;
+#endif
 
 
 
@@ -47,6 +50,7 @@ Camera camera;
 //  void run () { }
 //} gpio_receiver_thread;
 /**************************** IMU MESSAGES **************************************/
+#ifdef FUSION_ENABLE
 struct receiver_Fusion : public Subscriber, public Thread {
 	receiver_Fusion() : Subscriber(imu_rawData,"IMU Raw Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
@@ -57,7 +61,9 @@ struct receiver_Fusion : public Subscriber, public Thread {
 	}
 	void run(){}
 } fusion_receiver_thread;
+#endif
 /**************************** LIGHT MESSAGES ************************************/
+#ifdef LIGHT_ENABLE
 struct receiver_light : public Subscriber, public Thread {
 	receiver_light() : Subscriber(lux_data,"Lux Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
@@ -67,6 +73,7 @@ struct receiver_light : public Subscriber, public Thread {
 	}
 	void run(){}
 } light_receiver_thread;
+#endif
 
 mainThread::mainThread(const char* name) : Thread(name){
 
@@ -97,14 +104,25 @@ void mainThread::init(){
 void mainThread::run(){
 
 	#ifdef IMU_ENABLE
+	imu.regInit();
 	imu.setTime(500*MILLISECONDS);
 	#endif
+
+#ifdef LIGHT_ENABLE
 	LUX_DATA temp;
 	temp.activated = true;
 	lux_data.publish(temp);
+#endif
+
+
+
 
 	while(1){
 		suspendCallerUntil(NOW()+5000*MILLISECONDS);
+#ifdef CAMERA_ENABLE
+		camera.test();
+#endif
+
 	}
 }
 
