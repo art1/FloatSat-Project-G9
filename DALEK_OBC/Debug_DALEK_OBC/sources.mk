@@ -33,7 +33,7 @@ Hardware/AHRS \
 Hardware/Audio \
 Hardware/Camera \
 Hardware/Camera/Supps \
-Hardware/Motor \
 Hardware \
+Hardware/Motor \
 . \
 

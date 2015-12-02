@@ -32,7 +32,8 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 #define MOTOR_ENABLE
-#define SOLAR_ADC_ENABLE
+//#define SOLAR_ADC_ENABLE
+//#define IR_ENABLE
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
 #define LED_ORANGE 				GPIO_Pin_13

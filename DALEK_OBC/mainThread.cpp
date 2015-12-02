@@ -35,6 +35,9 @@ Camera camera;
 #ifdef MOTOR_ENABLE
 MotorControlThread motorControl;
 #endif
+#ifdef IR_ENABLE
+InfraredSensors irSensors;
+#endif
 
 
 
@@ -89,7 +92,18 @@ struct receiver_solar : public Subscriber, public Thread {
 	void run(){}
 } solar_receiver_thread;
 #endif
-
+/**************************** IR Sensors MESSAGES ************************************/
+#ifdef IR_ENABLE
+struct receiver_irSensors : public Subscriber, public Thread {
+	receiver_irSensors() : Subscriber(ir_data,"Infrared Data") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		irSensors.setActive(*(IR_DATA*)data);
+		irSensors.resume();
+		return 1;
+	}
+	void run(){}
+} ir_sensors_receiver_thread;
+#endif
 
 mainThread::mainThread(const char* name) : Thread(name){
 

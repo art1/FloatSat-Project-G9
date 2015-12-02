@@ -17,6 +17,7 @@
 #include "Hardware/lightSensor.h"
 #include "Hardware/Motor/MotorControlThread.h"
 #include "Hardware/SolarPanels.h"
+#include "Hardware/InfraredSensors.h"
 
 class mainThread : public Thread {
 public:
