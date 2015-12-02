@@ -19,8 +19,6 @@ namespace RODOS {
 class LinkinterfaceWF121: public Linkinterface,IOEventReceiver {
 private:
 	WF121 *wf121;
-	int checkedLen;
-
 public:
 	LinkinterfaceWF121(WF121 *_wf121);
 	void onDataReady();

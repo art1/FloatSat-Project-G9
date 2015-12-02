@@ -30,7 +30,7 @@ WF121::RecvThread::RecvThread(WF121 *_wf121, HAL_UART *_uart) : Thread("WF121 Re
 }
 
 void WF121::RecvThread::run() {
-//	this->suspendCallerUntil(END_OF_TIME);
+	this->suspendCallerUntil(END_OF_TIME);
 	while(true) {
 
 		uart->suspendUntilDataReady();
@@ -130,11 +130,7 @@ int WF121::init(const char *_ssid, const char *_pw) {
 		#endif
 		wifi_cmd_system_hello();
 		AT(NOW()+300*MILLISECONDS);
-#ifdef WIFI_DEBUG
-			PRINTF("current state is %d\n",this->internal_state);
-#endif
 	}
-	PRINTF("got out of the loop\n");
 
 	return 0;
 
@@ -392,20 +388,6 @@ void WF121::processMsg() {
 			PRINTF("Wifi - Endpoint Status changed\n\r");
 		#endif
 		break;
-    case wifi_evt_endpoint_closing_id:
-		#ifdef WIFI_DEBUG
-    		PRINTF("Wifi - Endpoint closing\n\r");
-		#endif
-    	wifi_cmd_endpoint_close(BGLIB_MSG(buffer)->evt_endpoint_closing.endpoint);
-    	break;
-    case wifi_rsp_endpoint_close_id:
-		#ifdef WIFI_DEBUG
-    		PRINTF("Wifi - Endpoint closed\n\r");
-		#endif
-    	if(tcpConnectionEnabled) {
-    		startTCPConnection();
-    	}
-    	break;
     case wifi_evt_tcpip_configuration_id:
 		#ifdef WIFI_DEBUG
 			PRINTF("Wifi - TcpIp configuration changed - IP: %d.%d.%d.%d\n\r",BGLIB_MSG(buffer)->evt_tcpip_configuration.address.a[0],BGLIB_MSG(buffer)->evt_tcpip_configuration.address.a[1],BGLIB_MSG(buffer)->evt_tcpip_configuration.address.a[2],BGLIB_MSG(buffer)->evt_tcpip_configuration.address.a[3]);
@@ -496,9 +478,6 @@ void WF121::startUDPConnection() {
 }
 
 void WF121::startTCPConnection() {
-	if(tcp_destination == 0) {
-		tcp_destination = gateway.u;
-	}
 	wifi_cmd_tcpip_tcp_connect(tcp_destination,tcp_port,-1);
 }
 

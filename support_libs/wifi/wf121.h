@@ -162,19 +162,6 @@ public:
 	void enableUDPConnection(uint32_t _udp_destination, uint32_t _udp_port);
 
 
-	/**
-	 * Enable TCP Connection. The TCP Connection enabled here,
-	 * can be accessed via the read and write methods of this class.
-	 * If the wifi is not ready yet, the udp connection will
-	 * be activated as soon as the connection is ready.
-	 *
-	 * @param _tcp_destination destination of the tcp connection.
-	 * Reverse ip in hex format - for example 192.168.0.1 = 0x0100A8C0.
-	 * This can be a broadcast address, for example 0xFFFFFFFF.
-	 * If 0 is passed the gateway address will be used.
-	 *
-	 * @param _tcp_port TCP port of the remote tcp connection.
-	 */
 	void enableTCPConnection(uint32_t _tcp_destination, uint32_t _tcp_port);
 
 	/**

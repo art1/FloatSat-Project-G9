@@ -27,11 +27,11 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
 //#define IMU_ENABLE
-//#define TTNC_ENABLE
+#define TTNC_ENABLE
 //#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
-#define MOTOR_ENABLE
+//#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
 /****************************** LED STUFF ************************************************/

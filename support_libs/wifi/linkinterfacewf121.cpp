@@ -38,25 +38,9 @@ bool LinkinterfaceWF121::sendNetworkMsg(NetworkMessage &outMsg)	{
 
 
 bool LinkinterfaceWF121::getNetworkMsg(NetworkMessage &inMsg,int32_t &numberOfReceivedBytes) {
-	if(checkedLen > 0) {
-		memcpy(&inMsg,&rxMsg.data[checkedLen],rxMsg.length-checkedLen);
-		if(inMsg.numberOfBytesToSend() < rxMsg.length-checkedLen) {
-			numberOfReceivedBytes = inMsg.numberOfBytesToSend();
-			checkedLen += inMsg.numberOfBytesToSend();
-		} else {
-			numberOfReceivedBytes = rxMsg.length-checkedLen;
-			checkedLen = 0;
-		}
-		return true;
-	} else if(wf121->read(&rxMsg)) {
+	if(wf121->read(&rxMsg)) {
 		memcpy(&inMsg,rxMsg.data,rxMsg.length);
-		if(inMsg.numberOfBytesToSend() < rxMsg.length) {
-			numberOfReceivedBytes = inMsg.numberOfBytesToSend();
-			checkedLen = inMsg.numberOfBytesToSend();
-		} else {
-			numberOfReceivedBytes = rxMsg.length;
-			checkedLen = 0;
-		}
+		numberOfReceivedBytes = rxMsg.length;
 		return true;
 	}
 	return false;
