@@ -15,4 +15,5 @@ HAL_ADC adc1(ADC_IDX1);
 Topic<IMU_DATA_RAW> imu_rawData(1,"IMU Raw Data");
 Topic<LUX_DATA> lux_data(2,"LUX Data");
 Topic<SOLAR_DATA> solar_data(3,"Solar Voltage Data");
+Topic<IR_DATA> ir_data(4,"Infrared Sensor Data");
 

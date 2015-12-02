@@ -28,11 +28,12 @@ CPP_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 Communication \
+Hardware/AHRS/Filter \
+Hardware/AHRS \
 Hardware/Audio \
 Hardware/Camera \
 Hardware/Camera/Supps \
-Hardware/Filter \
-Hardware \
 Hardware/Motor \
+Hardware \
 . \
 

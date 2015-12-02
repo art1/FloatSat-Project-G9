@@ -8,7 +8,7 @@
 #ifndef HARDWARE_FILTER_SENSORFUSION_H_
 #define HARDWARE_FILTER_SENSORFUSION_H_
 
-#include "../../basic.h"
+#include "../../../basic.h"
 #include "myMath.h"
 
 

@@ -91,7 +91,7 @@ struct IMU_DATA_RAW{
 	float TEMP_RAW;
 };
 /* ***************************************** LIGHT SENSOR STUFF **********************************************/
-#define LIGHT_SAMPLERATE		100			// Samplerate in milliseconds
+#define LIGHT_SAMPLERATE		100				// Samplerate in milliseconds
 struct LUX_DATA{
 	bool activated;
 	uint16_t LUX;
@@ -103,12 +103,26 @@ struct LUX_DATA{
 
 
 /* ***************************************** SolarPanel STUFF **********************************************/
-#define SolarVoltageADC			ADC_CH_001	//PA1 Pin
-#define SOLAR_SAMPLERATE		100			//Samplerate in milliseconds
+#define SolarVoltageADC			ADC_CH_001		//PA1 Pin
+#define SOLAR_SAMPLERATE		100				//Samplerate in milliseconds
 struct SOLAR_DATA{
 	bool activated;
 	int32_t Voltage;
 };
+
+/* ***************************************** Infrared Sensor STUFF **********************************************/
+#define IR_ONE					ADC_CH_002		// PA2
+#define IR_TWO					ADC_CH_003		// PA3
+#define IR_THREE				ADC_CH_005		// PA5
+#define IR_SAMPLERATE			200				// Samplerate in missileconds
+struct IR_DATA{
+	bool activated;
+	int32_t sensorOne;
+	int32_t sensorTwo;
+	int32_t sensorThree;
+};
+
+
 
 
 /***************************************** TOPICS ***************************************************/
@@ -116,6 +130,7 @@ struct SOLAR_DATA{
 extern Topic<IMU_DATA_RAW>	imu_rawData;
 extern Topic<LUX_DATA> lux_data;
 extern Topic<SOLAR_DATA> solar_data;
+extern Topic<IR_DATA> ir_data;
 
 #endif /* BASIC_H_ */
 

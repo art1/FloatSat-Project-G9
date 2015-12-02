@@ -10,12 +10,13 @@
 
 #include "basic.h"
 //#include "Hardware/GPIO_LED.h"
-#include "Hardware/IMU.h"
+#include "Hardware/AHRS/IMU.h"
 #include "Communication/TTnC.h"
 #include "Hardware/Camera/Camera.h"
-#include "Hardware/Filter/sensorFusion.h"
+#include "Hardware/AHRS/Filter/sensorFusion.h"
 #include "Hardware/lightSensor.h"
 #include "Hardware/Motor/MotorControlThread.h"
+#include "Hardware/SolarPanels.h"
 
 class mainThread : public Thread {
 public:
