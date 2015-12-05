@@ -147,15 +147,21 @@ void mainThread::run(){
 	lux_data.publish(temp);
 #endif
 
-
+#ifdef IR_ENABLE
+	IR_DATA tmp2;
+	irSensors.init();
+	tmp2.activated = true;
+//	PRINTF("publishing Data\n");
+	ir_data.publish(tmp2);
+#endif
 
 
 	while(1){
-		suspendCallerUntil(NOW()+5000*MILLISECONDS);
+		suspendCallerUntil(NOW()+500*MILLISECONDS);
 #ifdef CAMERA_ENABLE
 		camera.test();
 #endif
-
+		RED_TOGGLE;
 	}
 }
 

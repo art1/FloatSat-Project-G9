@@ -24,6 +24,9 @@ void InfraredSensors::init(){
 }
 
 void InfraredSensors::run(){
+	adc1.init(ADC_CH_002);
+	adc1.init(IR_TWO);
+	adc1.init(IR_THREE);
 	if(!isActive()) suspendCallerUntil(END_OF_TIME);
 	while(1){
 		suspendCallerUntil(NOW()+IR_SAMPLERATE*MILLISECONDS);

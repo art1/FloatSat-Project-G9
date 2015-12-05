@@ -24,16 +24,17 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 #define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
 #define TO_RAD					(M_PI/180.0)
 #define TO_DEG					(180.0/M_PI)
+#define COMPL_GAIN				0.98f			// Complementary Filter Gain
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
 //#define IMU_ENABLE
-#define TTNC_ENABLE
-#define FUSION_ENABLE
+//#define TTNC_ENABLE
+//#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
-//#define IR_ENABLE
+#define IR_ENABLE
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -97,6 +98,8 @@ struct IMU_DATA_RAW{
 	float ACCEL_RAW_Z;
 
 	float TEMP_RAW;
+
+	double currentSampleTime;
 };
 /* ***************************************** LIGHT SENSOR STUFF **********************************************/
 #define LIGHT_SAMPLERATE		100				// Samplerate in milliseconds

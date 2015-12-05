@@ -261,9 +261,12 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 	//	PRINTF("\nraw Gyro:  %d  %d  %d\n",gyro_raw[0],gyro_raw[1],gyro_raw[2]);
 	//	PRINTF("raw Accl:  %d  %d  %d\n",accl_raw[0],accl_raw[1],accl_raw[2]);
 	//	PRINTF("raw Magn:  %d  %d  %d\n",magn_raw[0],magn_raw[1],magn_raw[2]);
-	newData = scaleData();
 	samples++;
-	samplerateTime = SECONDS_NOW();
+	newData.currentSampleTime = SECONDS_NOW();
+//	samplerateTime = SECONDS_NOW();
+
+	newData = scaleData();
+
 	//			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  rad/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 
 #ifdef AUTO_RESET_IMU

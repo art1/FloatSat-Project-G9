@@ -161,14 +161,7 @@ struct IMU_OFFSETS{
 enum IMU_OFFSET_REG{
 
 };
-struct IMU_RPY_RAW{
-	float GYRO_YAW;
-	float GYRO_ROLL;
-	float GYRO_PITCH;
-	float MAG_YAW;
-	float ACCL_ROLL;
-	float ACCL_PITCH;
-};
+
 
 class IMU : public Thread{
 public:
@@ -205,6 +198,14 @@ private:
 	IMU_DATA_RAW oldData;
 	IMU_DATA_RAW newData;
 	// gyro integration things
+	struct IMU_RPY_RAW{
+		float GYRO_YAW;
+		float GYRO_ROLL;
+		float GYRO_PITCH;
+		float MAG_YAW;
+		float ACCL_ROLL;
+		float ACCL_PITCH;
+	};
 	IMU_RPY_RAW angleRPY;
 	float samplerateTime;
 	float oldSamplerateTime;
@@ -216,6 +217,9 @@ private:
 	int cnt_failedReads;
 	bool calibrationFinished;
 	int k =0;
+
+
+
 
 };
 
