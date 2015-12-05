@@ -74,7 +74,8 @@ namespace RODOS {
 /** the following define sets the UART used for debug outputs with xprintf
  *
  */
-#define UART_DEBUG						UART_IDX3
+//#define UART_DEBUG						UART_IDX3 //-> for USB Uart!
+#define UART_DEBUG						UART_IDX2 // for Bluettotgh UART!
 
 /** Memory for allocation (xmalloc) e.g. for all thread stacks ***/
 #define XMALLOC_SIZE					40*1024

@@ -104,7 +104,7 @@ int WF121::init(const char *_ssid, const char *_pw) {
 	pw = _pw;
 
 
-	uart->init(UART_BAUDRATE); //115200
+	uart->init(UART_BAUDRATE); //115200 -> rewrote it to 1MBaud
 	uart->config(UART_PARAMETER_HW_FLOW_CONTROL,1);
 
 	BGLIB_INITIALIZE(wifiOutput);
@@ -485,6 +485,7 @@ void WF121::enableUDPConnection(uint32_t _udp_destination, uint32_t _udp_port) {
 	udpConnectionEnabled = true;
 	udp_destination = _udp_destination;
 	udp_port = _udp_port;
+	PRINTF("im here now in UDP Connection\n");
 	PROTECT_WITH_SEMAPHORE(sem_wlan_state) {
 		if(internal_state == wlan_state_ready) {
 			startUDPConnection();

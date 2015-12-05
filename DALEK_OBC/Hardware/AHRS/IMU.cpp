@@ -238,7 +238,7 @@ IMU_DATA_RAW IMU::scaleData(){
 	tmp.ACCEL_RAW_X = (accl_raw[0] - acclOffset[0])* acclSensitivity;
 	tmp.ACCEL_RAW_Y = (accl_raw[1] - acclOffset[1])* acclSensitivity;
 	tmp.ACCEL_RAW_Z = ((accl_raw[2] - acclOffset[2])* acclSensitivity)*(-1.0);
-	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity;
+	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity; // TODO scale Data after calibration!!!
 	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;
 	tmp.ANGULAR_RAW_X *= TO_RAD;
@@ -309,17 +309,22 @@ void IMU::convertToRPY(){
 	//	PRINTF("\nYAW:  %f  PITCH:   %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
 	//	PRINTF("\ndeltaYaw:   %f   deltaPitch:   %f   deltaRoll:   %f   \n",deltaYaw,deltaPitch,deltaRoll);
 
-	// acclererometer convert to RPY -> yaw angle can not be get by accl!
-	angleRPY.ACCL_YAW = atan(newData.ACCEL_RAW_Z/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
+	// acclererometer convert to RPY -> yaw angle can not be get by accl, so use magnetometer
+//	angleRPY.MAG_YAW = atan(newData.ACCEL_RAW_Z/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_PITCH = atan(newData.ACCEL_RAW_X/(sqrt((newData.ACCEL_RAW_Y*newData.ACCEL_RAW_Y) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_ROLL = atan(newData.ACCEL_RAW_Y/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
+	// use accl pitch and roll for tilt compensation
+	angleRPY.MAG_YAW = atan(((newData.MAGNETIC_RAW_X*sin(angleRPY.ACCL_ROLL)*sin(angleRPY.ACCL_PITCH))+(newData.MAGNETIC_RAW_Y*cos(angleRPY.ACCL_ROLL))-(newData.MAGNETIC_RAW_Z*sin(angleRPY.ACCL_ROLL)*cos(angleRPY.ACCL_PITCH)))
+			/((newData.MAGNETIC_RAW_X*cos(angleRPY.ACCL_PITCH)) + (newData.MAGNETIC_RAW_Z*sin(angleRPY.ACCL_PITCH))));
 	//	PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+
+
 }
 
 /**
  * function reads multiple register (at least 2)
  * return
- * 			0 everything went well
+ * 			 0 everything went well
  * 			-1 minimum values to read are 2!
  * 			-2 values to read must be an even number! (because complements of high and low bytes are read)
  * 			-3 destination array does not match number of values to read divided by two!
@@ -578,7 +583,7 @@ void IMU::run(){
 #ifndef FUSION_ENABLE
 //			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 			PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
-			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 #endif
 			cnt =0;
 			GREEN_TOGGLE;

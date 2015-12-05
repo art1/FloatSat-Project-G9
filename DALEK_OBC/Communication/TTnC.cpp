@@ -8,13 +8,16 @@
 #include "TTnC.h"
 
 
-//HAL_SPI spi2(SPI_IDX3);
-HAL_UART uart3(UART_IDX3);
+#include "../support_libs/wifi/wf121.h"
+//#include "linkinterfacewf121.h"
 
-WF121 wifi(&uart3);
+
+//HAL_UART uart3(UART_IDX3); // USB-UART
+//WF121 wf121(&uart3);
 
 TTnC::TTnC() {
 	// TODO Auto-generated constructor stub
+
 
 }
 
@@ -29,14 +32,8 @@ void TTnC::init(){
 
 void TTnC::run(){
 	PRINTF("init wifi\n");
-	retStat = wifi.init(TTNC_SSID,TTNC_SSID_PW);
-	PRINTF("restat wifi: %d",retStat);
-	RED_ON;
-	while(1){
-		PRINTF("current adress: %d.%d.%d.%d\n",wifi.getAdress().a[0],wifi.getAdress().a[1],wifi.getAdress().a[2],wifi.getAdress().a[3]);
-		suspendCallerUntil(NOW()+1000*MILLISECONDS);
-	}
-
+//	wifi.init();
+//	wf121.init("YETENet","yeteyete");
 
 }
 

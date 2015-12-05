@@ -28,12 +28,19 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
 //#define IMU_ENABLE
 #define TTNC_ENABLE
-//#define FUSION_ENABLE
+#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
+
+#ifdef FUSION_ENABLE
+//#define MADGWICK								// enables the madgwick filter
+	#ifndef MADGWICK
+		#define COMPLEMENTARY					// enables the complementary filter -> used when madgwick is disabled!
+	#endif
+#endif
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12
 #define LED_ORANGE 				GPIO_Pin_13

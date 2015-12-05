@@ -8,8 +8,7 @@
 #ifndef COMMUNICATION_TTNC_H_
 #define COMMUNICATION_TTNC_H_
 #include "../basic.h"
-#include "rodos.h"
-#include "../support_libs/wifi/wf121.h"
+#include "WiFi.h"
 
 
 class TTnC : public Thread {
@@ -19,6 +18,7 @@ public:
 	void init();
 	void run();
 private:
+	WiFi wifi;
 	int retStat;
 	uint8_t recBuf[512];
 	uint8_t transBuf[512];

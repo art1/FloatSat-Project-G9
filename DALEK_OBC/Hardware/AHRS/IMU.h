@@ -165,7 +165,7 @@ struct IMU_RPY_RAW{
 	float GYRO_YAW;
 	float GYRO_ROLL;
 	float GYRO_PITCH;
-	float ACCL_YAW;
+	float MAG_YAW;
 	float ACCL_ROLL;
 	float ACCL_PITCH;
 };
