@@ -8,7 +8,7 @@
 #ifndef HARDWARE_INFRAREDSENSORS_H_
 #define HARDWARE_INFRAREDSENSORS_H_
 
-#include "../basic.h"
+#include "../Basic/basic.h"
 
 
 class InfraredSensors : public Thread {

@@ -8,7 +8,7 @@
 #ifndef HARDWARE_MOTOR_MOTORCONTROLTHREAD_H_
 #define HARDWARE_MOTOR_MOTORCONTROLTHREAD_H_
 
-#include "../../basic.h"
+#include "../../Basic/basic.h"
 #include "Motor.h"
 
 

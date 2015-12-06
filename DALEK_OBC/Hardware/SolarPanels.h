@@ -8,7 +8,7 @@
 #ifndef HARDWARE_SOLARPANELS_H_
 #define HARDWARE_SOLARPANELS_H_
 
-#include "../basic.h"
+#include "../Basic/basic.h"
 
 
 class SolarPanels : public Thread {

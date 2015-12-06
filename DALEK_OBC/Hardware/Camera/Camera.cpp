@@ -49,6 +49,9 @@ void Camera::init(){
 
 }
 
+
+
+
 void Camera::run(){
 //	i2c1.init(400000);
 	camPWR.init(true,1,0);
@@ -58,6 +61,7 @@ void Camera::run(){
 //	i2c1.reset();
 	while(1){
 		suspendCallerUntil(NOW()+500*MILLISECONDS);
+		test();
 		BLUE_TOGGLE;
 	}
 }
@@ -70,18 +74,19 @@ void Camera::test(){
 	suspendCallerUntil(NOW()+500*MILLISECONDS);
 	PRINTF("wirting to cam\n");
 
-
-
-	 recBuf[0] = sccb.get(0x01);
 //
-////
+//
+//
+	 recBuf[0] = sccb.readReg(0x01);
+//
+//////
 //	transBuf[0] = 0x01;
-////	i2c1.writeRead(CAM_READ,transBuf,1,recBuf,1);
-//	int k = i2c1.writeRead(CAM_READ,transBuf,1,recBuf,1);
-//	PRINTF("read 0x01 : %d\n",recBuf[0]);
-//
+//	i2c1.writeRead(CAM_READ,transBuf,1,recBuf,1);
+////	int k = i2c1.writeRead(CAM_READ,transBuf,1,recBuf,1);
+	PRINTF("read 0x01 : %d\n",recBuf[0]);
+////
 //	transBuf[0] = 0x02;
-//	k = i2c1.writeRead(CAM_READ,transBuf,1,recBuf,1);
+////	k = i2c1.writeRead(CAM_READ,transBuf,1,recBuf,1);
 //	PRINTF("read 0x02 : %d\n",recBuf[0]);
 
 }

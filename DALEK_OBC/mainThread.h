@@ -8,8 +8,7 @@
 #ifndef MAINTHREAD_H_
 #define MAINTHREAD_H_
 
-#include "basic.h"
-//#include "Hardware/GPIO_LED.h"
+#include "Basic/basic.h"
 #include "Hardware/AHRS/IMU.h"
 #include "Communication/TTnC.h"
 #include "Hardware/Camera/Camera.h"

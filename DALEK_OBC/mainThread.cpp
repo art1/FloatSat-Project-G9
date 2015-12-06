@@ -30,7 +30,7 @@ lightSensor light;
 SolarPanels solar;
 #endif
 #ifdef CAMERA_ENABLE
-Camera camera;
+extern "C" Camera camera; // needs to be public because interrupt handler!
 #endif
 #ifdef MOTOR_ENABLE
 MotorControlThread motorControl;
@@ -159,7 +159,7 @@ void mainThread::run(){
 	while(1){
 		suspendCallerUntil(NOW()+500*MILLISECONDS);
 #ifdef CAMERA_ENABLE
-		camera.test();
+		//camera.test();
 #endif
 		RED_TOGGLE;
 	}

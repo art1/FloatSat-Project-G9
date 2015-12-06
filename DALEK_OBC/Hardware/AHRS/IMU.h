@@ -8,9 +8,9 @@
 #ifndef HARDWARE_IMU_H_
 #define HARDWARE_IMU_H_
 
-#include "../../basic.h"
 #include "math.h"
 #include "hal.h"
+#include "../../Basic/basic.h"
 
 
 #define GYRO_ADDRESS 				0x6B

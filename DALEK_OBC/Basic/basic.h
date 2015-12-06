@@ -5,8 +5,8 @@
  *      Author: arthur
  */
 
-#ifndef BASIC_H_
-#define BASIC_H_
+#ifndef BASIC_BASIC_H_
+#define BASIC_BASIC_H_
 
 #include "rodos.h"
 #include "stm32f4xx.h"
@@ -15,7 +15,7 @@
 
 
 /************* BASIC STUFF AND I2C/SPI/UART Things **************************************/
-//extern "C" HAL_I2C i2c1;
+extern "C" HAL_I2C i2c1;
 extern "C" HAL_I2C i2c2;
 extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 
@@ -31,10 +31,10 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 //#define TTNC_ENABLE
 //#define FUSION_ENABLE
 //#define LIGHT_ENABLE
-//#define CAMERA_ENABLE
+#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
-#define IR_ENABLE
+//#define IR_ENABLE
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -110,6 +110,12 @@ struct LUX_DATA{
 
 
 /* ***************************************** Camera STUFF **********************************************/
+#define CAM_READ				0x43
+#define CAM_WRITE				0x42
+#define IM_HEIGHT				480
+#define IM_WIDTH				640
+#define DCMI_CAPTUREMODE		DCMI_CaptureMode_SnapShot
+#define DCMI_CAPTURERATE		DCMI_CaptureRate_All_Frame
 
 
 
@@ -143,5 +149,5 @@ extern Topic<LUX_DATA> lux_data;
 extern Topic<SOLAR_DATA> solar_data;
 extern Topic<IR_DATA> ir_data;
 
-#endif /* BASIC_H_ */
+#endif /* BASIC_BASIC_H_ */
 

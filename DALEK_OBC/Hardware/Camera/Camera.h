@@ -8,15 +8,17 @@
 #ifndef HARDWARE_CAMERA_CAMERA_H_
 #define HARDWARE_CAMERA_CAMERA_H_
 
-#include "../../basic.h"
+#include "../../Basic/basic.h"
 #include "Supps/SCCB.h"
-#define CAM_ADDR		0x21
-#define CAM_READ		0x43
-#define CAM_WRITE		0x42
+#include "Supps/myDCMI.h"
+
+
+#define CAM_ADDR		0x21 //#define CAM_READ		0x43 #define CAM_WRITE		0x42
+
 #define CAM_POWER		GPIO_033 // PC01
 #define CAM_RESET		GPIO_010 // PA10
 
-
+#define IMAGESIZE
 
 class Camera : public Thread {
 public:
@@ -29,6 +31,7 @@ private:
 //	HAL_GPIO camPWR;
 //	HAL_GPIO camReset;
 	SCCB sccb;
+	myDCMI dcmi;
 	uint8_t recBuf[10];
 	uint8_t transBuf[10];
 };

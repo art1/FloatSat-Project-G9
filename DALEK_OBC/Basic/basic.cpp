@@ -5,9 +5,9 @@
  *      Author: arthur
  */
 
-#include "basic.h"
+#include "Basic/basic.h"
 
-//HAL_I2C i2c1(I2C_IDX1);
+HAL_I2C i2c1(I2C_IDX1);
 HAL_I2C i2c2(I2C_IDX2);
 HAL_ADC adc1(ADC_IDX1);
 
