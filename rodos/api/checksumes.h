@@ -65,10 +65,10 @@ uint32_t computeCrc(const uint8_t* buf, int32_t len, int32_t initialValue);
   * use only one in the system. more is not required.
   */
 
-class CRC {
+class myCRC {
     uint32_t lookUpTable[256];
 public:
-    CRC(); 
+    myCRC();
     uint32_t computeCRC(uint8_t* buf, int32_t len, int32_t initialValue);
 };
 

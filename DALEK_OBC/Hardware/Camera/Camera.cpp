@@ -70,14 +70,14 @@ void Camera::test(){
 	camReset.setPins(0);
 	camPWR.setPins(0); // low is power on!
 	PRINTF("init SCCB\n");
-	sccb.init();
+//	sccb.init();
 	suspendCallerUntil(NOW()+500*MILLISECONDS);
 	PRINTF("wirting to cam\n");
 
 //
 //
 //
-	 recBuf[0] = sccb.readReg(0x01);
+//	 recBuf[0] = sccb.readReg(0x01);
 //
 //////
 //	transBuf[0] = 0x01;

@@ -106,7 +106,7 @@ uint32_t computeCrc(const uint8_t* buf, int32_t len, int32_t initialValue) {
   * first it generates a luck up table to speed up the crc computation
   */
 
-CRC::CRC() {
+myCRC::myCRC() {
 		for (int i=0; i < 256; i++) {
 			int tmp=0;
 			if ((i & 1) != 0)   tmp=tmp ^ 0x1021;
@@ -121,7 +121,7 @@ CRC::CRC() {
 		}
 }
 
-uint32_t CRC::computeCRC(uint8_t* buf, int32_t len, int32_t initialValue) {
+uint32_t myCRC::computeCRC(uint8_t* buf, int32_t len, int32_t initialValue) {
 
 		int32_t currentValue = initialValue;
 		for(int i=0; i < len; i++) {

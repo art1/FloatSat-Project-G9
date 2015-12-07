@@ -9,8 +9,8 @@
 #define HARDWARE_CAMERA_CAMERA_H_
 
 #include "../../Basic/basic.h"
-#include "Supps/SCCB.h"
-#include "Supps/myDCMI.h"
+//#include "Supps/SCCB.h"
+//#include "Supps/myDCMI.h"
 
 
 #define CAM_ADDR		0x21 //#define CAM_READ		0x43 #define CAM_WRITE		0x42
@@ -30,8 +30,8 @@ public:
 private:
 //	HAL_GPIO camPWR;
 //	HAL_GPIO camReset;
-	SCCB sccb;
-	myDCMI dcmi;
+//	SCCB sccb;
+//	myDCMI dcmi;
 	uint8_t recBuf[10];
 	uint8_t transBuf[10];
 };
