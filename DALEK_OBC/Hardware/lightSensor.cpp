@@ -5,7 +5,8 @@
  *      Author: arthur
  */
 
-#include "lightSensor.h"
+#include "LightSensor.h"
+
 #include "inttypes.h"
 
 static Application senderName("Lux_Data_Publisher",500);

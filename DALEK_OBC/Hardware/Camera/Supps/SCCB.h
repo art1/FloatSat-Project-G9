@@ -12,25 +12,23 @@
 #include "../../../Basic/basic.h"
 
 // Pin define of SCCB/I2C interface
-#define SIO_C  		    	GPIO_025		//PB9
-#define SIO_D	    		GPIO_024		//PB8
+#define SIO_C  		    	GPIO_Pin_8		//PB9
+#define SIO_D	    		GPIO_Pin_9		//PB8 // -> RODOS hat irgendne andere namensgebung oder so ne scheisse
 #define SIO_OUT				1
 #define	SIO_IN				0
-#define SCCB_Port			GPIOB
-#define SCCB_Clock			RCC_AHB1Periph_GPIOB
 // SIO_C SCCB clock
-#define SIO_C_High     		SCCB_Port->BSRRL = SIO_C;
-#define SIO_C_Low     		SCCB_Port->BSRRH =  SIO_C;
+#define SIO_C_High     		GPIOB->BSRRL = SIO_C;
+#define SIO_C_Low     		GPIOB->BSRRH =  SIO_C;
 // SIO_D SCCB daten
-#define SIO_D_High     		SCCB_Port->BSRRL = SIO_D;
-#define SIO_D_Low     		SCCB_Port->BSRRH =  SIO_D;
+#define SIO_D_High     		GPIOB->BSRRL = SIO_D;
+#define SIO_D_Low     		GPIOB->BSRRH =  SIO_D;
 // Data Pin State lesen
-#define SIO_D_CHECK	 		SCCB_Port->IDR&(SIO_D)
+#define SIO_D_CHECK	 		GPIOB->IDR&(SIO_D)
 
 
 
 
-#define SomeArbitraryDelayValue		500 // TEST VALUE ! CHANGE THAT!
+#define SomeArbitraryDelayValue		2000 // TEST VALUE ! CHANGE THAT!
 
 class SCCB{
 public:

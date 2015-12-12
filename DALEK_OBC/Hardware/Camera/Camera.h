@@ -9,7 +9,7 @@
 #define HARDWARE_CAMERA_CAMERA_H_
 
 #include "../../Basic/basic.h"
-//#include "Supps/SCCB.h"
+#include "Supps/SCCB.h"
 //#include "Supps/myDCMI.h"
 
 
@@ -27,10 +27,12 @@ public:
 	void init();
 	void run();
 	void test();
+	void setNewData(CAM_CONTROL data);
 private:
+	CAM_CONTROL dat;
 //	HAL_GPIO camPWR;
 //	HAL_GPIO camReset;
-//	SCCB sccb;
+	SCCB sccb;
 //	myDCMI dcmi;
 	uint8_t recBuf[10];
 	uint8_t transBuf[10];

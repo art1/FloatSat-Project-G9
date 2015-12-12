@@ -24,138 +24,54 @@ SCCB::~SCCB(){
 
 
 void SCCB::init() {
-
-
-
-
-
 	PRINTF("initialize SCCB\n");
-	RCC_AHB1PeriphClockCmd(SCCB_Clock, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 	GPIO_InitTypeDef GPIO_InitStructure; // this is for the GPIO pins used as clock and data pins for sccb
 	GPIO_InitStructure.GPIO_Pin = SIO_C | SIO_D;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(SCCB_Port, &GPIO_InitStructure);
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-	//	I2C_InitTypeDef I2C_InitStructure; // this is for the I2C1 initilization
-	//
-	//	/* enable APB1 peripheral clock for I2C1*/
-	//	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
-	//
-	//	/* enable the peripheral clock for the pins used by
-	//	 PB6 for I2C SCL and PB9 for I2C1_SDL*/
-	//	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-	//
-	//	/* This sequence sets up the I2C1SDA and I2C1SCL pins
-	//	 * so they work correctly with the I2C1 peripheral
-	//	 */
-	//	GPIO_StructInit(&GPIO_InitStructure);
-	//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9; // Pins 10(I2C1_SCL) and 11(I2C1_SDA)
-	//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF; // the pins are configured as alternate function so the USART peripheral has access to them
-	//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz; // this defines the IO speed and has nothing to do with the baudrate!
-	//	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD; // this defines the output type as open drain
-	//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; // this activates the pullup resistors on the IO pins
-	//	GPIO_Init(GPIOB, &GPIO_InitStructure); // now all the values are passed to the GPIO_Init()
-	//
-	//	/* The I2C1_SCL and I2C1_SDA pins are now connected to their AF
-	//	 * so that the I2C1 can take over control of the
-	//	 * pins
-	//	 */
-	//	GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_I2C1); //
-	//	GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_I2C1);
-	//
-	//	/* Configure I2C1 */
-	//	I2C_StructInit(&I2C_InitStructure);
-	//	I2C_DeInit(I2C1);
-	//
-	//	/* Enable the I2C peripheral */
-	//	I2C_Cmd(I2C1, ENABLE);
-	//
-	//	/* Set the I2C structure parameters */
-	//	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-	//	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
-	//	I2C_InitStructure.I2C_OwnAddress1 = 0x00;
-	//	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
-	//	I2C_InitStructure.I2C_AcknowledgedAddress =
-	//	I2C_AcknowledgedAddress_7bit;
-	//	I2C_InitStructure.I2C_ClockSpeed = 100000;
-	//	/* I2C Peripheral Enable */
-	//	I2C_ITConfig(I2C1, I2C_IT_ERR, ENABLE);
-	//	/* Initialize the I2C peripheral w/ selected parameters */
-	//	I2C_Init(I2C1, &I2C_InitStructure);
-	//	I2C_Cmd(I2C1, ENABLE);
-	//
-	//
-	//
-
-
-
-	//    GPIO_InitTypeDef GPIO_InitStructure;
-	//	I2C_InitTypeDef I2C_InitStructure;
-	//
-	//
-	//	/* Enable GPIO clock */
-	//	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-	//
-	//	/* Enable UART clock */
-	//	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
-	//
-	//	GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_I2C1);
-	//	GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_I2C1);
-	//
-	//	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-	//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
-	//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	//	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	//
-	//	I2C_StructInit(&I2C_InitStructure);
-	//	I2C_InitStructure.I2C_ClockSpeed = 100000;
-	//	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
-	//	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
-	//	I2C_InitStructure.I2C_OwnAddress1 = 0x00;
-	//	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
-	//	I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-	//
-	//	I2C_ITConfig(I2C1, I2C_IT_ERR,ENABLE);
-	//
-	//	/* Enable I2C */
-	//	I2C_Cmd(I2C1, ENABLE);
-	//	I2C_Init(I2C1, &I2C_InitStructure);
 }
 
 
 
 int SCCB::writeReg(uint8_t reg, uint8_t *data,int dataBytesToWrite){
-	int k = 0;
-	startCondition();
-	/** TODO check the return codes for errors and then abort communication! */
-	k = write(CAM_WRITE);
-	delay_microseconds(100);
-	k |= write(reg);
-	for(int i =0;i<dataBytesToWrite;i++){
-		k |= write(data[i]);
-	}
-	stopCondition();
-	return k;
+//	int k = 0;
+//	startCondition();
+//	/** TODO check the return codes for errors and then abort communication! */
+//	k = write(CAM_WRITE);
+//	delay_microseconds(SomeArbitraryDelayValue);
+//	k |= write(reg);
+//	for(int i =0;i<dataBytesToWrite;i++){
+//		k |= write(data[i]);
+//	}
+//	stopCondition();
+//	return k;
 
 }
 
 uint8_t SCCB::readReg(uint8_t reg){
+//	PRINTF("now going high\n");
+//	SIO_D_High;
+//	delay_microseconds(10000);
+//	PRINTF("now going low\n");
+//	SIO_D_Low;
+
 	int k=0;
 	uint8_t ret = 0x00;
 	startCondition();
 	k = write(CAM_WRITE);
-	delay_microseconds(100);
+	delay_microseconds(SomeArbitraryDelayValue);
 	k |= write(reg);
 	stopCondition();
-	delay_microseconds(100); // delay min 1.3 us before restart
+	delay_microseconds(SomeArbitraryDelayValue); // delay min 1.3 us before restart
 	startCondition();
 	k |= write(CAM_READ);
 	delay_microseconds(SomeArbitraryDelayValue);
+	PRINTF("k is here %d\n",k);
 	ret = read();
 	stopCondition();
 	return ret;
@@ -197,19 +113,33 @@ int SCCB::setDataDirection(int dir){
 		GPIO_Struct.GPIO_Mode = GPIO_Mode_OUT;
 		GPIO_Struct.GPIO_OType = GPIO_OType_PP; // opendrain
 		GPIO_Struct.GPIO_Speed = GPIO_Speed_2MHz;
-		GPIO_Struct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+		GPIO_Struct.GPIO_PuPd = GPIO_PuPd_NOPULL;// pullup already on chip?
 	} else {
 		GPIO_Struct.GPIO_Pin = SIO_D;
 		GPIO_Struct.GPIO_Mode = GPIO_Mode_IN;
 		GPIO_Struct.GPIO_Speed = GPIO_Speed_2MHz;
-		GPIO_Struct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+		GPIO_Struct.GPIO_PuPd = GPIO_PuPd_NOPULL; // pullup already on chip?
 	}
-	GPIO_Init(SCCB_Port,&GPIO_Struct);
+	GPIO_Init(GPIOB,&GPIO_Struct);
 	return 0;
 }
 
 void SCCB::delay_microseconds(uint16_t t){
 	/** TODO proper timer delay function*/
+	// assembler magic happens here (-> andy )
+//	//4694 = 1 ms
+//	while (t > 1) {
+//		t--;
+//		asm("nop");
+//	}
+
+	   uint16_t i = 0;
+	   while(t--)
+	   {
+		   // Calculate for 168MHz sysclk
+		   i = 5;	//72Mhz i = 10		35
+		   while(i--) ;
+	   }
 }
 
 
@@ -223,8 +153,18 @@ uint8_t SCCB::read(){
 		SIO_C_High;
 		delay_microseconds(SomeArbitraryDelayValue); // hold high time mindestens 600ns!
 		// read value at SIO_D Pin and then shift by one
-		if(SIO_D_CHECK == 1) ret += 1;
 		ret = ret << 1;
+		if(SIO_D_CHECK == 1) ret += 1;
+		int k = GPIO_ReadInputDataBit(GPIOB,SIO_D);
+		uint16_t r[0];
+		r[0] = GPIO_ReadInputData(GPIOB);
+		PRINTF("ret is %d and k is %d\n",ret,k);
+		for(int i=0;i<sizeof(r);i++){
+			PRINTF("r %d: %d\n",i,r[i]);
+		}
+
+
+
 		SIO_C_Low;
 		delay_microseconds(SomeArbitraryDelayValue); // min 2* setup time und 1* data setup time -> mindestens 700ns
 	}
@@ -243,10 +183,12 @@ uint8_t SCCB::read(){
 
 int SCCB::write(uint8_t data){
 	setDataDirection(SIO_OUT);
+	PRINTF("sending data: ");
 	for(int i=0;i<8;i++){
 		if((data & 0x80) == 0x80) {
 			SIO_D_High
 		} else SIO_D_Low;
+		PRINTF(" %d ",data);
 		data = data << 1; // shifts the next bit to position 0x80
 		delay_microseconds(SomeArbitraryDelayValue); // data out hold time min 50ns
 		SIO_C_High;
@@ -255,12 +197,15 @@ int SCCB::write(uint8_t data){
 		delay_microseconds(SomeArbitraryDelayValue);// clock low to valid data out between 100 and 900 ns!
 	}
 	// should the master drive now SIO_D low or just read it because slave drives it low??? fucking bitch ass documentation
-	delay_microseconds(100);
+	delay_microseconds(SomeArbitraryDelayValue);
 	setDataDirection(SIO_IN);
 	delay_microseconds(SomeArbitraryDelayValue);
 	SIO_C_High;
 	delay_microseconds(SomeArbitraryDelayValue);
 	int ret = 0;
+	uint16_t t = SIO_D_CHECK;
+	uint16_t u = GPIO_ReadInputDataBit(GPIOB,SIO_D);
+	PRINTF("Check: %d %u\n",t,u);
 	if(SIO_D_CHECK) ret = -1;
 	else ret = 0;
 	SIO_C_Low;

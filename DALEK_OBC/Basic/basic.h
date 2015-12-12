@@ -12,10 +12,12 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_conf.h"
 #include "support_libs.h"
+#include "protocol.h"
+#include "../Communication/WiFi.h"
 
 
 /************* BASIC STUFF AND I2C/SPI/UART Things **************************************/
-extern "C" HAL_I2C i2c1;
+//extern "C" HAL_I2C i2c1;
 extern "C" HAL_I2C i2c2;
 extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 
@@ -28,7 +30,7 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
 //#define IMU_ENABLE
-//#define TTNC_ENABLE
+#define TTNC_ENABLE
 //#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 #define CAMERA_ENABLE
@@ -101,6 +103,11 @@ struct IMU_DATA_RAW{
 
 	double currentSampleTime;
 };
+struct IMU_RPY_FILTERED{
+	float YAW;
+	float PITCH;
+	float ROLL;
+};
 /* ***************************************** LIGHT SENSOR STUFF **********************************************/
 #define LIGHT_SAMPLERATE		100				// Samplerate in milliseconds
 struct LUX_DATA{
@@ -117,6 +124,9 @@ struct LUX_DATA{
 #define DCMI_CAPTUREMODE		DCMI_CaptureMode_SnapShot
 #define DCMI_CAPTURERATE		DCMI_CaptureRate_All_Frame
 
+struct CAM_CONTROL{
+	bool shoot;
+};
 
 
 /* ***************************************** SolarPanel STUFF **********************************************/
@@ -139,15 +149,29 @@ struct IR_DATA{
 	int32_t sensorThree;
 };
 
-
-
+/* ***************************************** TM TC STUFF **********************************************/
+#ifdef TTNC_ENABLE
+struct TELEMETRY{
+	PAYLOAD_FRAME plFrame;
+	TELEMETRY_FRAME tmFrame;
+	int updated; // 0 or 1 for pl or tm frame
+};
+#define WIFI_SAMPLERATE			200				// milliseconds, check if new messages have arrived
+#define TM_SAMPLERATE			1000			// in milliseconds
+#endif
 
 /***************************************** TOPICS ***************************************************/
 // now define the topics stuff for the RODOS middleware
 extern Topic<IMU_DATA_RAW>	imu_rawData;
+extern Topic<IMU_RPY_FILTERED> imu_filtered;
 extern Topic<LUX_DATA> lux_data;
 extern Topic<SOLAR_DATA> solar_data;
 extern Topic<IR_DATA> ir_data;
+extern Topic<CAM_CONTROL> cam_control;
+extern Topic<TELEMETRY> tm_data;
+extern Topic<UDPMsg> tcRaw;
+extern Topic<UDPMsg> tmPlFrame;
+extern Topic<COMMAND_FRAME> commandFrame;
 
 #endif /* BASIC_BASIC_H_ */
 

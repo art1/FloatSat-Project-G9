@@ -12,18 +12,6 @@
 #include "myMath.h"
 //#include "math.h"
 
-
-
-
-
-struct IMU_RPY_FILTERED{
-	float YAW;
-	float PITCH;
-	float ROLL;
-};
-
-
-
 class sensorFusion : public Thread{
 public:
 	sensorFusion();

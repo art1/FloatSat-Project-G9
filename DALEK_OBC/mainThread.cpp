@@ -14,11 +14,14 @@ static Application mainThread("mainThread",20);
 
 // load all appropriate classes (-> must be public, initializing classes within a class is not working... ?)
 //GPIO_LED leds("LEDs");
+ControlThread control;
 #ifdef IMU_ENABLE
 IMU imu;
 #endif
 #ifdef TTNC_ENABLE
-TTnC ttnc;
+Telecommand tc;
+Telemetry tm;
+WiFi wifi;
 #endif
 #ifdef FUSION_ENABLE
 sensorFusion fusion;
@@ -30,7 +33,7 @@ lightSensor light;
 SolarPanels solar;
 #endif
 #ifdef CAMERA_ENABLE
-extern "C" Camera camera; // needs to be public because interrupt handler!
+Camera camera; // needs to be extern because interrupt handler!
 #endif
 #ifdef MOTOR_ENABLE
 MotorControlThread motorControl;
@@ -104,6 +107,50 @@ struct receiver_irSensors : public Subscriber, public Thread {
 	void run(){}
 } ir_sensors_receiver_thread;
 #endif
+/**************************** Camera MESSAGES *****************************************/
+#ifdef CAMERA_ENABLE
+struct receiver_camera : public Subscriber, public Thread {
+	receiver_camera() : Subscriber(cam_control,"Camera Control") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		camera.setNewData(*(CAM_CONTROL*)data);
+		camera.resume();
+		return 1;
+	}
+	void run(){}
+} camera_receiver_thread;
+#endif
+/**************************** TTnC MESSAGES **************************************/
+#ifdef TTNC_ENABLE
+struct receiver_telecommand : public Subscriber, public Thread {
+	receiver_telecommand() : Subscriber(tcRaw,"TC Raw Data") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		tc.setNewData(*(UDPMsg*)data);
+		tc.resume();
+		return 1;
+	}
+	void run(){}
+} tc_receiver_thread;
+// and now the other way round -> TM to Wifi
+struct receiver_telemetry : public Subscriber, public Thread {
+	receiver_telemetry() : Subscriber(tmPlFrame,"TelemetryPayloadFrame") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		wifi.setNewData(*(UDPMsg*)data);
+		wifi.resume();
+		return 1;
+	}
+	void run(){}
+} wifi_receiver_thread;
+// and now COmmand Messages to Main Control Thread
+struct receiver_tcControl : public Subscriber, public Thread {
+	receiver_tcControl() : Subscriber(commandFrame,"TC COntrol Data") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		control.setNewData(*(COMMAND_FRAME*)data);
+		control.resume();
+		return 1;
+	}
+	void run(){}
+} tcControl_receiver_thread;
+#endif
 
 mainThread::mainThread(const char* name) : Thread(name){
 
@@ -135,7 +182,6 @@ void mainThread::run(){
 
 	//enable ADC1 channel with 12 Bit Resolution
 	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);
-
 	#ifdef IMU_ENABLE
 	imu.regInit();
 	imu.setTime(500*MILLISECONDS);
@@ -154,12 +200,18 @@ void mainThread::run(){
 //	PRINTF("publishing Data\n");
 	ir_data.publish(tmp2);
 #endif
+#ifdef CAMERA_ENABLE
+	PRINTF("enabling cam\n");
+	CAM_CONTROL tmp3;
+	tmp3.shoot = true;
+	cam_control.publish(tmp3);
+#endif
 
 
 	while(1){
 		suspendCallerUntil(NOW()+500*MILLISECONDS);
 #ifdef CAMERA_ENABLE
-		//camera.test();
+
 #endif
 		RED_TOGGLE;
 	}
