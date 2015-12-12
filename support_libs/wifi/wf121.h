@@ -7,7 +7,7 @@
 
 #ifndef SRC_WF121_H_
 #define SRC_WF121_H_
-
+#pragma once
 #include <rodos.h>
 #include "apitypes.h"
 #include "wifi_bglib.h"

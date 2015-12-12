@@ -21,7 +21,11 @@ IMU imu;
 #ifdef TTNC_ENABLE
 Telecommand tc;
 Telemetry tm;
+#ifndef BLUETOOTH_FALLBACK
 WiFi wifi;
+#else
+Bluetooth blauzahn;
+#endif
 #endif
 #ifdef FUSION_ENABLE
 sensorFusion fusion;
@@ -77,6 +81,7 @@ struct receiver_light : public Subscriber, public Thread {
 	receiver_light() : Subscriber(lux_data,"Lux Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		light.setActive(*(LUX_DATA*)data);
+		tm.setNewData(*(LUX_DATA*)data);
 		light.resume();
 		return 1;
 	}
@@ -89,6 +94,7 @@ struct receiver_solar : public Subscriber, public Thread {
 	receiver_solar() : Subscriber(solar_data,"Solar Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		solar.setActive(*(SOLAR_DATA*)data);
+		tm.setNewData(*(SOLAR_DATA*)data);
 		solar.resume();
 		return 1;
 	}
@@ -101,6 +107,7 @@ struct receiver_irSensors : public Subscriber, public Thread {
 	receiver_irSensors() : Subscriber(ir_data,"Infrared Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		irSensors.setActive(*(IR_DATA*)data);
+		tm.setNewData(*(IR_DATA*) data);
 		irSensors.resume();
 		return 1;
 	}
@@ -134,8 +141,13 @@ struct receiver_telecommand : public Subscriber, public Thread {
 struct receiver_telemetry : public Subscriber, public Thread {
 	receiver_telemetry() : Subscriber(tmPlFrame,"TelemetryPayloadFrame") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+#ifndef BLUETOOTH_FALLBACK
 		wifi.setNewData(*(UDPMsg*)data);
 		wifi.resume();
+#else
+		blauzahn.setNewData(*(UDPMsg*)data);
+		blauzahn.resume();
+#endif
 		return 1;
 	}
 	void run(){}
@@ -180,6 +192,10 @@ void mainThread::init(){
 
 void mainThread::run(){
 
+#ifdef BLUETOOTH_FALLBACK
+	bt_uart.init(BLUETOOTH_BAUDRATE);
+#endif
+
 	//enable ADC1 channel with 12 Bit Resolution
 	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);
 	#ifdef IMU_ENABLE
@@ -210,9 +226,6 @@ void mainThread::run(){
 
 	while(1){
 		suspendCallerUntil(NOW()+500*MILLISECONDS);
-#ifdef CAMERA_ENABLE
-
-#endif
 		RED_TOGGLE;
 	}
 }

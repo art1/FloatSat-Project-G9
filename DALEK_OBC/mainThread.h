@@ -11,7 +11,11 @@
 #include "Basic/basic.h"
 #include "Communication/telecommand.h"
 #include "Communication/telemetry.h"
+#ifndef BLUETOOTH_FALLBACK
 #include "Communication/WiFi.h"
+#else
+#include "Communication/Bluetooth.h"
+#endif
 #include "Hardware/AHRS/IMU.h"
 #include "Hardware/Camera/Camera.h"
 #ifdef FUSION_ENABLE

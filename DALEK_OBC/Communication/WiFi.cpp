@@ -22,13 +22,14 @@ WiFi::~WiFi() {
 
 
 void WiFi::init(){
-	//	wifi.init("YETENet","yeteyete");
-	//	wifi.enableUDPConnection(0xFF01A8C0,12345);
-	//	int k = wifi.status();
-	//	PRINTF("wifi state is: %d\n",k);
+
 }
 
 void WiFi::run(){
+	wf121.init(WIFI_SSID,WIFI_SSID_PW);
+	wf121.enableTCPConnection(WIFI_IP,WIFI_PORT);
+	int k = wf121.status();
+	PRINTF("wifi state is: %d\n",k);
 	while(1){
 		while(!wifiBuf.isEmpty()){
 			wifiBuf.get(tmp);
@@ -36,7 +37,7 @@ void WiFi::run(){
 			if(wf121.isDataReady())break;
 		}
 		if(wf121.isDataReady())	getNewMessages();
-		suspendCallerUntil(NOW() + WIFI_SAMPLERATE*MILLISECONDS);
+		suspendCallerUntil(NOW() + TTNC_SAMPLERATE*MILLISECONDS);
 	}
 }
 
@@ -66,5 +67,7 @@ void WiFi::sendErrorMessage(UDPMsg invalidMsg){
 		}
 	}
 	sendNewMessage(&tmp);
-
+}
+void WiFi::sendNewMessage(UDPMsg *msg){
+	wf121.write(msg);
 }

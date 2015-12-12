@@ -10,7 +10,7 @@
 //HAL_I2C i2c1(I2C_IDX1);
 HAL_I2C i2c2(I2C_IDX2);
 HAL_ADC adc1(ADC_IDX1);
-WiFi wifi();
+HAL_UART bt_uart(BLUETOOTH_PORT);
 
 //declaring topics for RODOS middleware inter-Thread Communication
 Topic<IMU_DATA_RAW> imu_rawData(1,"IMU Raw Data");
@@ -20,5 +20,6 @@ Topic<IR_DATA> ir_data(4,"Infrared Sensor Data");
 Topic<CAM_CONTROL> cam_control(5,"Camera Control");
 Topic<TELEMETRY> tm_data(6,"Telemetry Data");
 Topic<UDPMsg> tcRaw(7,"Command Data Raw");
-Topic<COMMAND_FRAME> commandFrame(8,"Command Frame Data");
-Topic<IMU_RPY_FILTERED> imu_filtered(9,"IMU Data filtered");
+Topic<UDPMsg> tmPlFrame(8,"Telemetry Payload Frame");
+Topic<COMMAND_FRAME> commandFrame(9,"Command Frame Data");
+Topic<IMU_RPY_FILTERED> imu_filtered(10,"IMU Data filtered");

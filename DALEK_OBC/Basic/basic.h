@@ -13,13 +13,14 @@
 #include "stm32f4xx_conf.h"
 #include "support_libs.h"
 #include "protocol.h"
-#include "../Communication/WiFi.h"
+#include "../support_libs/wifi/wf121.h"
 
 
 /************* BASIC STUFF AND I2C/SPI/UART Things **************************************/
 //extern "C" HAL_I2C i2c1;
 extern "C" HAL_I2C i2c2;
 extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
+extern "C" HAL_UART bt_uart;
 
 #define ADC1_RESOLUTION			12				// Resolution for ADC Channel 1
 
@@ -29,14 +30,15 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 #define COMPL_GAIN				0.98f			// Complementary Filter Gain
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
+#define IMU_ENABLE
 #define TTNC_ENABLE
-//#define FUSION_ENABLE
+#define FUSION_ENABLE
 //#define LIGHT_ENABLE
-#define CAMERA_ENABLE
+//#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
+#define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -63,10 +65,15 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 #define BLUE_OFF				GPIOD->BSRRH = LED_BLUE
 #define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
 
-/****************************** WIFI STUFF ***********************************************/
-#define TTNC_SSID				"YETENet"
-#define TTNC_SSID_PW			"yeteyete"
-
+/****************************** WIFI & BT STUFF ******************************************/
+#define WIFI_SSID				"YETENet"
+#define WIFI_SSID_PW			"yeteyete"
+#define WIFI_IP					0xFF01A8C0 // in hex and reverse
+#define WIFI_PORT				1234
+#define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
+#define BLUETOOTH_BAUDRATE		115200
+#define BLUETOOTH_PORT			UART_IDX2
+#define BLUETOOTH_BUFFER		36				// in bytes, should be enough for Command Frames! (currently 24 needed)
 /****************************** IMU STUFF ************************************************/
 #define IMU_RESET_PIN			GPIO_055
 #define IMU_G_CS_PIN			GPIO_018
@@ -156,7 +163,6 @@ struct TELEMETRY{
 	TELEMETRY_FRAME tmFrame;
 	int updated; // 0 or 1 for pl or tm frame
 };
-#define WIFI_SAMPLERATE			200				// milliseconds, check if new messages have arrived
 #define TM_SAMPLERATE			1000			// in milliseconds
 #endif
 
@@ -172,6 +178,7 @@ extern Topic<TELEMETRY> tm_data;
 extern Topic<UDPMsg> tcRaw;
 extern Topic<UDPMsg> tmPlFrame;
 extern Topic<COMMAND_FRAME> commandFrame;
+
 
 #endif /* BASIC_BASIC_H_ */
 
