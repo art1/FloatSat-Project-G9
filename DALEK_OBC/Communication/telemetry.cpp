@@ -207,6 +207,7 @@ void Telemetry::buildFrame(){
 //		msg.data[msg.length++] = VALUE_SEPERATOR;
 	}
 	forLoop(j,3){msg.data[msg.length++] = FRAME_END;}
+	PRINTF("added %d bytes",msg.length);
 }
 
 

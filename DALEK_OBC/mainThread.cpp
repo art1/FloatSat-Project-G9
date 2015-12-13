@@ -75,6 +75,15 @@ struct receiver_Fusion : public Subscriber, public Thread {
 	}
 	void run(){}
 } fusion_receiver_thread;
+
+struct receiver_filtered : public Subscriber, public Thread {
+	receiver_filtered() : Subscriber(imu_filtered,"IMU Filtered Data") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		tm.setNewData(*(IMU_RPY_FILTERED*)data);
+		return 1;
+	}
+	void run(){}
+} filtered_receiver_thread;
 #endif
 /**************************** LIGHT MESSAGES ************************************/
 #ifdef LIGHT_ENABLE
