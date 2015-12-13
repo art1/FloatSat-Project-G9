@@ -45,9 +45,11 @@ private:
 	void doubleToChar(uint8_t* _target, double _number);
 	void longToChar(uint8_t* _target, uint32_t _number);
 	void shortToChar(uint8_t* _target, uint16_t _number);
+	void longLongToChar(uint8_t* _target, uint64_t _number);
 
 	float charToFloat(uint8_t* _number);
 	double charToDouble(uint8_t* _number);
+	uint64_t charToLongLong(uint8_t* _number);
 	uint16_t charToShort(uint8_t* _number);
 	uint32_t charToLong(uint8_t* _number);
 

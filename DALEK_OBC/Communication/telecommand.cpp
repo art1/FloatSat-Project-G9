@@ -38,14 +38,19 @@ void Telecommand::setNewData(UDPMsg frame){
 
 void Telecommand::run(){
 
+	bool checkFrame = true;
 	bool isValid = true;
 
 	while(1){
 		suspendCallerUntil(END_OF_TIME);
 		// parse Commands
 		tcBuf.get(currentMsg);
-		if((currentMsg.data[0] == FRAME_START) && (currentMsg.data[1] == VALUE_SEPERATOR)
-				&& (currentMsg.data[currentMsg.length-1] == FRAME_END)){
+		forLoop(i,3){
+			if(currentMsg.data[i] != FRAME_START) checkFrame = false;
+			if(currentMsg.data[currentMsg.length-i] != FRAME_END) checkFrame = false;
+			PRINTF("received Frame is invalid!\n");
+		}
+		if(!checkFrame){
 			// message seems to be valid
 			int pos = CMD_FRAMETYPE;
 			int lastSeparator = 1;

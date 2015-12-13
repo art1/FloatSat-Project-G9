@@ -68,6 +68,7 @@ struct receiver_Fusion : public Subscriber, public Thread {
 	receiver_Fusion() : Subscriber(imu_rawData,"IMU Raw Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		fusion.newData(*(IMU_DATA_RAW*)data);
+		tm.setNewData(*(IMU_DATA_RAW*)data);
 		fusion.resume();
 //		PRINTF("some stuff there!\n\n");
 		return 1;

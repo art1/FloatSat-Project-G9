@@ -19,11 +19,16 @@
  *      The framenumber must be increased each time a frame is sent.
  *
  *      EXAMPLE FRAME STRUCTURE:
- *      $,COMMAND,10,14,11230300,#
- *      (FRAME_START,FRAME_TYPE,FRAMENUMBER,COMMAND,TIME_NANOSECONDS,FRAME_END)
+ *      $$$COMMAND101411230300###
+ *      (FRAME_START FRAME_TYPE FRAMENUMBER COMMAND TIME_NANOSECONDS FRAME_END)
+ *		
+ *		! Everything is sent in uint8_t -> so appropriate recombination is needed! (see embedded system telemetry class for helper functions)
+ *		! Casting for signed integers still has to be done
+ *		! The values are not separated! The FRAME_START and FRAME_END is repeated three times each at frame start and end!
  *
  */
 
+#include "stdint.h"
 #ifndef BASIC_PROTOCOL_H_
 #define BASIC_PROTOCOL_H_
 
@@ -113,10 +118,10 @@ struct TELEMETRY_FRAME{
 	int frametype;
 	uint32_t framenumber;
 	uint8_t systemMode;
-	float light; 				// in lux
-	double roll;				// in degree
-	double pitch;				// in degree
-	double heading;				// in degree
+	uint16_t light; 			// in lux
+	float roll;					// in degree
+	float pitch;				// in degree
+	float heading;				// in degree
 	float gyroX;				// degree per seconds
 	float gyroY;
 	float gyroZ;

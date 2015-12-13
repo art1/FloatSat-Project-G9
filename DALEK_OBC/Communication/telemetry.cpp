@@ -26,6 +26,7 @@ void Telemetry::run(){
 		buildFrame();
 		tmPlFrame.publish(msg);
 		frameNumber++;
+		PRINTF("sent %d bytes\n",msg.length);
 		suspendCallerUntil(NOW()+TM_SAMPLERATE*MILLISECONDS);
 	}
 }
@@ -34,6 +35,9 @@ void Telemetry::run(){
 
 void Telemetry::setNewData(IMU_RPY_FILTERED _imu){
 	this->imu.put(_imu);
+}
+void Telemetry::setNewData(IMU_DATA_RAW _imuRaw){
+	this->imuRaw.put(_imuRaw);
 }
 void Telemetry::setNewData(LUX_DATA _lux){
 	this->lux.put(_lux);
@@ -70,7 +74,7 @@ void Telemetry::buildFrame(){
 	for(int i=-1;i<15;i++){
 		switch (i) {
 		case -1:
-			msg.data[msg.length++] = FRAME_START;
+			forLoop(j,3){msg.data[msg.length++] = FRAME_START;}// adding $$$
 			break;
 		case TM_FRAMETYPE:
 			msg.data[msg.length++] = TM;
@@ -153,12 +157,24 @@ void Telemetry::buildFrame(){
 			break;
 		case BATTERY_VOLTAGE:
 			/** TODO */
+			// adding dummy values here
+			forLoop(j,4){
+				msg.data[msg.length++] = 0x00;
+			}
 			break;
 		case CURRENT:
 			/** TODO */
+			// adding dummy values here
+			forLoop(j,4){
+				msg.data[msg.length++] = 0x00;
+			}
 			break;
 		case MOTOR_SPEED:
 			/** TODO */
+			// adding dummy values here
+			forLoop(j,4){
+				msg.data[msg.length++] = 0x00;
+			}
 			break;
 		case IR_DATA_ONE:
 			longToChar(tmp,(uint32_t)irData.sensorOne);
@@ -179,15 +195,18 @@ void Telemetry::buildFrame(){
 			}
 			break;
 		case TM_LOCALTIME:
-			/** TODO */
+			longLongToChar(tmp,(uint64_t)NOW());
+			forLoop(j,8){
+				msg.data[msg.length++] = tmp[i];
+			}
 			break;
 		default:
 			PRINTF("oO this should never ever happen :o\n");
 			break;
 		}
-		msg.data[msg.length++] = VALUE_SEPERATOR;
+//		msg.data[msg.length++] = VALUE_SEPERATOR;
 	}
-	msg.data[msg.length++] = FRAME_END;
+	forLoop(j,3){msg.data[msg.length++] = FRAME_END;}
 }
 
 
@@ -235,6 +254,24 @@ float Telemetry::charToFloat(uint8_t* _number){
 	return out;
 }
 
+void Telemetry::longLongToChar(uint8_t* _target, uint64_t _number){
+	char *tmp = (char*) &_number;
+
+	forLoop(j,8){
+		_target[j] = tmp[j];
+	}
+}
+
+uint64_t Telemetry::charToLongLong(uint8_t* _number){
+	uint64_t out;
+
+	uint8_t * ptr = (uint8_t *) &out;
+
+	forLoop(i,8){
+		ptr[i] = _number[i];
+	}
+	return out;
+}
 
 void Telemetry::longToChar(uint8_t* _target, uint32_t _number){
 	_target[0] = ((_number >> 24) & 0xFF);
