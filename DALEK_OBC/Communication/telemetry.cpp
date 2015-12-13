@@ -8,7 +8,7 @@
 #include "telemetry.h"
 
 Telemetry::Telemetry() {
-
+	this->frameNumber = 0;
 }
 
 Telemetry::~Telemetry() {
@@ -25,6 +25,7 @@ void Telemetry::run(){
 	while(1){
 		buildFrame();
 		tmPlFrame.publish(msg);
+		frameNumber++;
 		suspendCallerUntil(NOW()+TM_SAMPLERATE*MILLISECONDS);
 	}
 }
@@ -43,6 +44,12 @@ void Telemetry::setNewData(SOLAR_DATA _sol){
 void Telemetry::setNewData(IR_DATA _ir){
 	this->ir.put(_ir);
 }
+void Telemetry::setNewData(ACTIVE_SYSTEM_MODE _mode){
+	this->systemMode.activeMode = _mode.activeMode;
+}
+uint32_t Telemetry::getCurrentFrameNumber(){
+	return this->frameNumber;
+}
 
 void Telemetry::buildFrame(){
 	msg.length = 0;
@@ -55,6 +62,10 @@ void Telemetry::buildFrame(){
 	lux.get(l);
 	IR_DATA irData;
 	ir.get(irData);
+	SOLAR_DATA s;
+	sol.get(s);
+	IMU_DATA_RAW rpyRaw;
+	imuRaw.get(rpyRaw);
 
 	for(int i=-1;i<15;i++){
 		switch (i) {
@@ -65,34 +76,80 @@ void Telemetry::buildFrame(){
 			msg.data[msg.length++] = TM;
 			break;
 		case TM_FRAMENUMBER:
-			/** TODO */
+			longToChar(tmp,getCurrentFrameNumber());
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case SYSTEM_MODE:
-			/** TODO */
+			msg.data[msg.length++] = (uint8_t)this->systemMode.activeMode;
 			break;
 		case LIGHT:
-			/** TODO */
+			shortToChar(tmp,l.LUX);
+			msg.data[msg.length++] = tmp[0];
+			msg.data[msg.length++] = tmp[1];
 			break;
 		case ROLL:
 			floatToChar(tmp,rpy.ROLL);
-			for(int i=0;i<4;i++){
-				msg.data[msg.length++] = tmp[i];
-			}
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
 			break;
 		case PITCH:
 			floatToChar(tmp,rpy.PITCH);
-			for(int i=0;i<4;i++){
-				msg.data[msg.length++] = tmp[i];
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
 			}
 			break;
 		case YAW:
 			floatToChar(tmp,rpy.YAW);
-			for(int i=0;i<4;i++){
-				msg.data[msg.length++] = tmp[i];
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
 			}
 			break;
+		case GYRO_X:
+			floatToChar(tmp,rpyRaw.ANGULAR_RAW_X);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case GYRO_Y:
+			floatToChar(tmp,rpyRaw.ANGULAR_RAW_Y);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case GYRO_Z:
+			floatToChar(tmp,rpyRaw.ANGULAR_RAW_Z);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case ACCL_X:
+			floatToChar(tmp,rpyRaw.ACCEL_RAW_X);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case ACCL_Y:
+			floatToChar(tmp,rpyRaw.ACCEL_RAW_Y);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case ACCL_Z:
+			floatToChar(tmp,rpyRaw.ACCEL_RAW_Z);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case MAG_X:
+			floatToChar(tmp,rpyRaw.MAGNETIC_RAW_X);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case MAG_Y:
+			floatToChar(tmp,rpyRaw.MAGNETIC_RAW_Y);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case MAG_Z:
+			floatToChar(tmp,rpyRaw.MAGNETIC_RAW_Z);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
+		case TEMP:
+			floatToChar(tmp,rpyRaw.TEMP_RAW);
+			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			break;
 		case SOLAR_VOLTAGE:
-			/** TODO */
+			longToChar(tmp,(uint32_t)s.Voltage);
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case BATTERY_VOLTAGE:
 			/** TODO */
@@ -104,13 +161,22 @@ void Telemetry::buildFrame(){
 			/** TODO */
 			break;
 		case IR_DATA_ONE:
-			/** TODO */
+			longToChar(tmp,(uint32_t)irData.sensorOne);
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case IR_DATA_TWO:
-			/** TODO */
+			longToChar(tmp,(uint32_t)irData.sensorTwo);
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case IR_DATA_THREE:
-			/** TODO */
+			longToChar(tmp,(uint32_t)irData.sensorThree);
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case TM_LOCALTIME:
 			/** TODO */
@@ -124,23 +190,74 @@ void Telemetry::buildFrame(){
 	msg.data[msg.length++] = FRAME_END;
 }
 
-/**
- * puts double number to target as 8 bytes
- */
+
+
+
 void Telemetry::doubleToChar(uint8_t* target, double number){
 	char *tmp = (char *) &number;
+
 	for(int i=0;i<8;i++){
 		target[i] = tmp[i];
 	}
 }
 
-/**
- * puts float-bytes to target array
- */
+double Telemetry::charToDouble(uint8_t* _number){
+	double out;
+
+	uint8_t * ptr = (uint8_t *) &out;
+
+	forLoop(i,8){
+		ptr[i] = _number[i];
+	}
+
+	return out;
+}
+
+
+
 void Telemetry::floatToChar(uint8_t* target, float number){
 	char *tmp = (char *) &number;
+
 	for(int i=0;i<4;i++){
 		target[i] = tmp[i];
 	}
+}
+
+float Telemetry::charToFloat(uint8_t* _number){
+	float out;
+
+	uint8_t * ptr = (uint8_t *) &out;
+
+	forLoop(i,4){
+		ptr[i] = _number[i];
+	}
+
+	return out;
+}
+
+
+void Telemetry::longToChar(uint8_t* _target, uint32_t _number){
+	_target[0] = ((_number >> 24) & 0xFF);
+	_target[1] = ((_number >> 16) & 0xFF);
+	_target[2] = ((_number >> 8) & 0xFF);
+	_target[3] = ((_number) & 0xFF);
+}
+
+uint32_t Telemetry::charToLong(uint8_t* _number){
+	return ((_number[0] << 24 )
+			+ (_number[1] << 16)
+			+ (_number[2] << 8)
+			+ (_number[3] ) );
+}
+
+
+void Telemetry::shortToChar(uint8_t* _target, uint16_t _number){
+	_target[0] = _number & 0xFF;
+	_target[1] = _number >> 8;
+}
+
+
+uint16_t Telemetry::charToShort(uint8_t* _number){
+	return (_number[0] | (_number[1] << 8));
 }
 

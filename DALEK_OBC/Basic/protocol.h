@@ -46,6 +46,16 @@ enum telemetryFrame{
 	ROLL,
 	PITCH,
 	YAW,
+	GYRO_X,
+	GYRO_Y,
+	GYRO_Z,
+	ACCL_X,
+	ACCL_Y,
+	ACCL_Z,
+	MAG_X,
+	MAG_Y,
+	MAG_Z,
+	TEMP,
 	SOLAR_VOLTAGE,
 	BATTERY_VOLTAGE,
 	CURRENT,
@@ -102,18 +112,28 @@ enum system_mode{
 struct TELEMETRY_FRAME{
 	int frametype;
 	uint32_t framenumber;
-	int systemMode;
+	uint8_t systemMode;
 	float light; 				// in lux
 	double roll;				// in degree
 	double pitch;				// in degree
 	double heading;				// in degree
-	float solarVoltage;			// in Volts
-	float batteryVoltage;		// in Volts
+	float gyroX;				// degree per seconds
+	float gyroY;
+	float gyroZ;
+	float acclX;				// g
+	float acclY;
+	float acclZ;
+	float magnX;				// gauss
+	float magnY;
+	float magnZ;
+	float temp;					// degree celsius
+	int32_t solarVoltage;		// in Volts
+	int32_t batteryVoltage;		// in Volts
 	float current;				// in Ampere
 	float motorSpeed;			// in ???? dps?
-	double irDataOne;			// in meter
-	double irDataTwo;			// in meter
-	double irDataThree;			// in meter
+	int32_t irDataOne;			// in meter
+	int32_t irDataTwo;			// in meter
+	int32_t irDataThree;		// in meter
 	int64_t localTime;			// in nanoseconds since system start!
 };
 

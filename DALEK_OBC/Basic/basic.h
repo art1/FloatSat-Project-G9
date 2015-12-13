@@ -28,6 +28,7 @@ extern "C" HAL_UART bt_uart;
 #define TO_RAD					(M_PI/180.0)
 #define TO_DEG					(180.0/M_PI)
 #define COMPL_GAIN				0.98f			// Complementary Filter Gain
+#define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
 #define IMU_ENABLE
@@ -74,6 +75,7 @@ extern "C" HAL_UART bt_uart;
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
 #define BLUETOOTH_BUFFER		36				// in bytes, should be enough for Command Frames! (currently 24 needed)
+
 /****************************** IMU STUFF ************************************************/
 #define IMU_RESET_PIN			GPIO_055
 #define IMU_G_CS_PIN			GPIO_018
@@ -165,6 +167,9 @@ struct TELEMETRY{
 };
 #define TM_SAMPLERATE			1000			// in milliseconds
 #endif
+struct ACTIVE_SYSTEM_MODE{
+	int activeMode;
+};
 
 /***************************************** TOPICS ***************************************************/
 // now define the topics stuff for the RODOS middleware
@@ -174,10 +179,12 @@ extern Topic<LUX_DATA> lux_data;
 extern Topic<SOLAR_DATA> solar_data;
 extern Topic<IR_DATA> ir_data;
 extern Topic<CAM_CONTROL> cam_control;
+
 extern Topic<TELEMETRY> tm_data;
 extern Topic<UDPMsg> tcRaw;
 extern Topic<UDPMsg> tmPlFrame;
 extern Topic<COMMAND_FRAME> commandFrame;
+extern Topic<ACTIVE_SYSTEM_MODE> systemModeControl;
 
 
 #endif /* BASIC_BASIC_H_ */
