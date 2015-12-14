@@ -21,8 +21,8 @@ public:
 	void init();
 	void setNewData(UDPMsg msg);
 private:
-	static const uint8_t invalidBuf[7];
-	static const uint8_t echoBuf[4];
+//	static const uint8_t invalidBuf[7];
+//	static const uint8_t echoBuf[4];
 
 	Fifo<UDPMsg,50> btBuf;
 	void getNewMessages();

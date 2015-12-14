@@ -45,8 +45,10 @@ MotorControlThread motorControl;
 #ifdef IR_ENABLE
 InfraredSensors irSensors;
 #endif
-
-
+#ifdef KNIFE_ENABLE
+ThermalKnife knife;
+#endif
+HAL_GPIO HBRIDGE_EN(GPIO_066);
 
 //RESUMER THREADS
 ///**************************** GPIO MESSAGES *************************************/
@@ -197,6 +199,8 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
+
+
 }
 
 
@@ -205,6 +209,7 @@ void mainThread::run(){
 #ifdef BLUETOOTH_FALLBACK
 	bt_uart.init(BLUETOOTH_BAUDRATE);
 #endif
+    HBRIDGE_EN.init(true, 1, 1);
 
 	//enable ADC1 channel with 12 Bit Resolution
 	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);

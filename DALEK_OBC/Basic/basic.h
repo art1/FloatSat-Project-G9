@@ -31,14 +31,15 @@ extern "C" HAL_UART bt_uart;
 #define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-#define IMU_ENABLE
-#define TTNC_ENABLE
-#define FUSION_ENABLE
+//#define IMU_ENABLE
+//#define TTNC_ENABLE
+//#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
+#define KNIFE_ENABLE
 #define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
 
 #ifdef FUSION_ENABLE
@@ -160,18 +161,19 @@ struct IR_DATA{
 
 /* ***************************************** TM TC STUFF **********************************************/
 #ifdef TTNC_ENABLE
+
+#define COMMAND_ECHO							// if not commented, every command is echoed back
+#endif
+#define TM_SAMPLERATE			1000			// in milliseconds
+
+struct ACTIVE_SYSTEM_MODE{
+	int activeMode;
+};
 struct TELEMETRY{
 	PAYLOAD_FRAME plFrame;
 	TELEMETRY_FRAME tmFrame;
 	int updated; // 0 or 1 for pl or tm frame
 };
-#define TM_SAMPLERATE			1000			// in milliseconds
-#define COMMAND_ECHO							// if not commented, every command is echoed back
-#endif
-struct ACTIVE_SYSTEM_MODE{
-	int activeMode;
-};
-
 /***************************************** TOPICS ***************************************************/
 // now define the topics stuff for the RODOS middleware
 extern Topic<IMU_DATA_RAW>	imu_rawData;

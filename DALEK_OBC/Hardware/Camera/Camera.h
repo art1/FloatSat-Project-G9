@@ -1,41 +1,57 @@
-/*
- * camera.h
- *
- *  Created on: Nov 28, 2015
- *      Author: arthur
- */
-
-#ifndef HARDWARE_CAMERA_CAMERA_H_
-#define HARDWARE_CAMERA_CAMERA_H_
-
-#include "../../Basic/basic.h"
-#include "Supps/SCCB.h"
+///*
+// * camera.hpp
+// *
+// *  Created on: 30.11.2015
+// *      Author: akynos
+// */
+//
+//#ifndef CAMERA_HPP_
+//
+//#include "../../Basic/basic.h"
+//#include "Supps/SCCB.h"
 //#include "Supps/myDCMI.h"
-
-
-#define CAM_ADDR		0x21 //#define CAM_READ		0x43 #define CAM_WRITE		0x42
-
-#define CAM_POWER		GPIO_033 // PC01
-#define CAM_RESET		GPIO_010 // PA10
-
-#define IMAGESIZE
-
-class Camera : public Thread {
-public:
-	Camera();
-	virtual ~Camera();
-	void init();
-	void run();
-	void test();
-	void setNewData(CAM_CONTROL data);
-private:
-	CAM_CONTROL dat;
-//	HAL_GPIO camPWR;
-//	HAL_GPIO camReset;
-	SCCB sccb;
-//	myDCMI dcmi;
-	uint8_t recBuf[10];
-	uint8_t transBuf[10];
-};
-
-#endif /* HARDWARE_CAMERA_CAMERA_H_ */
+//
+//#define WIDTH						160
+//#define HEIGHT						121
+//
+//#define CAPTUREMODE					DCMI_CaptureMode_SnapShot
+//#define FRAMERATE					DCMI_CaptureRate_All_Frame
+////#define CAPTUREMODE				DCMI_CaptureMode_Continuous
+////#define FRAMERATE					DCMI_CaptureRate_1of4_Frame
+//#define DCMI_DR_ADDRESS      		0x50050028
+//#define IMAGESIZE					(HEIGHT*WIDTH*2)
+//
+//
+//class Camera : public Thread {
+//public:
+//	OV7670(const char* name);
+//	void init();
+//	void run();
+//	void Capture();
+//
+//	void ProcessData();
+//private:
+//	void initTimer();
+//	void OV7670_SCCB();
+//	void delayx(unsigned int ms);
+//	uint8_t* getPicture();
+//	void sendPicture();
+//	void turnOn(void);
+//	void turnOff(void);
+//
+//	SCCB sccb = SCCB();
+//	myDCMI dcmi = myDCMI(IMAGESIZE, (uint32_t) DCMI_Buffer, FRAMERATE, CAPTUREMODE);
+//	uint8_t DCMI_Buffer[IMAGESIZE];
+//
+//	HAL_GPIO ledo;
+//	HAL_GPIO reset;
+//	HAL_GPIO power;
+//
+//	bool active;
+//	bool processData;
+//	bool sendPic;
+//};
+//
+//extern OV7670 camera;
+//
+//#endif /* CAMERA_HPP_ */

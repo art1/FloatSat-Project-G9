@@ -6,13 +6,25 @@
  */
 
 #include "Motor.h"
-HAL_GPIO hbridgeA_inA(GPIO_036); /* declare HAL_GPIO for GPIO_036 = PC4 (HBRIDGE-A INA pin) */
-HAL_GPIO hbridgeA_inB(GPIO_017); /* declare HAL_GPIO for GPIO_017 = PB1 (HBRIDGE-B INA pin) */
-HAL_GPIO hbridge_enable(GPIO_066); /* declare HAL_GPIO for GPIO_066 = PE2 (HBRIDGE Power Enable pin) */
+//HAL_GPIO hbridgeA_inA(GPIO_036); /* declare HAL_GPIO for GPIO_036 = PC4 (HBRIDGE-A INA pin) */
+//HAL_GPIO hbridgeA_inB(GPIO_017); /* declare HAL_GPIO for GPIO_017 = PB1 (HBRIDGE-B INA pin) */
+//HAL_GPIO hbridge_enable(GPIO_066); /* declare HAL_GPIO for GPIO_066 = PE2 (HBRIDGE Power Enable pin) */
 
 HAL_GPIO dcdc_read(GPIO_067);
 
-HAL_PWM pwm(PWM_IDX12); /* declare HAL_PWM for PWM_IDX12 = TIM4-CH1 (HBRIDGE-A), please refer to hal_pwm.h for correct PWM mapping; PB6*/
+
+//HAL_GPIO GreenLED(LED_GREEN);
+//HAL_GPIO blinkingFucker(LED_BLUE);
+//HAL_UART TeleUart(UART_IDX3);
+
+HAL_GPIO HBRIDGE_A_INA (GPIO_036);
+HAL_GPIO HBRIDGE_A_INB (GPIO_017);
+
+HAL_PWM MotorPWM(PWM_IDX12);
+
+
+
+//HAL_PWM pwm(PWM_IDX12); /* declare HAL_PWM for PWM_IDX12 = TIM4-CH1 (HBRIDGE-A), please refer to hal_pwm.h for correct PWM mapping; PB6*/
 
 
 Motor::Motor() {
@@ -25,19 +37,22 @@ Motor::~Motor() {
 }
 
 void Motor::init(){
-	hbridgeA_inA.init(true,1,1);
-	hbridgeA_inB.init(true,1,0);
-	hbridge_enable.init(true,1,0);
-	dcdc_read.init(false,1,0);
-	pwm.init(5000,1000); // 84Hz
-	pwm.write(250);
+//	hbridgeA_inA.init(true,1,1);
+//	hbridgeA_inB.init(true,1,0);
+//	hbridge_enable.init(true,1,0);
+//	dcdc_read.init(false,1,0);
+//	pwm.init(5000,1000); // 84Hz
+//	pwm.write(250);
+	MotorPWM.init(5000, 1000);
+    HBRIDGE_A_INA.init(true, 1, 0);
+    HBRIDGE_A_INB.init(true, 1, 1);
 
 }
 
 void Motor::run(){
 	PRINTF("Starting Motor\n");
-	startMotor();
-	pwm.write(250);
+//	startMotor();
+//	pwm.write(250);
 //	int cnt = 0;
 //	while(1){
 //		setspeed(cnt++);
@@ -49,40 +64,58 @@ void Motor::run(){
 //			cnt = -1000;
 //		}
 //	}
+
+
+
 }
 
 
 int Motor::setspeed(int16_t duty){
-	if(hbridge_enable.readPins() == 0) {
-		PRINTF("motor wasnt enabled, starting\n");
-		startMotor();
-	}
-	int k = dcdc_read.readPins();
-	PRINTF("power is: %d\n",k);
-	k = hbridge_enable.readPins();
-	PRINTF("should be: %d\n",k);
-	switchDirection(duty);
-	pwm.write(abs(duty));
-	dutyCycle = duty;
+//	if(hbridge_enable.readPins() == 0) {
+//		PRINTF("motor wasnt enabled, starting\n");
+//		startMotor();
+//	}
+//	int k = dcdc_read.readPins();
+//	PRINTF("power is: %d\n",k);
+//	k = hbridge_enable.readPins();
+//	PRINTF("should be: %d\n",k);
+//	switchDirection(duty);
+//	pwm.write(abs(duty));
+//	dutyCycle = duty;
+	MotorPWM.write(duty);
 }
 
 int Motor::startMotor(){
-	hbridge_enable.setPins(1);
+//	hbridge_enable.setPins(1);
 	return 0;
 }
 
 int Motor::stopMotor(){
-	hbridge_enable.setPins(0);
+//	hbridge_enable.setPins(0);
 }
 
-int Motor::switchDirection(int16_t dir){
+int Motor::switchDirection(int currentSpeed){
+
+	if(currentSpeed > 500)despinTo(currentSpeed,500);
+
 //	PRINTF("switching directions\n");
-	if( dir < 0){
-		hbridgeA_inA.setPins(0);
-		hbridgeA_inB.setPins(1);
-	} else {
-		hbridgeA_inA.setPins(1);
-		hbridgeA_inB.setPins(0);
+    HBRIDGE_A_INA.setPins(~HBRIDGE_A_INA.readPins());
+    HBRIDGE_A_INB.setPins(~HBRIDGE_A_INB.readPins());
+
+
+    if(currentSpeed > 500) spinUpTo(500,currentSpeed);
+}
+
+void Motor::despinTo(int _currentSpeed,int _finalVal){
+	for(int i=_currentSpeed;i>_finalVal;i--){
+		setspeed(i);
+	}
+
+}
+
+void Motor::spinUpTo(int _currentSpeed,int _finalVal){
+	for(int i=_currentSpeed;i<_finalVal;i++){
+		setspeed(i);
 	}
 }
 

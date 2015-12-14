@@ -1,105 +1,171 @@
-/*
- * camera.cpp
- *
- *  Created on: Nov 28, 2015
- *      Author: arthur
- */
-
-#include "Camera.h"
-
-
-//SCCB sccb;
-
-
-HAL_GPIO camPWR(CAM_POWER);
-HAL_GPIO camReset(CAM_RESET);
-
-Camera::Camera() {
-	//	// TODO Auto-generated constructor stub
-	//	camPWR(CAM_POWER);
-	//	camReset(CAM_RESET);
-	this->dat.shoot = false;
-	memset(transBuf,0,sizeof(transBuf));
-	memset(recBuf,0,sizeof(recBuf));
-
-}
-
-Camera::~Camera() {
-	// TODO Auto-generated destructor stub
-}
-
-void Camera::init(){
-
-	// init clock -> PA8
-	//	 GPIO_InitTypeDef GPIO_InitStructure;
-	//
-	//	 RCC_ClockSecuritySystemCmd(ENABLE);
-	//
-	//	 /* Enable GPIOs clocks */
-	//	 RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-	//
-	//	 GPIO_PinAFConfig(GPIOA, GPIO_PinSource8, GPIO_AF_MCO);
-	//
-	//	 /* Configure PA8 */
-	//	 GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
-	//	 GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	//	 GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	//	 GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	//	 GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	//	 GPIO_Init(GPIOA, &GPIO_InitStructure);
-	//
-	//	 RCC_MCO1Config(RCC_MCO1Source_PLLCLK, RCC_MCO1Div_4);
-
-}
-
-
-void Camera::setNewData(CAM_CONTROL data){
-	PRINTF("setting cam data: %d\n",data.shoot);
-	this->dat = data;
-}
-
-
-void Camera::run(){
-//			i2c1.init(400000);
-	camPWR.init(true);
-	camReset.init(true);
-	camReset.setPins(1);
-	camPWR.setPins(0); // low is power on!
-	PRINTF("init SCCB\n");
-		sccb.init();
-	while(1){
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
-		if(dat.shoot)test();
-		BLUE_TOGGLE;
-	}
-}
-
-void Camera::test(){
-
-//	suspendCallerUntil(NOW()+500*MILLISECONDS);
-	PRINTF("wirting to cam\n");
-
-	//
-	//	//
-		transBuf[0] = 0x0A;
-		recBuf[0] = 0xFF;
-		recBuf[0] = sccb.readReg(transBuf[0]);
-		PRINTF("read 0x0A : %d\n",recBuf[0]);
-//		recBuf[1] = sccb.readReg(0x0B);
-//		PRINTF("read 0x0B : %d\n",recBuf[1]);
-
-	//
-	//////
-//		transBuf[0] = 0x0A;
-//	recBuf[0] = 0xFF;
-	//		int k = i2c1.writeRead((0x21),transBuf,1,recBuf,1);
-	//		PRINTF("1 read 0x01 : %d  k:%d\n",recBuf[0],k);
-//	int k = i2c1.writeRead((CAM_READ),transBuf,1,recBuf,1);
-//	PRINTF("2 read 0x01 : %d  k:%d\n",recBuf[0],k);
-
-	////
-	//	transBuf[0] = 0x02;
-	////	k = i2c1.writeRead(CAM_READ,transBuf,1,recBuf,1);
-	//	PRINTF("read 0x02 : %d\n",recBuf[0]);
-
-}
+///*
+// * camera.cpp
+// *
+// *  Created on: 08.12.2015
+// *      Author: akynos
+// */
+//
+//
+//#include "Camera.h"
+//#include "stm32f4xx.h"
+//#include "stm32f4xx_gpio.h"
+//#include "stm32f4xx_rcc.h"
+//#include "stm32f4xx_i2c.h"
+//#include "Supps/initRegister.h"
+//#include "stdio.h"
+//
+//#define ONE_BYTE_REG_ADDR 0x01
+//#define TWO_BYTE_REG_ADDR 0x02
+//
+//OV7670 camera("camera_thread");
+//
+//namespace RODOS{
+//extern HAL_UART uart_stdout;
+//}
+//
+//OV7670::OV7670(const char* name) : Thread(name){
+//	ledo = HAL_GPIO(GPIO_061); //PD13
+//	reset = HAL_GPIO(GPIO_010); //PA10
+//	power = HAL_GPIO(GPIO_033); //PC01
+//	active = false;
+//	processData = false;
+//	sendPic = true;
+//}
+//
+//void OV7670::initTimer(){
+//	GPIO_InitTypeDef GPIO_InitStructure;
+//
+//	RCC_ClockSecuritySystemCmd(ENABLE);
+//
+//	/* Enable GPIOs clocks */
+//	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+//
+//	GPIO_PinAFConfig(GPIOA, GPIO_PinSource8, GPIO_AF_MCO);
+//
+//	/* Configure MCO (PA8) */
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+//	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+//	GPIO_Init(GPIOA, &GPIO_InitStructure);
+//
+//	RCC_MCO1Config(RCC_MCO1Source_PLLCLK, RCC_MCO1Div_4);
+//}
+//
+//
+//void OV7670::OV7670_SCCB() {
+//	PRINTF("starting InitOV7670 init\n");
+//	uint16_t x = 0;
+//	int res = 0;
+//	res = sccb.ov7670_set(0x12, 0x80);
+//	res = sccb.ov7670_set(0x12, 0x00);
+//
+//	while (init_registers[x][0] != 0xFF && init_registers[x][1] != 0xFF) {
+//		PRINTF("init register: status x=%d\n", x);
+//
+//		res = sccb.ov7670_set((unsigned char) init_registers[x][0],
+//				(unsigned char) init_registers[x][1]);
+//		uint8_t read = sccb.ov7670_get((unsigned char) init_registers[x][0]);
+//		PRINTF("SCCB Init %d: reg 0x%x = 0x%x = 0x%x \n", x,
+//				init_registers[x][0], init_registers[x][1], read);
+//		if (res) {
+//			PRINTF("ERROR I2C %d\n", res);
+//		}
+//		x++;
+//		delayx(5);
+//
+//	}
+//
+//}
+//
+//void OV7670::init() {
+//	PRINTF("starting cam init\n");
+//	//initTimer();
+//	ledo.init(true);
+//	reset.init(true);
+//	power.init(true);
+//	reset.setPins(1);
+//	power.setPins(0);
+//	PRINTF("Init GPIOs...");
+//	dcmi.InitGPIO();
+//	PRINTF("Done!\n");
+//	PRINTF("Init DCMI...");
+//	dcmi.InitDCMI();
+//	PRINTF("Done!\n");
+//	PRINTF("Init I2C...");
+//	delayx(1000);
+//	sccb.I2CInit();
+//	PRINTF("Done!\n");
+//	PRINTF("Init OV7670...");
+//	delayx(1000);
+//	OV7670_SCCB();
+//	PRINTF("Done!\n");
+//	PRINTF("Enable DCMI...");
+//	delayx(1000);
+//	dcmi.EnableDCMI();
+//
+//	PRINTF("Done with cam init!\n");
+//}
+//
+//void OV7670::ProcessData() {
+//	processData = true;
+//
+//}
+//
+//
+//void OV7670::run(){
+//	while(1){
+//		if (processData) {
+//
+//			processData = false;
+//			if (sendPic) { // If picture was requested, send
+//				char tmpVal[4];
+//				PRINTF("CAMERA\n");
+//				for (int i = 0; i < IMAGESIZE; i ++) {
+//
+//					sprintf(tmpVal, "%03u", DCMI_Buffer[i]);
+//					TeleUART.write(tmpVal, 4);
+//					while (!TeleUART.isWriteFinished()) {
+//					}
+//					sprintf(tmpVal, "\r\n");
+//					TeleUART.write(tmpVal, 4);
+//					while (!TeleUART.isWriteFinished()) {
+//					}
+//
+//				}
+//				PRINTF("CAMEND\n");
+//				sendPic = false;
+//			}
+//
+//			if (active) { // Continue captureing/processing if cam is still active
+//				Capture();
+//			}
+//
+//			suspendCallerUntil(NOW()+200*MILLISECONDS); // Could run even faster but 200ms is suficient for mission mode
+//		}
+//	}
+//}
+//
+//
+//void OV7670::sendPicture() {
+//	sendPic = true;
+//	//tm.turnOn();
+//}
+//
+//uint8_t* OV7670::getPicture() {
+//	return DCMI_Buffer;
+//}
+//
+//void OV7670::Capture() {
+//	DCMI_CaptureCmd(ENABLE);
+//}
+//
+//
+//void OV7670::delayx(unsigned int ms) {
+//	//4694 = 1 ms
+//	while (ms > 1) {
+//		ms--;
+//		asm("nop");
+//	}
+//}

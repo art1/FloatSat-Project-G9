@@ -7,8 +7,8 @@
 
 #include "Bluetooth.h"
 
-const uint8_t Bluetooth::invalidBuf = {'I','N','V','A','L','I','D'};
-const uint8_t Bluetooth::echoBuf = {'E','C','H','O'};
+const uint8_t invalidBuf[7] = {'I','N','V','A','L','I','D'};
+const uint8_t echoBuf[4] = {'E','C','H','O'};
 
 
 Bluetooth::Bluetooth() {

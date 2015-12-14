@@ -25,6 +25,7 @@
 #include "Hardware/Motor/MotorControlThread.h"
 #include "Hardware/SolarPanels.h"
 #include "Hardware/InfraredSensors.h"
+#include "Hardware/ThermalKnife.h"
 #include "ControlThread.h"
 
 

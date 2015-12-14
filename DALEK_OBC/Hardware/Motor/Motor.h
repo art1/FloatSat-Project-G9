@@ -21,7 +21,9 @@ public:
 	int setspeed(int16_t duty);
 	int startMotor();
 	int stopMotor();
-	int switchDirection(int16_t dir);
+	int switchDirection(int currentSpeed);
+	void despinTo(int _currentSpeed, int _finalVal);
+	void spinUpTo(int _currentSpeed, int _finalVal);
 private:
 	int16_t dutyCycle;
 
