@@ -24,3 +24,5 @@ Topic<UDPMsg> tmPlFrame(8,"Telemetry Payload Frame");
 Topic<COMMAND_FRAME> commandFrame(9,"Command Frame Data");
 Topic<IMU_RPY_FILTERED> imu_filtered(10,"IMU Data filtered");
 Topic<ACTIVE_SYSTEM_MODE> systemMode(11,"active System Mode");
+Topic<KNIFE_DATA> knife_data(12,"Thermal Knife Data");
+

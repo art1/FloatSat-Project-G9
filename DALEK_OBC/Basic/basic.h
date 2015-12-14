@@ -159,6 +159,11 @@ struct IR_DATA{
 	int32_t sensorThree;
 };
 
+/* ***************************************** Thermal Knife STUFF **********************************************/
+
+struct KNIFE_DATA{
+	bool activated;
+};
 /* ***************************************** TM TC STUFF **********************************************/
 #ifdef TTNC_ENABLE
 
@@ -181,6 +186,7 @@ extern Topic<IMU_RPY_FILTERED> imu_filtered;
 extern Topic<LUX_DATA> lux_data;
 extern Topic<SOLAR_DATA> solar_data;
 extern Topic<IR_DATA> ir_data;
+extern Topic<KNIFE_DATA> knife_data;
 extern Topic<CAM_CONTROL> cam_control;
 
 extern Topic<TELEMETRY> tm_data;

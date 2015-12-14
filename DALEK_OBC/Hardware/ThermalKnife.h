@@ -16,6 +16,11 @@ public:
 	virtual ~ThermalKnife();
 	void init();
 	void run();
+	void setNewData(KNIFE_DATA _dat);
+
+
+private:
+	KNIFE_DATA data;
 };
 
 #endif /* HARDWARE_THERMALKNIFE_H_ */

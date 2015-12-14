@@ -126,6 +126,17 @@ struct receiver_irSensors : public Subscriber, public Thread {
 	void run(){}
 } ir_sensors_receiver_thread;
 #endif
+/**************************** TTnC MESSAGES **************************************/
+#ifdef KNIFE_ENABLE
+struct receiver_knife : public Subscriber, public Thread {
+	receiver_knife() : Subscriber(knife_data,"Knife Data") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		knife.setNewData(*(KNIFE_DATA*)data);
+		return 1;
+	}
+	void run(){}
+} ir_sensors_receiver_thread;
+#endif
 /**************************** Camera MESSAGES *****************************************/
 #ifdef CAMERA_ENABLE
 struct receiver_camera : public Subscriber, public Thread {
