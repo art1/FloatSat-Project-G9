@@ -10,6 +10,9 @@
 
 #include "../Basic/basic.h"
 
+
+
+
 class Bluetooth : public Thread{
 public:
 	Bluetooth();
@@ -18,7 +21,9 @@ public:
 	void init();
 	void setNewData(UDPMsg msg);
 private:
-	const uint8_t invalidBuf[7] = {'I','N','V','A','L','I','D'};
+	static const uint8_t invalidBuf[7];
+	static const uint8_t echoBuf[4];
+
 	Fifo<UDPMsg,50> btBuf;
 	void getNewMessages();
 	UDPMsg tmp;
@@ -26,6 +31,7 @@ private:
 	char recBuf[BLUETOOTH_BUFFER];
 	void sendNewMessage(UDPMsg *msg);
 	void sendErrorMessage(UDPMsg invalidMsg);
+	void sendEchoMessage(UDPMsg echoMsg);
 };
 
 #endif /* COMMUNICATION_BLUETOOTH_H_ */

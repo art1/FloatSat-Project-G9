@@ -166,6 +166,7 @@ struct TELEMETRY{
 	int updated; // 0 or 1 for pl or tm frame
 };
 #define TM_SAMPLERATE			1000			// in milliseconds
+#define COMMAND_ECHO							// if not commented, every command is echoed back
 #endif
 struct ACTIVE_SYSTEM_MODE{
 	int activeMode;
