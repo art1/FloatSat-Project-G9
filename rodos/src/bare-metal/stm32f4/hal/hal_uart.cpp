@@ -36,6 +36,8 @@
 
 #include "rodos.h"
 #include "hal/hal_uart.h"
+#include "hw_hal_gpio.h"
+
 #include "../STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_rcc.h"
 #include "../STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_gpio.h"
 #include "../STM32F4xx_StdPeriph_Driver/inc/stm32f4xx_usart.h"
@@ -75,7 +77,6 @@ extern "C"{
 	void DMA1_Stream1_IRQHandler();
 
 }
-
 
 #define DMA_TIMEOUT 10*MILLISECONDS
 
@@ -122,18 +123,10 @@ class HW_HAL_UART {
 
 	USART_TypeDef *UARTx;
 
-    GPIO_TypeDef *UART_TX_GPIO_PORT;
-    uint16_t UART_TX_GPIO;
-
-    GPIO_TypeDef *UART_RX_GPIO_PORT;
-    uint16_t UART_RX_GPIO;
-
-    GPIO_TypeDef *UART_RTS_GPIO_PORT;
-    uint16_t UART_RTS_GPIO;
-
-    GPIO_TypeDef *UART_CTS_GPIO_PORT;
-    uint16_t UART_CTS_GPIO;
-
+	GPIO_PIN tx;
+	GPIO_PIN rx;
+	GPIO_PIN rts;
+	GPIO_PIN cts;
 
 	bool isDMAEnabeld;
 	volatile bool DMATransmitRunning;
@@ -161,12 +154,12 @@ class HW_HAL_UART {
 	void UARTIRQHandler();
 
 	int init(unsigned int baudrate);
+	void initMembers(HAL_UART* halUart, UART_IDX uartIdx, GPIO_PIN txPin, GPIO_PIN rxPin, GPIO_PIN rtsPin, GPIO_PIN ctsPin);
 
-	uint32_t getGPIO_PinSource(uint32_t GPIO_Pin);
-	uint32_t getRCC_APB1Periph_GPIOx(GPIO_TypeDef *port);
 	uint32_t getRCC_APBxPeriph_UARTx();
 	uint8_t getGPIO_AF_UARTx();
 	IRQn getUARTx_IRQn();
+	USART_TypeDef* getUARTx();
 };
 
 
@@ -195,6 +188,19 @@ void ReceiveTrigger::run()
 
 static ReceiveTrigger triggerthread;
 
+HAL_UART::HAL_UART(UART_IDX uartIdx, GPIO_PIN txPin, GPIO_PIN rxPin, GPIO_PIN rtsPin, GPIO_PIN ctsPin) {
+
+    if ((uartIdx < UART_IDX_MIN) || (uartIdx > UART_IDX_MAX)) {
+        context = &UART_contextArray[UART_IDX0]; // UART_IDX0 is not used in this implementation
+                                                 // -> so we can use this contextArray to save wrong idx
+                                                 // -> with this saved idx all HAL_UART-methods will return correctly with -1
+        context->idx = uartIdx;
+        return;
+    }
+
+	context = &UART_contextArray[uartIdx];
+	context->initMembers(this, uartIdx, txPin, rxPin, rtsPin, ctsPin);
+}
 
 
 HAL_UART::HAL_UART(UART_IDX uartIdx){
@@ -208,101 +214,38 @@ HAL_UART::HAL_UART(UART_IDX uartIdx){
     }
 
 	context = &UART_contextArray[uartIdx];
-	context->idx = uartIdx;
-	context->baudrate = 115200;
-	context->hwFlowCtrl = UART_PARAMETER_HW_FLOW_CONTROL;
-	context->hal_uart = this;
-	context->isDMAEnabeld = false;
-	context->DMATransmitRunning = false;
-	context->DMAReceiveRunning = false;
 
 	switch (uartIdx){
-	case UART_IDX1:
-	    context->UARTx              = USART1;
-	    // pins
-	    context->UART_TX_GPIO_PORT  = GPIOB;        // \ PB6
-	    context->UART_TX_GPIO       = GPIO_Pin_6;   // /
-	    context->UART_RX_GPIO_PORT  = GPIOB;        // \ PB7
-	    context->UART_RX_GPIO       = GPIO_Pin_7;   // /
-        context->UART_RTS_GPIO_PORT = GPIOA;        // \ PA12
-        context->UART_RTS_GPIO      = GPIO_Pin_12;  // /
-        context->UART_CTS_GPIO_PORT = GPIOA;        // \ PA11
-        context->UART_CTS_GPIO      = GPIO_Pin_11;  // /
+	case UART_IDX1: //                tx-PB6    rx-PB7    rts-PA12  cts-PA11
+	    context->initMembers(this, uartIdx, GPIO_022, GPIO_023, GPIO_012, GPIO_011);
 	    break;
 
-    case UART_IDX2:
-        context->UARTx              = USART2;
-        // pins
-        context->UART_TX_GPIO_PORT  = GPIOD;        // \ PD5
-        context->UART_TX_GPIO       = GPIO_Pin_5;   // /
-        context->UART_RX_GPIO_PORT  = GPIOD;        // \ PD6
-        context->UART_RX_GPIO       = GPIO_Pin_6;   // /
-        context->UART_RTS_GPIO_PORT = GPIOD;        // \ PD4
-        context->UART_RTS_GPIO      = GPIO_Pin_4;  // /
-        context->UART_CTS_GPIO_PORT = GPIOD;        // \ PD3
-        context->UART_CTS_GPIO      = GPIO_Pin_3;  // /
+    case UART_IDX2: //                tx-PD5    rx-PD6    rts-PD4   cts- PD3
+        context->initMembers(this, uartIdx, GPIO_053, GPIO_054, GPIO_052, GPIO_051);
         break;
 
-    case UART_IDX3:
-        context->UARTx              = USART3;
-        // pins
-        context->UART_TX_GPIO_PORT  = GPIOD;        // \ PD8
-        context->UART_TX_GPIO       = GPIO_Pin_8;   // /
-        context->UART_RX_GPIO_PORT  = GPIOD;        // \ PD9
-        context->UART_RX_GPIO       = GPIO_Pin_9;   // /
-        context->UART_RTS_GPIO_PORT = GPIOB;        // \ PB14
-        context->UART_RTS_GPIO      = GPIO_Pin_14;  // /
-        context->UART_CTS_GPIO_PORT = GPIOD;        // \ PD11
-        context->UART_CTS_GPIO      = GPIO_Pin_11;  // /
+    case UART_IDX3: //                tx-PD8    rx-PD9    rts-PB14  cts-PD11
+        context->initMembers(this, uartIdx, GPIO_056, GPIO_057, GPIO_030, GPIO_059);
         break;
 
-    case UART_IDX4:
-        context->UARTx              = UART4;
-        // pins
-        context->UART_TX_GPIO_PORT  = GPIOC;        // \ PC10
-        context->UART_TX_GPIO       = GPIO_Pin_10;  // /
-        context->UART_RX_GPIO_PORT  = GPIOC;        // \ PC11
-        context->UART_RX_GPIO       = GPIO_Pin_11;  // /
+    case UART_IDX4: //                tx-PC10   rx-PC11
+        context->initMembers(this, uartIdx, GPIO_042, GPIO_043, GPIO_INVALID, GPIO_INVALID);
         break;
 
-    case UART_IDX5:
-        context->UARTx              = UART5;
-        // pins
-        context->UART_TX_GPIO_PORT  = GPIOC;        // \ PC12
-        context->UART_TX_GPIO       = GPIO_Pin_12;  // /
-        context->UART_RX_GPIO_PORT  = GPIOD;        // \ PD2
-        context->UART_RX_GPIO       = GPIO_Pin_2;   // /
+    case UART_IDX5: //                tx-PC12   rx-PD2
+        context->initMembers(this, uartIdx, GPIO_044, GPIO_050, GPIO_INVALID, GPIO_INVALID);
         break;
 
-    case UART_IDX6:
-        context->UARTx              = USART6;
-        // pins
-        context->UART_TX_GPIO_PORT  = GPIOC;        // \ PC6
-        context->UART_TX_GPIO       = GPIO_Pin_6;   // /
-        context->UART_RX_GPIO_PORT  = GPIOC;        // \ PC7
-        context->UART_RX_GPIO       = GPIO_Pin_7;   // /
-        context->UART_RTS_GPIO_PORT = GPIOG;        // \ PG8
-        context->UART_RTS_GPIO      = GPIO_Pin_8;   // /
-        context->UART_CTS_GPIO_PORT = GPIOG;        // \ PG15
-        context->UART_CTS_GPIO      = GPIO_Pin_15;  // /
+    case UART_IDX6: //                tx-PC6    rx-PC7    rts-PG8   cts-PG15
+        context->initMembers(this, uartIdx, GPIO_038, GPIO_039, GPIO_104, GPIO_111);
         break;
 
-    case UART_IDX7:
-        context->UARTx              = UART7;
-        // pins
-        context->UART_TX_GPIO_PORT  = GPIOF;        // \ PF7
-        context->UART_TX_GPIO       = GPIO_Pin_7;   // /
-        context->UART_RX_GPIO_PORT  = GPIOF;        // \ PF6
-        context->UART_RX_GPIO       = GPIO_Pin_6;   // /
+    case UART_IDX7: //                tx-PF7    rx-PF6
+        context->initMembers(this, uartIdx, GPIO_087, GPIO_086, GPIO_INVALID, GPIO_INVALID);
         break;
 
-    case UART_IDX8:
-        context->UARTx              = UART8;
-        // pins
-        context->UART_TX_GPIO_PORT  = GPIOE;        // \ PE1
-        context->UART_TX_GPIO       = GPIO_Pin_1;   // /
-        context->UART_RX_GPIO_PORT  = GPIOE;        // \ PE0
-        context->UART_RX_GPIO       = GPIO_Pin_0;   // /
+    case UART_IDX8: //                tx-PE1    rx-PE0
+        context->initMembers(this, uartIdx, GPIO_065, GPIO_064, GPIO_INVALID, GPIO_INVALID);
         break;
 
     default: break;
@@ -326,6 +269,7 @@ void USART2_IRQHandler() {
 	NVIC_ClearPendingIRQ(USART2_IRQn);
 }
 
+#ifndef STM32F401xx
 void USART3_IRQHandler() {
 	UART_contextArray[UART_IDX3].UARTIRQHandler();
 	NVIC_ClearPendingIRQ(USART3_IRQn);
@@ -343,6 +287,9 @@ void UART5_IRQHandler() {
 	NVIC_ClearPendingIRQ(UART5_IRQn);
 }
 
+#else
+	#warning no USART3, UART4, UART5 supported by MCU STM32F401
+#endif
 void USART6_IRQHandler() {
     UART_contextArray[UART_IDX6].UARTIRQHandler();
     NVIC_ClearPendingIRQ(USART6_IRQn);
@@ -442,9 +389,6 @@ void DMA1_Stream1_IRQHandler(){
 } // end extern "C"
 
 
-
-
-
 /*
  * USART
  * - all USART will be initialized in 8N1 mode
@@ -489,27 +433,19 @@ int HAL_UART::config(UART_PARAMETER_TYPE type, int paramVal) {
 			GPIO_StructInit(&gpioRTS);
 			GPIO_StructInit(&gpioCTS);
 
-			if (paramVal > 0){ // enable HW Flow Control
+			/* if rts and cts are set to GPIO_INVALID HW flow control is not available */
+			if (paramVal > 0 && context->rts != GPIO_INVALID){ // enable HW Flow Control
 				Uis.USART_HardwareFlowControl = USART_HardwareFlowControl_RTS_CTS;
 				context->hwFlowCtrl = USART_HardwareFlowControl_RTS_CTS;
-				gpioRTS.GPIO_Mode = GPIO_Mode_AF;
-				gpioCTS.GPIO_Mode = GPIO_Mode_AF;
-			}
-			else {  // disable HW Flow Control
+				HW_HAL_GPIO::configureAFPin(context->rts, context->getGPIO_AF_UARTx());
+				HW_HAL_GPIO::configureAFPin(context->cts, context->getGPIO_AF_UARTx());
+			} else if(context->rts != GPIO_INVALID){  // disable HW Flow Control
 				Uis.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 				context->hwFlowCtrl = USART_HardwareFlowControl_None;
-				gpioRTS.GPIO_Mode = GPIO_Mode_IN; // set gpio to default state
-				gpioCTS.GPIO_Mode = GPIO_Mode_IN; // set gpio to default state
+				HW_HAL_GPIO::resetPin(context->rts);
+				HW_HAL_GPIO::resetPin(context->cts);
 			}
-
-			GPIO_PinAFConfig(context->UART_CTS_GPIO_PORT,context->getGPIO_PinSource(context->UART_CTS_GPIO),context->getGPIO_AF_UARTx());
-			GPIO_PinAFConfig(context->UART_RTS_GPIO_PORT,context->getGPIO_PinSource(context->UART_RTS_GPIO),context->getGPIO_AF_UARTx());
-			gpioCTS.GPIO_Pin = context->UART_CTS_GPIO;
-			GPIO_Init(context->UART_CTS_GPIO_PORT, &gpioCTS);
-			gpioRTS.GPIO_Pin = context->UART_RTS_GPIO;
-			GPIO_Init(context->UART_RTS_GPIO_PORT, &gpioRTS);
-
-			break;
+			break;  // end case UART_PARAMETER_HW_FLOW_CONTROL
 
 		case UART_PARAMETER_ENABLE_DMA:
 		    if(context->idx > UART_IDX_MAX_DMA){ //Only UART 1-3 support DMA
@@ -525,8 +461,6 @@ int HAL_UART::config(UART_PARAMETER_TYPE type, int paramVal) {
 		    context->RceiveIntoRxBufWithDMA();
 		    enableDMATriggerThread=true;
 		    return 0;
-
-		    break; // end case UART_PARAMETER_HW_FLOW_CONTROL
 
 		default: return -1;
 	}
@@ -551,16 +485,18 @@ void HAL_UART::reset(){
 	// reset interface
 	USART_DeInit(usart);
 
-	// reset pins
-	// - reset value of all pins: FUNCTION A, GPIO, INPUT
-	GPIO_InitTypeDef Gis;
-	GPIO_StructInit(&Gis);
-	Gis.GPIO_Mode = GPIO_Mode_IN;
+	HW_HAL_GPIO::resetPin(context->rx);
+	HW_HAL_GPIO::resetPin(context->tx);
 
-	Gis.GPIO_Pin = context->UART_RX_GPIO;
-	GPIO_Init(context->UART_RX_GPIO_PORT, &Gis);
-	Gis.GPIO_Pin = context->UART_TX_GPIO;
-	GPIO_Init(context->UART_TX_GPIO_PORT, &Gis);
+	if (context->hwFlowCtrl == USART_HardwareFlowControl_RTS_CTS ||
+	    context->hwFlowCtrl == USART_HardwareFlowControl_RTS){
+        if (context->rts != GPIO_INVALID) { HW_HAL_GPIO::resetPin(context->rts); }
+	}
+
+	if (context->hwFlowCtrl == USART_HardwareFlowControl_RTS_CTS ||
+	    context->hwFlowCtrl == USART_HardwareFlowControl_CTS){
+        if (context->cts != GPIO_INVALID) { HW_HAL_GPIO::resetPin(context->cts); }
+	}
 }
 
 
@@ -663,7 +599,7 @@ int HAL_UART::putcharNoWait(char c) {
 		}else{
 			USART_ITConfig(context->UARTx,USART_IT_TXE,ENABLE);
 		}
-		return c;
+		return c & 0xFF;
 	}else{
 		return -1;
 	}
@@ -715,6 +651,21 @@ bool HAL_UART::isDataReady() {
 
 
 /****************** HW_HAL_UART *******************/
+
+void HW_HAL_UART::initMembers(HAL_UART* halUart, UART_IDX uartIdx, GPIO_PIN txPin, GPIO_PIN rxPin, GPIO_PIN rtsPin, GPIO_PIN ctsPin){
+     idx = uartIdx;
+     baudrate = 115200;
+     hwFlowCtrl = USART_HardwareFlowControl_None;
+     hal_uart = halUart;
+     isDMAEnabeld = false;
+     DMATransmitRunning = false;
+     DMAReceiveRunning = false;
+     UARTx = getUARTx();
+     tx = txPin;
+     rx = rxPin;
+     rts = rtsPin;
+     cts = ctsPin;
+}
 
 
 void HW_HAL_UART::DMAConfigure() {
@@ -931,7 +882,8 @@ void HW_HAL_UART::UARTIRQHandler() {
 
     uint8_t c;
 
-    if (USART_GetFlagStatus(UARTx,USART_FLAG_ORE) || (isDMAEnabeld && USART_GetITStatus(UARTx,USART_IT_ERR)))
+    if ( USART_GetFlagStatus(UARTx,USART_FLAG_ORE) ||
+         (isDMAEnabeld && (USART_GetITStatus(UARTx,USART_IT_FE) || USART_GetITStatus(UARTx,USART_IT_NE) || USART_GetITStatus(UARTx,USART_IT_ORE_ER))))
     {
         USART_ReceiveData(UARTx);
         uartRxError++;
@@ -962,34 +914,6 @@ void HW_HAL_UART::UARTIRQHandler() {
 
 }
 
-
-uint32_t HW_HAL_UART::getGPIO_PinSource(uint32_t GPIO_Pin) {
-
-    uint32_t GPIO_PinSource = 0;
-
-    while (GPIO_Pin >>= 1) GPIO_PinSource++;
-
-    return GPIO_PinSource;
-}
-
-
-uint32_t HW_HAL_UART::getRCC_APB1Periph_GPIOx(GPIO_TypeDef *port) {
-
-    switch((uint32_t)port){
-    case GPIOA_BASE: return RCC_AHB1Periph_GPIOA;
-    case GPIOB_BASE: return RCC_AHB1Periph_GPIOB;
-    case GPIOC_BASE: return RCC_AHB1Periph_GPIOC;
-    case GPIOD_BASE: return RCC_AHB1Periph_GPIOD;
-    case GPIOE_BASE: return RCC_AHB1Periph_GPIOE;
-    case GPIOF_BASE: return RCC_AHB1Periph_GPIOF;
-    case GPIOG_BASE: return RCC_AHB1Periph_GPIOG;
-    case GPIOH_BASE: return RCC_AHB1Periph_GPIOH;
-    case GPIOI_BASE: return RCC_AHB1Periph_GPIOI;
-    case GPIOJ_BASE: return RCC_AHB1Periph_GPIOJ;
-    case GPIOK_BASE: return RCC_AHB1Periph_GPIOK;
-    default: return 0;
-    }
-}
 
 uint32_t HW_HAL_UART::getRCC_APBxPeriph_UARTx() {
 
@@ -1028,10 +952,12 @@ IRQn HW_HAL_UART::getUARTx_IRQn() {
     switch(idx){
     case UART_IDX1: return USART1_IRQn;
     case UART_IDX2: return USART2_IRQn;
+#ifndef STM32F401xx
     case UART_IDX3: return USART3_IRQn;
     case UART_IDX4: return UART4_IRQn;
     case UART_IDX5: return UART5_IRQn;
     case UART_IDX6: return USART6_IRQn;
+#endif
 #if defined (STM32F427_437xx) || defined (STM32F429_439xx)
     case UART_IDX7: return UART7_IRQn;
     case UART_IDX8: return UART8_IRQn;
@@ -1040,6 +966,21 @@ IRQn HW_HAL_UART::getUARTx_IRQn() {
     }
 }
 
+USART_TypeDef* HW_HAL_UART::getUARTx() {
+
+    switch(idx){
+    case UART_IDX1: return USART1;
+    case UART_IDX2: return USART2;
+    case UART_IDX3: return USART3;
+    case UART_IDX4: return UART4;
+    case UART_IDX5: return UART5;
+    case UART_IDX6: return USART6;
+    case UART_IDX7: return UART7;
+    case UART_IDX8: return UART8;
+    default: return NULL;
+    }
+    return NULL;
+}
 
 int HW_HAL_UART::init(unsigned int baudrate) {
 
@@ -1047,7 +988,6 @@ int HW_HAL_UART::init(unsigned int baudrate) {
 
     this->baudrate = baudrate;
 
-    GPIO_InitTypeDef Gis;
     USART_InitTypeDef Uis;
 
     // Release reset and enable clock
@@ -1061,39 +1001,24 @@ int HW_HAL_UART::init(unsigned int baudrate) {
     //    RCC_AHB1PeriphResetCmd(UART_CLK, DISABLE); // it's done in USART_DeInit()
     }
 
-    // Enable GPIO clock and release reset
-    RCC_AHB1PeriphClockCmd(getRCC_APB1Periph_GPIOx(UART_TX_GPIO_PORT) | getRCC_APB1Periph_GPIOx(UART_RX_GPIO_PORT), ENABLE);
-    RCC_AHB1PeriphResetCmd(getRCC_APB1Periph_GPIOx(UART_TX_GPIO_PORT) | getRCC_APB1Periph_GPIOx(UART_RX_GPIO_PORT), DISABLE);
-
-    // configure pin multiplexer -> choose alternate function (AF) UART
-    GPIO_PinAFConfig(UART_TX_GPIO_PORT,getGPIO_PinSource(UART_TX_GPIO),getGPIO_AF_UARTx());
-    GPIO_PinAFConfig(UART_RX_GPIO_PORT,getGPIO_PinSource(UART_RX_GPIO),getGPIO_AF_UARTx());
-
-    // configure TX pin
-    GPIO_StructInit(&Gis);
-    Gis.GPIO_Mode = GPIO_Mode_AF;
-    Gis.GPIO_Pin = UART_TX_GPIO;
-    GPIO_Init(UART_TX_GPIO_PORT, &Gis);
-
-    // configure RX pin
-    GPIO_StructInit(&Gis);
-    Gis.GPIO_Mode = GPIO_Mode_AF;
-    Gis.GPIO_Pin = UART_RX_GPIO;
-    GPIO_Init(UART_RX_GPIO_PORT, &Gis);
+    HW_HAL_GPIO::configureAFPin(rx,getGPIO_AF_UARTx());
+    HW_HAL_GPIO::configureAFPin(tx,getGPIO_AF_UARTx());
+    // !!! do not init RTS & CTS -> HW flow control is disabled per default !!!
+    //if (rts != GPIO_INVALID) configurePin(rts);
+    //if (cts != GPIO_INVALID) configurePin(cts);
 
     USART_StructInit(&Uis);         // init struct to 8N1
     Uis.USART_BaudRate = baudrate;  // set baudrate
     USART_Init(UARTx, &Uis);        // init USART/UART
     USART_Cmd(UARTx, ENABLE);       // enable USART/UART
 
-    // Interrupt USART1 enable
+    // Interrupt USART enable
     USART_ITConfig(UARTx,USART_IT_RXNE,ENABLE);
     USART_ITConfig(UARTx,USART_IT_TXE,ENABLE);
     NVIC_EnableIRQ(getUARTx_IRQn());
 
     return 0;
 }
-
 
 #ifndef NO_RODOS_NAMESPACE
 }

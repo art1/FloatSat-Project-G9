@@ -50,6 +50,7 @@ extern "C" {
  *    -> but this can be a problem when ISRs can interrupt each other
  * -> this can happen when they don't have the same priority !!!
  */
+void SysTick_Handler();
 void SysTick_Handler() {
 
 	if(!isSchedulingEnabled) return;
@@ -182,24 +183,25 @@ static const unsigned int timerClock = 6000000;
 //#define PCLKn_Frequency         PCLK1_Frequency
 
 /* Timer 7: 16Bit, APB1 */
-#define TIMx                    TIM7
-#define RCC_APBnPeriph_TIMx     RCC_APB1Periph_TIM7
-#define DBGMCU_TIMx_STOP        DBGMCU_TIM7_STOP
-#define TIMx_IRQn               TIM7_IRQn
-#define TIMx_IRQHandler         TIM7_IRQHandler
-#define RCC_APBnPeriphClockCmd  RCC_APB1PeriphClockCmd
-#define RCC_APBnPeriphResetCmd  RCC_APB1PeriphResetCmd
-#define PCLKn_Frequency         PCLK1_Frequency
+//#define TIMx                    TIM7
+//#define RCC_APBnPeriph_TIMx     RCC_APB1Periph_TIM7
+//#define DBGMCU_TIMx_STOP        DBGMCU_TIM7_STOP
+//#define TIMx_IRQn               TIM7_IRQn
+//#define TIMx_IRQHandler         TIM7_IRQHandler
+//#define RCC_APBnPeriphClockCmd  RCC_APB1PeriphClockCmd
+//#define RCC_APBnPeriphResetCmd  RCC_APB1PeriphResetCmd
+//#define PCLKn_Frequency         PCLK1_Frequency
 
 /* Timer 11: 16Bit, APB2 */
-//#define TIMx                    TIM11
-//#define RCC_APBnPeriph_TIMx     RCC_APB2Periph_TIM11
-//#define DBGMCU_TIMx_STOP        DBGMCU_TIM11_STOP
-//#define TIMx_IRQn               TIM1_TRG_COM_TIM11_IRQn
-//#define TIMx_IRQHandler         TIM1_TRG_COM_TIM11_IRQHandler
-//#define RCC_APBnPeriphClockCmd  RCC_APB2PeriphClockCmd
-//#define RCC_APBnPeriphResetCmd  RCC_APB2PeriphResetCmd
-//#define PCLKn_Frequency         PCLK2_Frequency
+
+#define TIMx                    TIM11
+#define RCC_APBnPeriph_TIMx     RCC_APB2Periph_TIM11
+#define DBGMCU_TIMx_STOP        DBGMCU_TIM11_STOP
+#define TIMx_IRQn               TIM1_TRG_COM_TIM11_IRQn
+#define TIMx_IRQHandler         TIM1_TRG_COM_TIM11_IRQHandler
+#define RCC_APBnPeriphClockCmd  RCC_APB2PeriphClockCmd
+#define RCC_APBnPeriphResetCmd  RCC_APB2PeriphResetCmd
+#define PCLKn_Frequency         PCLK2_Frequency
 
 /* Timer 14: 16Bit, APB1 */
 //#define TIMx                    TIM14
@@ -224,6 +226,7 @@ extern "C" {
  *    -> but this can be a problem when ISRs can interrupt each other
  * -> this can happen when they don't have the same priority !!!
  */
+void TIMx_IRQHandler();
 void TIMx_IRQHandler()
 {
    TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
@@ -232,7 +235,7 @@ void TIMx_IRQHandler()
 }
 } // end extern "C"
 
-
+void TIMx_init();
 void TIMx_init(){
     // local variables to initialize timer
     TIM_TimeBaseInitTypeDef timStruct;
@@ -274,6 +277,8 @@ void TIMx_init(){
     TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
     DBGMCU_Config(DBGMCU_TIMx_STOP, ENABLE);            // stop Timer during debug break
     TIM_Cmd(TIMx, ENABLE);
+
+    NVIC_SetPriority(TIMx_IRQn, 255);
     // enable timer-interrupt in interrupt controller
     NVIC_EnableIRQ(TIMx_IRQn);
 }
@@ -281,17 +286,18 @@ void TIMx_init(){
 unsigned long long hwGetNanoseconds() {
 
 	int count = 0;
-	long long returnTime = 0;
+	unsigned long long returnTime = 0;
 
-	// to get the correct time, we have to disable interrupts, while taking a snapshot of the
-	// time variables
 	// -> current time = nanoTime + 1 000 000 000 * countRegister/tim2Clock
-	unsigned int faultmask = __get_FAULTMASK(); // get global interrupt mask to restore value afterwards
-	__set_FAULTMASK(1);			// disable interrupt
-	count = TIM_GetCounter(TIMx);
-	returnTime = nanoTime;
-	__set_FAULTMASK(faultmask);	// set faultmask to its old value -> so interrupts will only
-								// be enabled if they have been enabled before
+
+	// Disable Interrupt is no solution here (wrong values caused by missed interrupt)
+
+	// Read nanoTime twice, to make sure it has not changed while reading counter value
+	do {
+		returnTime = nanoTime;
+		count = TIM_GetCounter(TIMx);
+	} while(returnTime != nanoTime);
+
 
 	/** low precision
 	 * - nanos = 166ns * count (for tim2Clock = 6MHz)

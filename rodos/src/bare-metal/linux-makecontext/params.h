@@ -53,7 +53,7 @@
 
 /** Version Number */
 namespace RODOS {
-#define OSVERSION "RODOS-linux-8"
+#define OSVERSION "Linux Makecontext"
 
 /*************** System Configuration *********/
 

@@ -7,15 +7,18 @@
 extern "C" {
 #endif // __cplusplus
 
-extern size_t strlen(const char *s);
-extern size_t strnlen(const char *s, size_t n);
-extern char* strcpy(char* dest, const char *s);
-extern char* strncpy(char* dest, const char* src, size_t n);
-extern void* memcpy(void* dest, const void* s, size_t len);
-extern void* memset(void* dest, int val, size_t len);
-extern int memcmp(const void* a, const void* b, size_t len);
-extern int strcmp (char const *a, char const *b) ;
-extern int strncmp (char const *a, char const *b, size_t n);
+size_t strlen(const char *s);
+size_t strnlen(const char *s, size_t n);
+char* strcpy(char* dest, const char *s);
+char* strncpy(char* dest, const char* src, size_t n);
+void* memcpy(void* dest, const void* s, size_t len);
+void* memset(void* dest, int val, size_t len);
+int memcmp(const void* a, const void* b, size_t len);
+int strcmp (char const *a, char const *b) ;
+int strncmp (char const *a, char const *b, size_t n);
+char* strcpyXXXX(char* dest, const char* src);
+extern char * strstr(const char *s, const char *find);
+extern char * strchr ( const char * str, int character );
 
 #ifdef __cplusplus
 }
@@ -27,6 +30,5 @@ extern int strncmp (char const *a, char const *b, size_t n);
 // memcpy, das führt nur zu Irrtümern. Also auch daher sollten wir es vermeiden
 #define bcopy(src, dest, n) memcpy(dest, src, n)
 #define bzero(dest, len) memset(dest, 0, len)
-
 
 #endif // __STRING_PICO_H_

@@ -46,17 +46,13 @@ const char *canDeviceNames[MAX_CAN_DEVICES] = {"can0","can1","vcan0","vcan1"};
 int numHalCanInstances = 0;
 HW_HAL_CAN* activeDevices[MAX_HALCAN_INSTANCES];
 
-
-
+void CANGlobalInit();
+void can_sig_io_handler(int signo);
 
 void CANGlobalInit(){
 	static bool init=false;
 	if(!init){
 		init=true;
-
-
-
-
 	}
 
 }
@@ -126,7 +122,7 @@ void HW_HAL_CAN::setupFilters(){
 
 
 
-HAL_CAN::HAL_CAN(CAN_IDX canIdx){
+HAL_CAN::HAL_CAN(CAN_IDX canIdx, GPIO_PIN rxPin, GPIO_PIN txPin){
 	context= new(xmalloc(sizeof(HW_HAL_CAN))) HW_HAL_CAN();
 	context->devName = canDeviceNames[canIdx];
 	context->rxFifoEmpty=true;

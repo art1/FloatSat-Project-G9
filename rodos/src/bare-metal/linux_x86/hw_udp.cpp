@@ -1,41 +1,5 @@
 
 
-/*********************************************************** Copyright
- **
- ** Copyright (c) 2008, German Aerospace Center (DLR)
- ** All rights reserved.
- **
- ** Redistribution and use in source and binary forms, with or without
- ** modification, are permitted provided that the following conditions are
- ** met:
- **
- ** 1 Redistributions of source code must retain the above copyright
- **   notice, this list of conditions and the following disclaimer.
- **
- ** 2 Redistributions in binary form must reproduce the above copyright
- **   notice, this list of conditions and the following disclaimer in the
- **   documentation and/or other materials provided with the
- **   distribution.
- **
- ** 3 Neither the name of the German Aerospace Center nor the names of
- **   its contributors may be used to endorse or promote products derived
- **   from this software without specific prior written permission.
- **
- ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- ** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- ** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- ** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- ** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- ** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- ** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- **
- ****************************************************************************/
-
-
 /**
 * @file hw_udp.cc
 * @date 2012/06/09
@@ -68,6 +32,12 @@
 #include "rodos.h"
 #include "hw_udp.h"
 #include "hal/hal_uart.h"
+
+#include "userconfig.h"
+#ifndef IP_BROADCAST_ADR // from userconfig.h
+#define IP_BROADCAST_ADR "255.255.255.255"
+#endif
+
 namespace RODOS {
 
 /*********************************************************
@@ -87,6 +57,7 @@ static int asyncInputSocketDescriptor[MAX_UDP_PORTS];
 static Topic<GenericMsgRef>* asyncInputSocketAssociatedTopic[MAX_UDP_PORTS];
 static char inputBuf[1400];// as long as a UDP packet can be
 
+void udpReader(int a);
 void udpReader(int a) {
     
     GenericMsgRef msgRef;
@@ -234,7 +205,7 @@ void UDPTransmitter::openConnection(const TUDPPortNr port, const char *host) {
         //eg 192.168.1.255. All computer in  network 192.168.1.xxx receive it.
         //   127.255.255.255 broadcast of loopback: only to local host
         //outputAddr.sin_addr.s_addr = inet_addr("127.255.255.255");
-        outputAddr.sin_addr.s_addr = inet_addr("255.255.255.255");
+        outputAddr.sin_addr.s_addr = inet_addr(IP_BROADCAST_ADR);
         const int on = 1;
         setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on) );
     }
@@ -332,21 +303,20 @@ bool  UDPTransmitter::sendTo(const void* userData, const int maxLen, unsigned lo
 
 }
 
+void sigio_handler(int a);
 void uart_sig_io_handler(int signo);
 void can_sig_io_handler(int signo);
 
 void sigio_handler(int a){
-
-	udpReader(a);
-	uart_sig_io_handler(a);
+    udpReader(a);
+    uart_sig_io_handler(a);
 #ifdef ENABLE_LINUX_CAN_INTERRUPT
-	can_sig_io_handler(a);
+    can_sig_io_handler(a);
 #endif
 }
 
 
-void init_sigio_handler()
-{
+void init_sigio_handler() {
 	static int initialized=0;
 
 	if(!initialized){

@@ -1,10 +1,10 @@
 
 #include "string_pico.h"
 
-
-#ifndef NO_RODOS_NAMESPACE
-namespace RODOS {
-#endif
+//Namespace not required, only C fukctions, causese warnings with -Wall
+//#ifndef NO_RODOS_NAMESPACE
+//namespace RODOS {
+//#endif
 extern "C" {
 
 size_t strlen(const char *s) {
@@ -41,6 +41,31 @@ char* strcpy(char* destP, const char *s) {
     return destP;
 }
 
+char * strstr(const char *s, const char *find)
+{
+    char c, sc;
+    size_t len;
+
+    if ((c = *find++) != 0) {
+        len = strlen(find);
+        do {
+            do {
+                if ((sc = *s++) == 0)
+                    return (NULL);
+            } while (sc != c);
+        } while (strncmp(s, find, len) != 0);
+        s--;
+    }
+    return ((char *)s);
+}
+
+char * strchr ( const char * str, int character ){
+    while(*str != 0 && *str != character){
+        str++;
+    }
+    if(*str == character) return (char*)str;
+    else return NULL;
+}
 
 void* memset(void* destP, int val, size_t len) {
     if(!destP) return destP ;
@@ -155,9 +180,9 @@ int strncmp (char const *a, char const *b, size_t n) {
 
 } // extern "C"
 
-#ifndef NO_RODOS_NAMESPACE
-}
-#endif
+//#ifndef NO_RODOS_NAMESPACE
+//}
+//#endif
 
 /**
  * C++ stuff: operator delete.

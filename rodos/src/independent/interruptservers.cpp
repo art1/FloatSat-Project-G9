@@ -14,6 +14,11 @@ namespace RODOS {
 #endif
 
 /*********************************************/
+void sigtermHandler(int sig);
+void uartHandler(int sig);
+void timerHandler(int sig);
+
+
 void sigtermHandler(int sig)   { interruptSigterm.publishFromInterrupt(0); }
 void uartHandler(int sig)      { interruptUart.publishFromInterrupt(0); }
 void timerHandler(int sig)     { interruptTimer.publishFromInterrupt(0); }

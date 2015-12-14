@@ -73,10 +73,12 @@ void DMA2D_IRQHandler(void)
 }
 #endif
 
+void NMI_Handler();
 void NMI_Handler(){
 	while(1){}
 }
 
+void HardFault_Handler();
 void HardFault_Handler(){
 	//Put PC that caused fault in R1
 	  __asm volatile (
@@ -95,19 +97,23 @@ void HardFault_Handler(){
 	while(1){}
 }
 
+void MemManage_Handler();
 void MemManage_Handler(){
 	while(1){}
 }
 
+void BusFault_Handler();
 void BusFault_Handler(){
 	while(1){}
 }
 
+void UsageFault_Handler();
 void UsageFault_Handler(){
 	while(1){}
 }
 
-void WWDG_IRQHandler(){
+void WWDG_IRQHandlerFunc();
+void WWDG_IRQHandlerFunc(){
 	while(1){}
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

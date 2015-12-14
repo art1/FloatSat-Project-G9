@@ -1,0 +1,14 @@
+
+
+linux-executable  demo_topics.cpp sender.cpp gateway-with-topicreporter.cpp
+xterm -title senders -e tst &
+sleep 2
+
+linux-executable  demo_topics.cpp receiver.cpp gateway-with-topicreporter.cpp
+xterm  -title receiver -e tst &
+sleep 2
+
+linux-executable  demo_topics.cpp receiver-torpicreports.cpp  gateway-with-topicreporter.cpp
+xterm  -title receiver-toplist -e tst &
+
+

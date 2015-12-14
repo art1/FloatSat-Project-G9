@@ -24,24 +24,29 @@ TopicReporter::TopicReporter(Gateway* gateway1, Gateway* gateway2, Gateway* gate
 }
 
 void TopicReporter::run() {
-    while(1) {
+    TIME_LOOP(1700*MILLISECONDS, 1*SECONDS) {
         topiclist.init();
         sendListOfTopicsToNetwork();
-        suspendCallerUntil(NOW()+ 1LL*SECONDS);
     }
 }
 
 void TopicReporter::sendListOfTopicsToNetwork() {
     addLocalTopics(topiclist);
     sendToAllGateways(topiclist);
+        //PRINTF("Topicreporter (%d):",topiclist.numberOfTopics);
+        //for(int i = 0; i < topiclist.numberOfTopics; i++) PRINTF(" %d ", topiclist.topicList[i]);
+        //PRINTF("\n");
 }
 
 
 void TopicReporter::addLocalTopics(TopicListReport& list) {
-    ITERATE_LIST(TopicInterface, TopicInterface::topicList) {
-        if (iter->mySubscribers != 0) { // only topics with subscribers
-            list.add((short)(iter->topicId));
-        }
+    ITERATE_LIST(TopicInterface, TopicInterface::topicList) { // scan all subscriver for each topic
+        for(Subscriber* subs = (Subscriber*)iter->mySubscribers; subs!=0; subs = (Subscriber*)subs->getNext()) {
+            if(subs->isEnabled) { // at least one listener
+                list.add((short)(iter->topicId));
+                break; // this topic is processed, do not search mor subscriver for thie topic
+            }
+        }  
     }
 }
 

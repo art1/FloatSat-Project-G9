@@ -6,7 +6,7 @@
  * @author Michael Ruffer
  */
 #include "hal/hal_uart.h"
-
+#include "hal/hal_gpio.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -30,8 +30,8 @@ namespace RODOS {
 
 //================================================================================
 //Mapping of UART IDs to linux device names
-#define MAX_NUM_UARTS 6
-const char *uartDeviceNames[6] = {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/rfcomm0","/dev/rfcomm1","/dev/ttyS0","/dev/ttyS1"};
+#define MAX_NUM_UARTS 8
+const char *uartDeviceNames[MAX_NUM_UARTS] = {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/rfcomm0","/dev/rfcomm1","/dev/ttyS0","/dev/ttyS1","/dev/ttyUSB2","/dev/ttyUSB3"};
 //================================================================================
 
 
@@ -57,6 +57,10 @@ public:
 
 HW_HAL_UART UART_contextArray[MAX_NUM_UARTS];
 
+// constructor with pin assignment - dummy on Linux
+HAL_UART::HAL_UART(UART_IDX uartIdx, GPIO_PIN txPin, GPIO_PIN rxPin, GPIO_PIN rtsPin, GPIO_PIN ctsPin) :  HAL_UART(uartIdx){
+
+}
 
 HAL_UART::HAL_UART(UART_IDX uartIdx){
 	context = &UART_contextArray[uartIdx];

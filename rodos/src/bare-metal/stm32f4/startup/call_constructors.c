@@ -6,7 +6,13 @@ typedef void (*constructor)();
 extern constructor __init_array_start;
 extern constructor __init_array_end;
 
+int __cxa_atexit(void(*f)(void *), void *p, void *d);
+void __cxa_pure_virtual(void);
+int __cxa_guard_acquire(unsigned char *g);
+void __cxa_guard_release(unsigned char *g);
+
 // Ruft die Konstruktoren fuer globale/statische Objekte auf
+void call_constructors();
 void call_constructors() {
 	constructor* i;
 	unsigned int j;

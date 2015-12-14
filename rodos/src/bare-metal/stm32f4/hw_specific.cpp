@@ -88,7 +88,6 @@ volatile long taskRunning = 0;
 
 HAL_UART uart_stdout(UART_DEBUG);
 
-
 void TIMx_init(); // timer for system time -> see hw_timer.cpp
 
 /* measure LSI frequency using Timer 5 -> necessary for watchdog
@@ -103,7 +102,7 @@ void hwInit() {
 	/* Make PendSV, SysTick and Timer2 the same priroity */
 	NVIC_SetPriority(PendSV_IRQn, 255);
 	NVIC_SetPriority(SysTick_IRQn, 255);
-	NVIC_SetPriority(TIM2_IRQn, 255);
+	//NVIC_SetPriority(TIM2_IRQn, 255); // moved to TIMx_init()
 
 	// initialization of stm32f4:
 	// set system clock to 168MHz
@@ -129,7 +128,7 @@ void hwInit() {
 
 	RCC_ClocksTypeDef  rcc_clocks;
 	RCC_GetClocksFreq(&rcc_clocks);
-	PRINTF("CPU: %d MHz\n",rcc_clocks.SYSCLK_Frequency/1000000);
+	PRINTF("CPU: %ld MHz\n",rcc_clocks.SYSCLK_Frequency/1000000);
 }
 
 /**
@@ -330,6 +329,10 @@ static volatile unsigned int PeriodValue = 0;
 static volatile bool captureRdy = false;
 static uint32_t CaptureNumber = 0;
 
+extern "C" {
+
+
+void TIM5_ISR4LSI();
 void TIM5_ISR4LSI(){
     static uint16_t tmpCC4[2] = { 0 };
 
@@ -370,7 +373,8 @@ void TIM5_ISR_USER(){}
  * @param  None
  * @retval None
  */
-extern "C" {
+
+void TIM5_IRQHandler(void);
 void TIM5_IRQHandler(void) {
     if (LSIFrequency == 0){
         TIM5_ISR4LSI();

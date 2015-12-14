@@ -68,9 +68,11 @@ then
 
 	# mount rule for stlink1
     echo "SUBSYSTEMS==\"usb\", ATTRS{idVendor}==\"0483\", ATTRS{idProduct}==\"3744\", MODE:=\"0666\", SYMLINK+=\"stlinkv1_%n\"" > 49-stlinkv1.rules
+    echo "SUBSYSTEMS==\"usb\", ATTRS{idVendor}==\"0483\", ATTRS{idProduct}==\"374b\", MODE:=\"0666\", SYMLINK+=\"stlinkv2_%n\"" >> 49-stlinkv2.rules
 
 	# mount rule for stlink2
     echo "SUBSYSTEMS==\"usb\", ATTRS{idVendor}==\"0483\", ATTRS{idProduct}==\"3748\", MODE:=\"0666\", SYMLINK+=\"stlinkv2_%n\"" > 49-stlinkv2.rules
+    echo "SUBSYSTEMS==\"usb\", ATTRS{idVendor}==\"0483\", ATTRS{idProduct}==\"374b\", MODE:=\"0666\", SYMLINK+=\"stlinkv2_%n\"" >> 49-stlinkv2.rules
 
 	sudo mv 49-stlinkv1.rules /etc/udev/rules.d/
 	sudo mv 49-stlinkv2.rules /etc/udev/rules.d/
@@ -83,4 +85,9 @@ fi
 
 
 echo "flashing ..."
-${FLASH_TOOL} -f ${RODOS_ROOT}/src/bare-metal/${ARCH}/scripts/openocd_flash.cfg
+if [ ${SUB_ARCH} = stm32f401 ]
+then
+	${FLASH_TOOL} -f ${RODOS_ROOT}/src/bare-metal/${ARCH}/scripts/openocd_flash_nucleo.cfg
+else
+	${FLASH_TOOL} -f ${RODOS_ROOT}/src/bare-metal/${ARCH}/scripts/openocd_flash.cfg
+fi

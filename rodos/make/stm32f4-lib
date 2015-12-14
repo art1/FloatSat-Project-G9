@@ -36,11 +36,9 @@ ${C_COMP}   ${CFLAGS} ${INCLUDES} -c ${RODOS_ARCH_SRC1}/startup/*.c -c &
 ${C_COMP}   ${CFLAGS} ${INCLUDES} -c ${RODOS_ARCH_SRC5}/../src/*.c -c &
 
 
-${C_COMP}   ${CFLAGS} ${INCLUDES} -c ${RODOS_ARCH_SRC6}/*.c -c &
 
 ${CPP_COMP}   ${CFLAGS} ${CPPFLAGS} ${INCLUDES} -c ${RODOS_ARCH_SRC1}/*.cpp -c &
 ${CPP_COMP}   ${CFLAGS} ${CPPFLAGS} ${INCLUDES} -c ${RODOS_ARCH_SRC3}/*.cpp -c &
-${CPP_COMP}   ${CFLAGS} ${CPPFLAGS} ${INCLUDES} -c ${RODOS_ARCH_SRC6}/*.cpp -c &
 wait
 ${AR} -rc librodos.a *.o
 mv librodos.a ${ARCH}

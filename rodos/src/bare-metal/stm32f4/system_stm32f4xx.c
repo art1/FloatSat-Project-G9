@@ -276,32 +276,83 @@
 /******************************************************************************/
 
 /************************* PLL Parameters *************************************/
-/* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
-#define PLL_M      8
-/* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
-#define PLL_Q      7
-
-#if defined (STM32F40_41xxx)
-//#define PLL_N      336
-#define PLL_N      (CPU_CLK*2/1000000)
-/* SYSCLK = PLL_VCO / PLL_P */
-#define PLL_P      2
-#endif /* STM32F40_41xxx */
+/* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N = 192...432MHz
+ * PLL_IN_CLK = HSE_VALUE or HSI_VALUE / PLL_M = 1...2MHz
+ * USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ
+ * SYSCLK = PLL_VCO / PLL_P
+ */
+#define PLL_M      (HSE_VALUE/1000000)
 
 #if defined (STM32F427_437xx) || defined (STM32F429_439xx)
-//#define PLL_N      360
-#define PLL_N      (CPU_CLK*2/1000000)
-/* SYSCLK = PLL_VCO / PLL_P */
-#define PLL_P      2
-#endif /* STM32F427_437x || STM32F429_439xx */
+    #if (CPU_CLK == 180)
+        #define PLL_N   360         // 192 <= PLL_N <= 432
+        #define PLL_Q   7
+        #define PLL_P   2
+        #define VALID_PLL_SETTING
+    #endif
+#endif
 
+#if defined (STM32F40_41xxx) || defined (STM32F427_437xx) || defined (STM32F429_439xx)
+    #if (CPU_CLK == 168)
+        #define PLL_N   336         // 192 <= PLL_N <= 432
+        #define PLL_Q   7
+        #define PLL_P   2
+        #define VALID_PLL_SETTING
+    #elif (CPU_CLK == 144)
+        #define PLL_N   288
+        #define PLL_Q   6
+        #define PLL_P   2
+        #define VALID_PLL_SETTING
+    #elif (CPU_CLK == 120)
+        #define PLL_N   240
+        #define PLL_Q   5
+        #define PLL_P   2
+        #define VALID_PLL_SETTING
+    #elif (CPU_CLK == 96)
+        #define PLL_N   192
+        #define PLL_Q   4
+        #define PLL_P   2
+        #define VALID_PLL_SETTING
+    #endif
+#endif
 
-#if defined (STM32F401xx)
-//#define PLL_N      336
-#define PLL_N      (CPU_CLK*2/1000000)
-/* SYSCLK = PLL_VCO / PLL_P */
-#define PLL_P      4
-#endif /* STM32F401xx */
+#if defined (STM32F401xx) || defined (STM32F40_41xxx) || defined (STM32F427_437xx) || defined (STM32F429_439xx)
+    #if (CPU_CLK == 84)
+        #define PLL_N   336
+        #define PLL_Q   7
+        #define PLL_P   4
+        #define VALID_PLL_SETTING
+    #elif (CPU_CLK == 56)
+        #define PLL_N   336
+        #define PLL_Q   7
+        #define PLL_P   6
+        #define VALID_PLL_SETTING
+    #elif (CPU_CLK == 48)
+        #define PLL_N   192
+        #define PLL_Q   4
+        #define PLL_P   4
+        #define VALID_PLL_SETTING
+    #elif (CPU_CLK == 42)
+        #define PLL_N   336
+        #define PLL_Q   7
+        #define PLL_P   8
+        #define VALID_PLL_SETTING
+    #elif (CPU_CLK == 32)
+        #define PLL_N   192
+        #define PLL_Q   4
+        #define PLL_P   6
+        #define VALID_PLL_SETTING
+    #elif (CPU_CLK == 24)
+        #define PLL_N   192
+        #define PLL_Q   4
+        #define PLL_P   8
+        #define VALID_PLL_SETTING
+    #endif
+#endif
+
+#ifndef VALID_PLL_SETTING
+#error CPU clock not supported by RODOS or CPU
+#endif
 
 /******************************************************************************/
 
@@ -552,8 +603,8 @@ static void SetSysClock(void)
 #endif /* STM32F401xx */
    
     /* Configure the main PLL */
-    RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) -1) << 16) |
-                   (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
+    RCC->PLLCFGR = (uint32_t)((uint32_t)0x20000000 | PLL_M | (PLL_N << 6) | (((PLL_P >> 1) -1) << 16) |
+                   (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24));
 
     /* Enable the main PLL */
     RCC->CR |= RCC_CR_PLLON;
@@ -563,7 +614,8 @@ static void SetSysClock(void)
     {
     }
    
-#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
+//#if defined (STM32F427_437xx) || defined (STM32F429_439xx) //Overdrive on STM32F427_437xx Rev A is not working
+#if  defined (STM32F429_439xx)
     /* Enable the Over-drive to extend the clock frequency to 180 Mhz */
     PWR->CR |= PWR_CR_ODEN;
     while((PWR->CSR & PWR_CSR_ODRDY) == 0)
@@ -573,6 +625,8 @@ static void SetSysClock(void)
     while((PWR->CSR & PWR_CSR_ODSWRDY) == 0)
     {
     }      
+#endif
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
     /* Configure Flash prefetch, Instruction cache, Data cache and wait state */
     FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN |FLASH_ACR_DCEN |FLASH_ACR_LATENCY_5WS;
 #endif /* STM32F427_437x || STM32F429_439xx  */
@@ -599,6 +653,68 @@ static void SetSysClock(void)
   else
   { /* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
+
+	  /* Enable Power Control clock */
+	  	RCC->APB1ENR |= RCC_APB1LPENR_PWRLPEN;
+	  	/* Regulator voltage scaling output selection: Scale 2 */
+	  	PWR->CR |= PWR_CR_VOS_1;
+
+	  	RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+
+	  	/* Wait until HSI ready */
+	  	while ((RCC->CR & RCC_CR_HSIRDY) == 0);
+
+	  	/* Store calibration value */
+	  	PWR->CR |= (uint32_t)(16 << 3);
+
+	  	/* Disable main PLL */
+	  	RCC->CR &= ~(RCC_CR_PLLON);
+	  	/* Wait until PLL ready (disabled) */
+	  	while ((RCC->CR & RCC_CR_PLLRDY) != 0);
+
+	  	/*
+	  	 * Configure Main PLL
+	  	 * HSI as clock input
+	  	 * PLLM = 16  -- fixed for previously defined PLL _P, _Q, _N values, since HSI is always 16MHz
+	  	 */
+
+	  	RCC->PLLCFGR = (uint32_t)((uint32_t)0x20000000 | (uint32_t)(16 << 0) | (uint32_t)(PLL_N << 6) |
+	  				(((PLL_P >> 1) -1) << 16) | (uint32_t)(PLL_Q << 24));
+
+	  	/* PLL On */
+	  	RCC->CR |= RCC_CR_PLLON;
+	  	/* Wait until PLL is locked */
+	  	while ((RCC->CR & RCC_CR_PLLRDY) == 0);
+
+		/*
+		 * FLASH configuration block
+		 * enable instruction cache
+		 * enable prefetch
+		 * set latency to 2WS (3 CPU cycles)
+		 */
+
+	    FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN |FLASH_ACR_LATENCY_2WS;
+
+		/* Check flash latency */
+		if ((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_ACR_LATENCY_2WS) {
+				while(1);
+		}
+
+		/* Set clock source to PLL */
+		RCC->CFGR |= RCC_CFGR_SW_PLL;
+		/* Check clock source */
+		while ((RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
+
+		/* Set HCLK (AHB1) prescaler (DIV1) */
+		RCC->CFGR &= ~(RCC_CFGR_HPRE);
+
+		/* Set APB1 Low speed prescaler (APB1) DIV2 */
+		RCC->CFGR |= RCC_CFGR_PPRE1_DIV2;
+
+		/* SET APB2 High speed srescaler (APB2) DIV1 */
+		RCC->CFGR &= ~(RCC_CFGR_PPRE2);
+
   }
 
 }

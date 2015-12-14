@@ -1,39 +1,5 @@
 
 
-/*********************************************************** Copyright
- **
- ** Copyright (c) 2008, German Aerospace Center (DLR)
- ** All rights reserved.
- **
- ** Redistribution and use in source and binary forms, with or without
- ** modification, are permitted provided that the following conditions are
- ** met:
- **
- ** 1 Redistributions of source code must retain the above copyright
- **   notice, this list of conditions and the following disclaimer.
- **
- ** 2 Redistributions in binary form must reproduce the above copyright
- **   notice, this list of conditions and the following disclaimer in the
- **   documentation and/or other materials provided with the
- **   distribution.
- **
- ** 3 Neither the name of the German Aerospace Center nor the names of
- **   its contributors may be used to endorse or promote products derived
- **   from this software without specific prior written permission.
- **
- ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- ** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- ** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- ** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- ** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- ** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- ** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- **
- ****************************************************************************/
 
 
 /**
@@ -81,6 +47,7 @@ int32_t Gateway::numberOfNodes = 0;
 SeenNode Gateway::seenNodes[MAX_NUMBER_OF_NODES];
 Semaphore Gateway::seenNodesProtector;
 
+int compare_SeenNode (const void *a, const void *b);
 int compare_SeenNode (const void *a, const void *b) {
     int32_t temp =  ((SeenNode*)a)->nodeID - ((SeenNode*)b)->nodeID;
     if(temp > 0)      return 1;
@@ -161,6 +128,7 @@ bool Gateway::messageSeen(NetworkMessage& msg) {
 
 long Gateway::put(const long topicId, const long len, const void* data, const NetMsgInfo& netMsgInfo) {
     if(!isEnabled) return 0;
+    // if(topicId == 0) return 0;
 
     if(!forwardAll) {
         if(topicId !=0 && !externalsubscribers.find(topicId)) { return 0; }
@@ -196,12 +164,12 @@ void Gateway::sendNetworkMessage(NetworkMessage& msg) {
 /**************** Receiver part of the gateway   ********************/
 
 
-void Gateway::setTopicsToForward(void* topicList) {
+void Gateway::setTopicsToForward(TopicListReport* topicList) {
     getTopicsToForwardFromOutside=false;
     externalsubscribers = *(TopicListReport*)topicList;
 }
 
-void Gateway::addTopicsToForward(void* topicsWanted_) {
+void Gateway::addTopicsToForward(TopicListReport* topicsWanted_) {
     getTopicsToForwardFromOutside=false;
     TopicListReport *topicsWanted = (TopicListReport*)topicsWanted_;
     for(int i = 0; i < topicsWanted->numberOfTopics; i++) {
@@ -240,15 +208,15 @@ void Gateway::AnalyseAndDistributeMessagesFromNetwork() {
     if(messageSeen(networkInMessage)) return;
 
     networkInMessage.dec_maxStepsToForward();
-    numberOfReceivedMsgsFromNetwork++;
+    PRIORITY_CEILING{  numberOfReceivedMsgsFromNetwork++; }
 
     long topicId           = networkInMessage.get_topicId();
 
     if(topicId == 0 && getTopicsToForwardFromOutside) { // This is a topic report of expected topics in network.
         if(linkinterface->isBroadcastLink) {
-            addTopicsToForward(networkInMessage.userDataC); // for broadcast networks
+            addTopicsToForward((TopicListReport*)networkInMessage.userDataC); // for broadcast networks
         } else {
-            setTopicsToForward(networkInMessage.userDataC); // for inteellignet networks-Swtiches
+            setTopicsToForward((TopicListReport*)networkInMessage.userDataC); // for inteellignet networks-Swtiches
         }
         getTopicsToForwardFromOutside=true;
 

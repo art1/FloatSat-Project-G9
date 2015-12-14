@@ -41,6 +41,7 @@ void MotorControlThread::run(){
 //			cnt++;
 //		}
 //		cnt++;
+
 //		if(cnt > 999) cnt = -999;
 		if(cnt == 1000){
 			while(1){

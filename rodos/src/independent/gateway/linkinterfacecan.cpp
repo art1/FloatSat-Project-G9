@@ -1,39 +1,25 @@
 
 
-/*********************************************************** Copyright
- **
- ** Copyright (c) 2008, German Aerospace Center (DLR)
- ** All rights reserved.
- **
- ** Redistribution and use in source and binary forms, with or without
- ** modification, are permitted provided that the following conditions are
- ** met:
- **
- ** 1 Redistributions of source code must retain the above copyright
- **   notice, this list of conditions and the following disclaimer.
- **
- ** 2 Redistributions in binary form must reproduce the above copyright
- **   notice, this list of conditions and the following disclaimer in the
- **   documentation and/or other materials provided with the
- **   distribution.
- **
- ** 3 Neither the name of the German Aerospace Center nor the names of
- **   its contributors may be used to endorse or promote products derived
- **   from this software without specific prior written permission.
- **
- ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- ** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- ** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- ** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- ** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- ** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- ** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- **
- ****************************************************************************/
+/** msg formant on ca messages:
+ *
+ * A middleware message will be encoded in several can telegrams:
+ *
+ * can ID: 29 bits:
+ *  11100 - tttttttttttttttt  - nnnnnnnn 
+ *  t = 16-bit topic
+ *  n =  8-bit sender node (not really relevant, just to avoid collitions)
+ *
+ * can user data max 8 bytes per telegram:
+ * 0 : sequenceCouonter: 0 .. 255, 0 == first can telegram of the current middleware message
+ * 1 : if (sequenceCouonter == 0) bytes in middleware message:  upper byte ; else message data
+ * 2 : if (sequenceCouonter == 0) bytes in middleware message:  lower byte ; else message data
+ * 3 .. 8 :  message data
+ *
+ * last can telegram may contain less than 8 bytes
+ * max middleware message len = 255*7 + 5 bytes = 1790 (Internal limited to 1300) 
+ *
+ */
+
 
 
 #include"gateway/linkinterfacecan.h"
@@ -75,7 +61,7 @@ void LinkinterfaceCAN::init() {
 bool LinkinterfaceCAN::sendNetworkMsg(NetworkMessage &outMsg)	{
 
 
-	char buffer[8];
+	uint8_t buffer[8];
 
 	uint16_t dataLength = outMsg.get_len();
 	uint32_t senderNode = outMsg.get_senderNode() & ONES(CAN_LINK_NODE_BITS);
@@ -102,8 +88,8 @@ bool LinkinterfaceCAN::sendNetworkMsg(NetworkMessage &outMsg)	{
 			messageData++;
 			dataLength--;
 		}
-		while(can.write(buffer,count,canID,true) == -1){
-			can.suspendUntilWriteFinished(CAN_TX_TIMEOUT);
+		while(can.write((char*)buffer,count,canID,true) == -1){
+			can.suspendUntilWriteFinished(NOW() + CAN_TX_TIMEOUT);
 			int error;
 			if((error=can.status(CAN_STATUS_TX_ERROR)) > 10){
 				//Don't block if there are transmit errors
@@ -119,6 +105,11 @@ bool LinkinterfaceCAN::sendNetworkMsg(NetworkMessage &outMsg)	{
 }
 
 
+/*
+1. Can Nachricht empfangen, in receiveCANMessage (dazu wird eine BufferedCANMessage aus dem Stack emptyBufferedCANMessages "entnommen" **)
+2a. Wenn die Nachricht zur aktuellen gehört füge die Daten zu dieser hinzu und lege BufferedCANMessage zurück auf den Stack( appendCANMsgToCurrentNetMsg() ) ->  Weiter mit schritt 1.
+2b. Wenn die Nachricht nicht zur aktuellen gehört -> füge sie in die LinkedList bufferedCANMsgs_start ein ->  Weiter mit schritt 1. 
+*/
 
 bool LinkinterfaceCAN::getNetworkMsg(NetworkMessage &inMsg,int32_t &numberOfReceivedBytes) {
 
@@ -151,8 +142,10 @@ bool LinkinterfaceCAN::getNetworkMsg(NetworkMessage &inMsg,int32_t &numberOfRece
 				if(appendCANMsgToCurrentNetMsg(bufElement)){
 					return true;
 				}
+			}else{
+				//If we removed the current element from the buffer prev elemts stays the same of next round
+				prevBufElement=bufElement;
 			}
-			prevBufElement=bufElement;
 			bufElement=bufElement->next;
 		}
 	}
@@ -215,7 +208,9 @@ BufferedCANMessage* LinkinterfaceCAN::receiveCANMessage(){
 
 	if((msg->len=can.read((char*)msg->data,&msg->canID)) >= 0){
 
-		emptyBufferedCANMessagesPos--;
+		if(!(emptyBufferedCANMessagesPos < 0)){
+			emptyBufferedCANMessagesPos--;
+		}
 		return msg;
 
 	}
@@ -223,17 +218,21 @@ BufferedCANMessage* LinkinterfaceCAN::receiveCANMessage(){
 
 	if(emptyBufferedCANMessagesPos < 0){ // put msg back to empty msgs if it was taken out of the buffer
 		emptyBufferedCANMessagesPos++;
+		if(emptyBufferedCANMessagesPos < 0 || emptyBufferedCANMessagesPos >= CAN_MSG_BUFFER_SIZE){
+			ERROR("ASSERT: emptyBufferedCANMessagesPos out of range");
+		}
 		emptyBufferedCANMessages[emptyBufferedCANMessagesPos]=msg;
 	}
 
 	return 0;
-
-
 }
 
 bool LinkinterfaceCAN::appendCANMsgToCurrentNetMsg(BufferedCANMessage* canMsg){
 
 	emptyBufferedCANMessagesPos++;
+	if(emptyBufferedCANMessagesPos < 0 || emptyBufferedCANMessagesPos >= CAN_MSG_BUFFER_SIZE) {
+		ERROR("ASSERT: emptyBufferedCANMessagesPos out of range");
+	}
 	emptyBufferedCANMessages[emptyBufferedCANMessagesPos]=canMsg;
 
 

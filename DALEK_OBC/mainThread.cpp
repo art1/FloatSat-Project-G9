@@ -51,19 +51,6 @@ ThermalKnife knife;
 HAL_GPIO HBRIDGE_EN(GPIO_066);
 
 //RESUMER THREADS
-///**************************** GPIO MESSAGES *************************************/
-//CommBuffer<LED_SWITCH> inputMessageBuffer;
-//struct GPIO_Receiver :  public Subscriber,  public Thread  {
-//  GPIO_Receiver() : Subscriber(led_switch,"led switcher") { }
-//
-//  long put(const long topicId, const long len, const void* data, const NetMsgInfo& netMsgInfo) {
-//      leds.setNextMode(*(LED_SWITCH*)data);
-//      leds.resume();                         // not to publish from interrupt, call a thread to do it
-//      return 1;
-//   }
-//
-//  void run () { }
-//} gpio_receiver_thread;
 /**************************** IMU MESSAGES **************************************/
 #ifdef FUSION_ENABLE
 struct receiver_Fusion : public Subscriber, public Thread {
@@ -72,7 +59,6 @@ struct receiver_Fusion : public Subscriber, public Thread {
 		fusion.newData(*(IMU_DATA_RAW*)data);
 		tm.setNewData(*(IMU_DATA_RAW*)data);
 		fusion.resume();
-//		PRINTF("some stuff there!\n\n");
 		return 1;
 	}
 	void run(){}
@@ -142,7 +128,7 @@ struct receiver_knife : public Subscriber, public Thread {
 struct receiver_camera : public Subscriber, public Thread {
 	receiver_camera() : Subscriber(cam_control,"Camera Control") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		camera.setNewData(*(CAM_CONTROL*)data);
+//		camera.setNewData(*(CAM_CONTROL*)data);
 		camera.resume();
 		return 1;
 	}
@@ -242,12 +228,12 @@ void mainThread::run(){
 //	PRINTF("publishing Data\n");
 	ir_data.publish(tmp2);
 #endif
-#ifdef CAMERA_ENABLE
-	PRINTF("enabling cam\n");
-	CAM_CONTROL tmp3;
-	tmp3.shoot = true;
-	cam_control.publish(tmp3);
-#endif
+//#ifdef CAMERA_ENABLE
+//	PRINTF("enabling cam\n");
+//	CAM_CONTROL tmp3;
+//	tmp3.shoot = true;
+//	cam_control.publish(tmp3);
+//#endif
 
 
 	while(1){

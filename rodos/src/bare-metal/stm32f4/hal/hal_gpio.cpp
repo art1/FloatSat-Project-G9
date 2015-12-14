@@ -1,6 +1,7 @@
 #include <new>
 #include "rodos.h"
 #include "hal/hal_gpio.h"
+#include "hw_hal_gpio.h"
 
 #include "stm32f4xx_gpio.h"
 
@@ -9,6 +10,7 @@ namespace RODOS {
 #endif
 
 
+void initEXTInterrupts();
 void initEXTInterrupts(){
 	static bool init=false;
 	if(!init){
@@ -28,45 +30,23 @@ void initEXTInterrupts(){
 
 
 
-class HW_HAL_GPIO {
-public:
-	HW_HAL_GPIO(GPIO_PIN pinIdx, uint8_t numOfPins, bool isOutput):
-		pinIdx(pinIdx),numOfPins(numOfPins),isOutput(isOutput){
-		setPinMask();
-		setGPIOPortVars();
+/***** class HW_HAL_GPIO *****/
+HW_HAL_GPIO* extInterruptLines[16];
 
-		GPIO_StructInit(&GPIO_InitStruct);
-		GPIO_InitStruct.GPIO_Pin = pinMask;
-		GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-		GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
+HW_HAL_GPIO::HW_HAL_GPIO(GPIO_PIN pinIdx, uint8_t numOfPins, bool isOutput):
+    pinIdx(pinIdx),numOfPins(numOfPins),isOutput(isOutput){
+    setPinMask();
+    PORT = getSTM32Port(pinIdx);
 
-		irqSensitivity = GPIO_IRQ_SENS_BOTH;
-		interruptEventOcured = false;
-	};
+    GPIO_StructInit(&GPIO_InitStruct);
+    GPIO_InitStruct.GPIO_Pin = pinMask;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN;
 
-	GPIO_PIN pinIdx;
-	HAL_GPIO* hal_gpio;
-	uint8_t numOfPins;
-	bool isOutput;
-	uint16_t pinMask;
-
-	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_TypeDef *PORT;
-	uint32_t RCC_AHB1Periph;
-
-	//int32_t extiLine;
-	GPIO_IRQ_SENSITIVITY irqSensitivity;
-	bool interruptEventOcured;
-
-	void setPinMask();
-	void EXTIRQHandler();
-
-private:
-	void setGPIOPortVars();
+    irqSensitivity = GPIO_IRQ_SENS_BOTH;
+    interruptEventOcured = false;
 };
 
-
-HW_HAL_GPIO* extInterruptLines[16];
 
 void HW_HAL_GPIO::setPinMask(){
 	if (numOfPins+(pinIdx & 0xF) > 16) { // pin-group exceeds port boundary ! only the pins up to most significant pin of port will be set
@@ -78,54 +58,102 @@ void HW_HAL_GPIO::setPinMask(){
 	}
 }
 
-void HW_HAL_GPIO::setGPIOPortVars(){
-	if(pinIdx < 16){
-		PORT = GPIOA;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOA;
-	}
-	else if(pinIdx < 32){
-		PORT = GPIOB;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOB;
-	}
-	else if(pinIdx < 48){
-		PORT = GPIOC;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOC;
-	}
-	else if(pinIdx < 64){
-		PORT = GPIOD;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOD;
-	}
-	else if(pinIdx < 80){
-		PORT = GPIOE;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOE;
-	}
-	else if(pinIdx < 96){
-		PORT = GPIOF;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOF;
-	}
-	else if(pinIdx < 112){
-		PORT = GPIOG;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOG;
-	}
-	else if(pinIdx < 128){
-		PORT = GPIOH;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOH;
-	}
-	else if(pinIdx < 140){
-		PORT = GPIOI;
-		RCC_AHB1Periph = RCC_AHB1Periph_GPIOI;
-	}
-	else{
-		PORT = NULL;
-		RCC_AHB1Periph = 0;
-	}
-}
 
 void HW_HAL_GPIO::EXTIRQHandler(){
 	interruptEventOcured=true;
 	hal_gpio->upCallDataReady();
 	EXTI->PR = 1 << (pinIdx % 16);
 }
+
+
+uint32_t HW_HAL_GPIO::getGPIO_PinSource(uint32_t GPIO_Pin) {
+
+    uint32_t GPIO_PinSource = 0;
+
+    while (GPIO_Pin >>= 1) GPIO_PinSource++;
+
+    return GPIO_PinSource;
+}
+
+
+uint32_t HW_HAL_GPIO::getRCC_APB1Periph_GPIOx(GPIO_TypeDef *port) {
+
+    switch((uint32_t)port){
+    case GPIOA_BASE: return RCC_AHB1Periph_GPIOA;
+    case GPIOB_BASE: return RCC_AHB1Periph_GPIOB;
+    case GPIOC_BASE: return RCC_AHB1Periph_GPIOC;
+    case GPIOD_BASE: return RCC_AHB1Periph_GPIOD;
+    case GPIOE_BASE: return RCC_AHB1Periph_GPIOE;
+    case GPIOF_BASE: return RCC_AHB1Periph_GPIOF;
+    case GPIOG_BASE: return RCC_AHB1Periph_GPIOG;
+    case GPIOH_BASE: return RCC_AHB1Periph_GPIOH;
+    case GPIOI_BASE: return RCC_AHB1Periph_GPIOI;
+    case GPIOJ_BASE: return RCC_AHB1Periph_GPIOJ;
+    case GPIOK_BASE: return RCC_AHB1Periph_GPIOK;
+    default: return 0;
+    }
+}
+
+
+GPIO_TypeDef* HW_HAL_GPIO::getSTM32Port(GPIO_PIN pinIdx){
+    if      (pinIdx < GPIO_016)   {   return GPIOA; }
+    else if (pinIdx < GPIO_032)   {   return GPIOB; }
+    else if (pinIdx < GPIO_048)   {   return GPIOC; }
+    else if (pinIdx < GPIO_064)   {   return GPIOD; }
+    else if (pinIdx < GPIO_080)   {   return GPIOE; }
+    else if (pinIdx < GPIO_096)   {   return GPIOF; }
+    else if (pinIdx < GPIO_112)   {   return GPIOG; }
+    else if (pinIdx < GPIO_128)   {   return GPIOH; }
+    else if (pinIdx <= GPIO_139)  {   return GPIOI; }
+    else                    {   return NULL;  }
+}
+
+uint16_t HW_HAL_GPIO::getSTM32Pin(GPIO_PIN pinIdx){
+    //return 1 << (pinIdx%16);
+    return 1 << (pinIdx & 0xf);
+}
+
+
+int32_t HW_HAL_GPIO::configureAFPin(GPIO_PIN pinIdx, uint8_t GPIO_AF_XXX){
+    if (pinIdx < GPIO_000 || pinIdx > GPIO_139) return -1;
+    GPIO_TypeDef* port = getSTM32Port(pinIdx);
+    uint16_t pin = getSTM32Pin(pinIdx);
+
+    // Enable GPIO clock and release reset
+    RCC_AHB1PeriphClockCmd(getRCC_APB1Periph_GPIOx(port), ENABLE);
+    RCC_AHB1PeriphResetCmd(getRCC_APB1Periph_GPIOx(port), DISABLE);
+
+    // configure pin multiplexer -> choose alternate function (AF) UART
+    GPIO_PinAFConfig(port,getGPIO_PinSource(pin),GPIO_AF_XXX);
+
+    // configure pin
+    GPIO_InitTypeDef Gis;
+    GPIO_StructInit(&Gis);
+    Gis.GPIO_Mode = GPIO_Mode_AF;
+    Gis.GPIO_Pin = pin;
+    GPIO_Init(port, &Gis);
+
+    return 0;
+}
+
+
+int32_t HW_HAL_GPIO::resetPin(GPIO_PIN pinIdx){
+    if (pinIdx < GPIO_000 || pinIdx > GPIO_139) return -1;
+
+    GPIO_InitTypeDef Gis;
+    GPIO_StructInit(&Gis);
+    Gis.GPIO_Mode = GPIO_Mode_IN;
+
+    Gis.GPIO_Pin = getSTM32Pin(pinIdx);
+    GPIO_Init(getSTM32Port(pinIdx), &Gis);
+
+    return 0;
+}
+/***** END class HW_HAL_GPIO *****/
+
+
+
+
 
 HAL_GPIO::HAL_GPIO(GPIO_PIN pinIdx) {
 	//context = new HW_HAL_GPIO(pinIdx,1,false);
@@ -143,7 +171,7 @@ int32_t HAL_GPIO::init(bool isOutput, uint32_t numOfPins, uint32_t initVal){
 
 	if (context->PORT == NULL) return -1;
 
-	RCC_AHB1PeriphClockCmd(context->RCC_AHB1Periph, ENABLE);
+	RCC_AHB1PeriphClockCmd(HW_HAL_GPIO::getRCC_APB1Periph_GPIOx(context->PORT), ENABLE);
 
 	if (context->isOutput){
 		config(GPIO_CFG_OUTPUT_ENABLE, 1);
@@ -205,7 +233,7 @@ int32_t HAL_GPIO::config(GPIO_CFG_TYPE type, uint32_t paramVal){
 			}
 			return -1;
 		case GPIO_CFG_IRQ_SENSITIVITY:
-			if (paramVal >= 0 && paramVal <= GPIO_IRQ_SENS_FALLING){
+			if (paramVal <= GPIO_IRQ_SENS_FALLING){
 				context->irqSensitivity=(RODOS::GPIO_IRQ_SENSITIVITY)paramVal;
 				return 0;
 			}
@@ -218,9 +246,10 @@ int32_t HAL_GPIO::config(GPIO_CFG_TYPE type, uint32_t paramVal){
 
 void HAL_GPIO::reset(){
 	interruptEnable(false);
-	config(GPIO_CFG_OUTPUT_ENABLE, 0);
-	GPIO_DeInit(context->PORT);
-	RCC_AHB1PeriphClockCmd(context->RCC_AHB1Periph, DISABLE);
+//    config(GPIO_CFG_OUTPUT_ENABLE, 0);                                                  already done in resetPin()
+//    GPIO_DeInit(context->PORT);                                                         !!! we can not disable the whole port
+//    RCC_AHB1PeriphClockCmd(context->getRCC_APB1Periph_GPIOx(context->PORT), DISABLE);   !!! we can not disable the whole port
+	HW_HAL_GPIO::resetPin(context->pinIdx);
 }
 
 
@@ -308,6 +337,15 @@ void HAL_GPIO::resetInterruptEventStatus(){
 
 
 extern "C" {
+	void EXTI0_IRQHandler();
+	void EXTI1_IRQHandler();
+	void EXTI2_IRQHandler();
+	void EXTI3_IRQHandler();
+	void EXTI4_IRQHandler();
+	void EXTI4_IRQHandler();
+	void EXTI9_5_IRQHandler();
+	void EXTI15_10_IRQHandler();
+
 	void EXTI0_IRQHandler(){
 		if(extInterruptLines[0]){
 			extInterruptLines[0]->EXTIRQHandler();

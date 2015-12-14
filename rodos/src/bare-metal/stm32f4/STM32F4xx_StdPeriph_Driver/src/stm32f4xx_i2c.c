@@ -91,7 +91,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_i2c.h"
 #include "stm32f4xx_rcc.h"
-#include "inttypes.h"
+
 #define ERROR STM32_ERROR
 
 /** @addtogroup STM32F4xx_StdPeriph_Driver
@@ -1172,10 +1172,8 @@ ErrorStatus I2C_CheckEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT)
   flag2 = I2Cx->SR2;
   flag2 = flag2 << 16;
 
-
   /* Get the last event value from I2C status register */
   lastevent = (flag1 | flag2) & FLAG_MASK;
-//  xprintf("last event: %"PRIu32"\n",lastevent);
 
   /* Check whether the last event contains the I2C_EVENT */
   if ((lastevent & I2C_EVENT) == I2C_EVENT)

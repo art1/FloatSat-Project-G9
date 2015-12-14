@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include "genericIO.h"
+#include "hal_gpio.h"
 
 #ifndef NO_RODOS_NAMESPACE
 namespace RODOS {
@@ -21,10 +22,10 @@ enum SPI_IDX{   //  STM32F4
 	SPI_IDX0,   //  not available
 	SPI_IDX1,   //  SPI1
 	SPI_IDX2,   //  SPI2
-	SPI_IDX3   //  SPI3
-	//SPI_IDX4,   //  TBD SPI4 (STM32F429 only)
-	//SPI_IDX5,   //  TBD SPI5 (STM32F429 only)
-	//SPI_IDX6    //  TBD SPI6 (STM32F429 only)
+	SPI_IDX3,    //   SPI3
+	SPI_IDX4,   //  SPI4 (STM32F429 only)
+	SPI_IDX5,   //  SPI5 (STM32F429 only)
+	SPI_IDX6    //  SPI6 (STM32F429 only)
 };
 
 enum SPI_PARAMETER_TYPE {
@@ -43,6 +44,7 @@ class HAL_SPI : public GenericIOInterface {
 	HW_HAL_SPI *context;
 public:
     HAL_SPI(SPI_IDX spiIdx);
+    HAL_SPI(SPI_IDX idx, GPIO_PIN sckPin, GPIO_PIN misoPin, GPIO_PIN mosiPin);
 
     /**
      * @brief   Initialization of SPI interface & pins
@@ -50,7 +52,7 @@ public:
      *          Request configured baudrate with status().
      * @return  0 on success, -1 on failure
      */
-    int32_t init(uint32_t baudrate = 1000000);
+    int32_t init(uint32_t baudrate = 1000000, bool slave = false);
 
     /**
      *  @brief  Disable interface and set all its registers and pins to its reset state.

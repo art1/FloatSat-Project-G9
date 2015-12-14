@@ -1661,7 +1661,7 @@ typedef struct
 #define GPIOI               ((GPIO_TypeDef *) GPIOI_BASE)
 #define GPIOJ               ((GPIO_TypeDef *) GPIOJ_BASE)
 #define GPIOK               ((GPIO_TypeDef *) GPIOK_BASE)
-#define CRC                 ((CRC_TypeDef *) CRC_BASE) /** TODO had to comment it because conflicts with CRC class in rodos/api/checksumes.h */
+#define CRC                 ((CRC_TypeDef *) CRC_BASE)
 #define RCC                 ((RCC_TypeDef *) RCC_BASE)
 #define FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)
 #define DMA1                ((DMA_TypeDef *) DMA1_BASE)

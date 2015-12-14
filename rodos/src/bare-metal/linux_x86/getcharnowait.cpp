@@ -93,7 +93,7 @@ void activateTopicCharInput() {
 /*
  * nonblocking getc / getchar (from stdin)
  */
-
+void setNoDelay();
 void setNoDelay() {
 	struct termios term;
 

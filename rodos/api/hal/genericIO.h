@@ -24,12 +24,12 @@ public:
 
 class GenericIOInterface {
 private:
-    IOEventReceiver* ioEventReceiver;
     Thread* callerReadFinished;
     Thread* callerWriteFinished;
     Thread* callerDataReady;
 
 protected:
+    IOEventReceiver* ioEventReceiver;
 	void* context;
 
 public:

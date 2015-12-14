@@ -115,7 +115,11 @@ private:
 
 public:
 
-    int32_t leapSeconds; ///< leapseconds since 2000, 2011 aprox 15, used to get gpsTime
+    /**
+    * leapSeconds since 1980 (GPS Time).
+    * See timemodel.cpp for last update. 
+    **/
+    int32_t leapSeconds; 
 
     TimeModel();
 
@@ -229,8 +233,13 @@ public:
 
 
     /// CCSDS CUC time format to local time format
-    static int64_t  ECSSTimeToLocalTime(uint32_t seconds, uint32_t fraction) {
-        return (SECONDS * seconds) + ((SECONDS * fraction) / (64*1024)); // 64K is 16 bits fraction
+    typedef enum {
+      FractSize16Bit = 16,
+      FractSize32Bit = 32
+    } FractSize;
+
+    static int64_t  ECSSTimeToLocalTime(uint32_t seconds, uint32_t fraction, FractSize fractSize = FractSize16Bit) {
+        return (SECONDS * seconds) + ((SECONDS * (uint64_t)fraction) >> fractSize); // >> fractSize -> /2^16 or /2^32
     }
 
 };

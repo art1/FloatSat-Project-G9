@@ -32,15 +32,15 @@ extern "C" HAL_UART bt_uart;
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
 //#define IMU_ENABLE
-//#define TTNC_ENABLE
+#define TTNC_ENABLE
 //#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
-#define KNIFE_ENABLE
-#define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
+//#define KNIFE_ENABLE
+//#define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -67,12 +67,14 @@ extern "C" HAL_UART bt_uart;
 #define BLUE_OFF				GPIOD->BSRRH = LED_BLUE
 #define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
 
+
 /****************************** WIFI & BT STUFF ******************************************/
 #define WIFI_SSID				"YETENet"
 #define WIFI_SSID_PW			"yeteyete"
 #define WIFI_IP					0xFF01A8C0 // in hex and reverse
-#define WIFI_PORT				1234
+#define WIFI_PORT				1235
 #define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
+
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
 #define BLUETOOTH_BUFFER		36				// in bytes, should be enough for Command Frames! (currently 24 needed)

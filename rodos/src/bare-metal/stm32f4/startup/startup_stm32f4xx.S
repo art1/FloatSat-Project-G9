@@ -144,6 +144,7 @@ LoopFillZeroccram:
     .section  .text.Default_Handler,"ax",%progbits
 Default_Handler:
 Infinite_Loop:
+  bl WWDG_IRQHandlerFunc
   b  Infinite_Loop
   .size  Default_Handler, .-Default_Handler
 /******************************************************************************
@@ -259,7 +260,7 @@ g_pfnVectors:
   .word     CRYP_IRQHandler                   /* CRYP crypto                  */                   
   .word     HASH_RNG_IRQHandler               /* Hash and Rng                 */
   .word     FPU_IRQHandler                    /* FPU                          */
-#ifdef STM32F429_439xx
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
   .word     UART7_IRQHandler                  /* UART7                        */
   .word     UART8_IRQHandler                  /* UART8                        */
   .word     SPI4_IRQHandler                   /* SPI4                         */
@@ -556,7 +557,7 @@ g_pfnVectors:
 
    .weak      FPU_IRQHandler                  
    .thumb_set FPU_IRQHandler,Default_Handler  
-#ifdef STM32F429_439xx
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
    .weak      UART7_IRQHandler                  
    .thumb_set UART7_IRQHandler,Default_Handler                   
    
@@ -584,4 +585,13 @@ g_pfnVectors:
 //   .weak      DMA2D_IRQHandler
 //   .thumb_set DMA2D_IRQHandler,Default_Handler
 #endif
+
+#if defined (STM32F427_437xx)
+   .weak      LTDC_IRQHandler
+   .thumb_set LTDC_IRQHandler,Default_Handler
+
+   .weak      DMA2D_IRQHandler
+   .thumb_set DMA2D_IRQHandler,Default_Handler
+#endif
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

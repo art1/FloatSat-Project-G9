@@ -1,37 +1,3 @@
-/*********************************************************** Copyright 
- **
- ** Copyright (c) 2008, German Aerospace Center (DLR)
- ** All rights reserved.
- ** 
- ** Redistribution and use in source and binary forms, with or without
- ** modification, are permitted provided that the following conditions are
- ** met:
- ** 
- ** 1 Redistributions of source code must retain the above copyright
- **   notice, this list of conditions and the following disclaimer.
- ** 
- ** 2 Redistributions in binary form must reproduce the above copyright
- **   notice, this list of conditions and the following disclaimer in the
- **   documentation and/or other materials provided with the
- **   distribution.
- ** 
- ** 3 Neither the name of the German Aerospace Center nor the names of
- **   its contributors may be used to endorse or promote products derived
- **   from this software without specific prior written permission.
- ** 
- ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- ** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- ** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- ** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- ** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- ** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- ** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- **  
- ****************************************************************************/
 
 /**
  * @file params.h
@@ -46,6 +12,8 @@
 
 #ifndef __PARAMS_H__
 #define __PARAMS_H__
+
+//#include "userconfig.h"
 
 #ifdef __cplusplus
 #ifndef NO_RODOS_NAMESPACE
@@ -63,25 +31,40 @@ namespace RODOS {
  * - APB2_CLK is fixed to CPU_CLK/2 (TIM1/8/9/10/11, USART1/6, SPI1, ADC1/2/3, MMC)
  * - for more information see system_stm32f4xx.c
  */
-/** cpu clock */
-#ifdef STM32F40_41xxx
-#define CPU_CLK							168000000
+#ifdef STM32F40_41xxx   // MINI-M4, STM32F4Discovery
+#define CPU_CLK                         168   // 24,32,42,48,56,84,96,120,144,168 MHz
 #endif
-#ifdef STM32F429_439xx
-#define CPU_CLK							180000000
+#ifdef STM32F429_439xx  // STM32F429Discovery
+#define CPU_CLK                         180   // 24,32,42,48,56,84,96,120,144,168,180 MHz
 #endif
+#ifdef STM32F427_437xx
+#define CPU_CLK                         168   // 24,32,42,48,56,84,96,120,144,168,180 MHz
+#endif
+#ifdef STM32F401xx
+#define CPU_CLK                         84   // 24,32,42,48,56,84 MHz
+#endif
+// STM32F4xx_xxxx is set in RODOS_ROOT/make/stm32f4-set-vars or eclipse project settings
+
 
 /** the following define sets the UART used for debug outputs with xprintf
  *
  */
-#define UART_DEBUG						UART_IDX3 //-> for USB Uart!
-//#define UART_DEBUG						UART_IDX2 // for Bluettotgh UART!
+#ifndef UART_DEBUG
+//#define UART_DEBUG                        UART_IDX3, GPIO_056, GPIO_057 // PD8 and PD9 // UART intern -> not when using wifi!
+#define UART_DEBUG                      UART_IDX2, GPIO_053, GPIO_054 // PD5 and PD6	// UART external device -> when using wifi
+//#define UART_DEBUG                      UART_IDX4, GPIO_000, GPIO_001 // PA0 and PA1
+//#define UART_DEBUG                      UART_IDX5
+#endif
 
 /** Memory for allocation (xmalloc) e.g. for all thread stacks ***/
+#ifndef XMALLOC_SIZE
 #define XMALLOC_SIZE					40*1024
+#endif
 
 /** default stack size (in bytes) for threads */
+#ifndef DEFAULT_STACKSIZE
 #define DEFAULT_STACKSIZE				2000
+#endif
 
 /** stack size (in bytes) for scheduler
  * - ISRs and Scheduler are using the main stack (MSP)
@@ -91,30 +74,45 @@ namespace RODOS {
 #define SCHEDULER_STACKSIZE 			0
 
 /** time interval between timer interrupts in microseconds - max. 798000us (if CPU_CLK==168MHz)!!! */
+#ifndef PARAM_TIMER_INTERVAL
 #define PARAM_TIMER_INTERVAL			10000
+#endif
 
 /*** time for time slice to swtich between threads with same priority ***/
-#define  TIME_SLICE_FOR_SAME_PRIORITY	(100*MILLISECONDS)
+#ifndef TIME_SLICE_FOR_SAME_PRIORITY
+#define TIME_SLICE_FOR_SAME_PRIORITY	(100*MILLISECONDS)
+#endif
 
 /** default priority for newly created threads */
+#ifndef DEFAULT_THREAD_PRIORITY
 #define DEFAULT_THREAD_PRIORITY			100
+#endif
 
 /** user threads shall not have a priority higher than this */
+#ifndef MAX_THREAD_PRIORITY
 #define MAX_THREAD_PRIORITY				1000
+#endif
 
 /** high priority levels for priority ceiling  */
+#ifndef NETWORKREADER_PRIORITY
 #define NETWORKREADER_PRIORITY			(MAX_THREAD_PRIORITY + 2)
+#endif
 /** high priority levels for priority ceiling  */
+#ifndef CEILING_PRIORITY
 #define CEILING_PRIORITY				(NETWORKREADER_PRIORITY + 1)
-
+#endif
 /** using a network, the maximal number of nodes attached */
+#ifndef MAX_NUMBER_OF_NODES
 #define MAX_NUMBER_OF_NODES				10
+#endif
 /** if using network it may have a limit for pakets, eg udp 1500 */
+#ifndef MAX_NETWORK_MESSAGE_LENGTH
 #define MAX_NETWORK_MESSAGE_LENGTH		1300
-
+#endif
 /*** If using a network: Maximal number of subscribers per node */
+#ifndef MAX_SUBSCRIBERS
 #define MAX_SUBSCRIBERS					60
-
+#endif
 
 // Declare global variables with this to put them into the 64k-CoreCoupled Memory Block
 // No DMA is possible. No initialization is possible,all gets set to zero.

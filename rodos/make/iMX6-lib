@@ -56,6 +56,7 @@ ${CC_COMP} ${C_FLAGS} ${INCLUDES} -c ${MY_HW_SRCS}/drivers/src/MPCore/*.c
 ${CC_COMP} ${C_FLAGS} ${INCLUDES} -c ${MY_HW_SRCS}/drivers/src/global_timer/*.c
 ${CC_COMP} ${C_FLAGS} ${INCLUDES} -c ${MY_HW_SRCS}/drivers/src/uart/*.c
 ${CC_COMP} ${C_FLAGS} ${INCLUDES} -c ${MY_HW_SRCS}/drivers/src/flexcan/*.c
+${CC_COMP} ${C_FLAGS} ${INCLUDES} -c ${MY_HW_SRCS}/drivers/src/i2c/*.c
 
 #***************************#
 

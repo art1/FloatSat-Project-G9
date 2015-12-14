@@ -126,7 +126,7 @@ void HW_HAL_CAN::setupFilters(){
 
 
 
-HAL_CAN::HAL_CAN(CAN_IDX canIdx){
+HAL_CAN::HAL_CAN(CAN_IDX canIdx, GPIO_PIN rxPin, GPIO_PIN txPin){
 	context= new(xmalloc(sizeof(HW_HAL_CAN))) HW_HAL_CAN();
 	context->devName = canDeviceNames[canIdx];
 	context->rxFifoEmpty=true;

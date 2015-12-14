@@ -170,19 +170,19 @@ public:
 
 template <class Type>
 class SubscriberReceiver : public Subscriber {
-    void (*receiver)(Type &msg); // a functio to be called for each message (optional)
+    void (*receiverFunc)(Type &msg); // a functio to be called for each message (optional)
 
 public:
     SubscriberReceiver(TopicInterface &topic, const char* name = "anonymSubscriber") :
         Subscriber(topic, name) {
-        receiver = 0;
+        receiverFunc = 0;
     }
     SubscriberReceiver(TopicInterface &topic,  void (*funcPtr)(Type&), const char* name = "anonymSubscriber") :
         Subscriber(topic, name) {
-        receiver = funcPtr;
+        receiverFunc = funcPtr;
     }
 
-    virtual void put(Type &msg) {if(receiver) (*receiver)(msg); };
+    virtual void put(Type &msg) {if(receiverFunc) (*receiverFunc)(msg); };
     virtual void put(Type &msg, const NetMsgInfo& netMsgInfo) {put(msg);};
     long put(const long topicId, const long len, const void* data, const NetMsgInfo& netMsgInfo) { 
         put(*(Type*)data,netMsgInfo);

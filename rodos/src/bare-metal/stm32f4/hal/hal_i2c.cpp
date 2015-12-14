@@ -1,97 +1,62 @@
 #include <new>
 #include "hal/hal_i2c.h"
+#include "rodos.h"
 #include "timemodel.h"
-
+#include "userconfig.h"
 
 #include "hal/hw_hal_i2c.h" // bare-metal/stm32f4/hal
 
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_i2c.h"
+#include "hw_hal_gpio.h"
 
 #ifndef NO_RODOS_NAMESPACE
 namespace RODOS {
 #endif
 
-#define I2C_TIMEOUT_IN_NS  			(1*MILLISECONDS)
+#ifndef I2C_TIMEOUT_IN_NS
+#define I2C_TIMEOUT_IN_NS  		(2*MILLISECONDS)
+#endif
+#ifndef I2C_LONG_TIMEOUT_IN_NS
 #define I2C_LONG_TIMEOUT_IN_NS  	(10*MILLISECONDS)
-
+#endif
 
 HW_HAL_I2C I2C_contextArray[3];
 
 HAL_I2C::HAL_I2C(I2C_IDX idx) {
-    if(idx < I2C_IDX1) idx = I2C_IDX1;
-    if(idx > I2C_IDX3) idx = I2C_IDX3;
+  if(idx < I2C_IDX1) idx = I2C_IDX1;
+  if(idx > I2C_IDX3) idx = I2C_IDX3;
 	context = new (&I2C_contextArray[idx-1]) HW_HAL_I2C(idx); // placement new to avoid dynamic memory allocation
-
-	context->IsMaster = true;
 
 	switch (idx){
 	case I2C_IDX1:
-		context->I2Cx = I2C1;
-		context->I2C_CLK = RCC_APB1Periph_I2C1;
-		context->I2C_AF = GPIO_AF_I2C1;
-
-        /*
-         * Discovery uses PB6 & PB9 for DAC
-         */
-        /* SCL pin config -> possible pins: PB6 & PB8 */
-        context->I2C_SCL_GPIO_PORT = GPIOB;
-        context->I2C_SCL_GPIO_CLK = RCC_AHB1Periph_GPIOB;
-        //context->I2C_SCL_PIN = GPIO_Pin_6;
-        //context->I2C_SCL_SOURCE = GPIO_PinSource6;
-        context->I2C_SCL_PIN = GPIO_Pin_8;
-        context->I2C_SCL_SOURCE = GPIO_PinSource8;
-
-        /* SDA pin config -> possible pins: PB7 & PB9 */
-        context->I2C_SDA_GPIO_PORT = GPIOB;
-        context->I2C_SDA_GPIO_CLK = RCC_AHB1Periph_GPIOB;
-        //context->I2C_SDA_PIN = GPIO_Pin_7;
-        //context->I2C_SDA_SOURCE = GPIO_PinSource7;
-        context->I2C_SDA_PIN = GPIO_Pin_9;
-        context->I2C_SDA_SOURCE = GPIO_PinSource9;
-        break; 
-
+    /* SCL pin config -> PB8 */
+    /* SDA pin config -> PB9 */
+    context->initMembers(this, idx, GPIO_024, GPIO_025);
+    break; 
 	case I2C_IDX2:
-		context->I2Cx = I2C2;
-		context->I2C_CLK = RCC_APB1Periph_I2C2;
-		context->I2C_AF = GPIO_AF_I2C2;
-
-		/* SCL pin config -> possible pins: PB10, PF1, PH4 */
-		context->I2C_SCL_GPIO_PORT = GPIOB;
-		context->I2C_SCL_GPIO_CLK = RCC_AHB1Periph_GPIOB;
-		context->I2C_SCL_PIN = GPIO_Pin_10;
-		context->I2C_SCL_SOURCE = GPIO_PinSource10;
-
-		/* SDA pin config -> possible pins: PB11, PF0, PH5 */
-		context->I2C_SDA_GPIO_PORT = GPIOB;
-		context->I2C_SDA_GPIO_CLK = RCC_AHB1Periph_GPIOB;
-		context->I2C_SDA_PIN = GPIO_Pin_11;
-		context->I2C_SDA_SOURCE = GPIO_PinSource11;
+    /* SCL pin config -> PB10 */
+    /* SDA pin config -> PB11 */
+    context->initMembers(this, idx, GPIO_026, GPIO_027);
 		break;
-
 	case I2C_IDX3:
-		context->I2Cx = I2C3;
-		context->I2C_CLK = RCC_APB1Periph_I2C3;
-		context->I2C_AF = GPIO_AF_I2C3;
-
-		/* SCL pin config -> possible pins: PA8 & PH7 */
-		context->I2C_SCL_GPIO_PORT = GPIOA;
-		context->I2C_SCL_GPIO_CLK = RCC_AHB1Periph_GPIOA;
-		context->I2C_SCL_PIN = GPIO_Pin_8;
-		context->I2C_SCL_SOURCE = GPIO_PinSource8;
-
-		/* SDA pin config -> possible pins: PC9 & PH8 */
-		context->I2C_SDA_GPIO_PORT = GPIOC;
-		context->I2C_SDA_GPIO_CLK = RCC_AHB1Periph_GPIOC;
-		context->I2C_SDA_PIN = GPIO_Pin_9;
-		context->I2C_SDA_SOURCE = GPIO_PinSource9;
+    /* SCL pin config -> PA8 */
+    /* SDA pin config -> PC9 */
+    context->initMembers(this, idx, GPIO_008, GPIO_041);
 		break;
 	default:
 		break;
 	}
 }
 
+HAL_I2C::HAL_I2C(I2C_IDX idx, GPIO_PIN sclPin, GPIO_PIN sdaPin) {
+  if(idx < I2C_IDX1) idx = I2C_IDX1;
+  if(idx > I2C_IDX3) idx = I2C_IDX3;
+	context = new (&I2C_contextArray[idx-1]) HW_HAL_I2C(idx); // placement new to avoid dynamic memory allocation
+  context->initMembers(this, idx, sclPin, sdaPin);
+
+}
 
 int32_t HAL_I2C::init(uint32_t speed) {
     /* Reset I2C module */
@@ -130,8 +95,7 @@ int32_t HAL_I2C::init(uint32_t speed) {
 	I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
 	I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
 	I2C_InitStructure.I2C_OwnAddress1 = context->I2C_SLAVE_ADDRESS7;
-	if(context->I2Cx == I2C1) I2C_InitStructure.I2C_Ack = I2C_Ack_Disable;
-	else I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
+	I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
 	I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
 	I2C_InitStructure.I2C_ClockSpeed = context->I2C_SPEED;
 	I2C_Init(context->I2Cx, &I2C_InitStructure);
@@ -148,15 +112,38 @@ void HAL_I2C::reset() {
     I2C_DeInit(context->I2Cx);
     RCC_APB1PeriphClockCmd(context->I2C_CLK, DISABLE);
 
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_StructInit(&GPIO_InitStructure);
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 
+    GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_StructInit(&GPIO_InitStructure);
     GPIO_InitStructure.GPIO_Pin = context->I2C_SCL_PIN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	//GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
+
+    GPIO_SetBits(context->I2C_SCL_GPIO_PORT,context->I2C_SCL_PIN);
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+    GPIO_Init(context->I2C_SCL_GPIO_PORT, &GPIO_InitStructure);
+
+    if(Scheduler::isSchedulerRunning()){
+    	Thread::suspendCallerUntil(NOW()+1*MILLISECONDS);
+
+    	for(int i=0;i<8;i++){
+			GPIO_ResetBits(context->I2C_SCL_GPIO_PORT,context->I2C_SCL_PIN);
+			Thread::suspendCallerUntil(NOW()+1*MILLISECONDS);
+			GPIO_SetBits(context->I2C_SCL_GPIO_PORT,context->I2C_SCL_PIN);
+			Thread::suspendCallerUntil(NOW()+1*MILLISECONDS);
+    	}
+    }
+
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
     GPIO_Init(context->I2C_SCL_GPIO_PORT, &GPIO_InitStructure);
 
     GPIO_InitStructure.GPIO_Pin = context->I2C_SDA_PIN;
     GPIO_Init(context->I2C_SDA_GPIO_PORT, &GPIO_InitStructure);
+
+    GPIO_ResetBits(context->I2C_SCL_GPIO_PORT,context->I2C_SCL_PIN);
 }
 
 
@@ -528,6 +515,42 @@ int32_t HW_HAL_I2C::mstrReadNoStart(const uint8_t addr, uint8_t* rxBuf, uint32_t
 	I2C_ClearFlag(I2Cx, I2C_FLAG_AF );
 
 	return rxBufSize;
+}
+
+void HW_HAL_I2C::initMembers(HAL_I2C* halI2C, I2C_IDX i2cIdx, GPIO_PIN sclPin, GPIO_PIN sdaPin){
+  IsMaster = true;
+  switch(i2cIdx) {
+  case I2C_IDX1:
+    I2Cx = I2C1;
+		I2C_CLK = RCC_APB1Periph_I2C1;
+		I2C_AF = GPIO_AF_I2C1;
+    break;
+  case I2C_IDX2:
+    I2Cx = I2C2;
+		I2C_CLK = RCC_APB1Periph_I2C2;
+		I2C_AF = GPIO_AF_I2C2;
+    break;
+  case I2C_IDX3:
+		I2Cx = I2C3;
+		I2C_CLK = RCC_APB1Periph_I2C3;
+		I2C_AF = GPIO_AF_I2C3;
+    break;
+  default:
+		break;
+  }
+  /* SCL pin config */
+  I2C_SCL_GPIO_PORT = HW_HAL_GPIO::getSTM32Port(sclPin);
+  I2C_SCL_GPIO_CLK = HW_HAL_GPIO::getRCC_APB1Periph_GPIOx(I2C_SCL_GPIO_PORT);
+  I2C_SCL_PIN = HW_HAL_GPIO::getSTM32Pin(sclPin);
+  I2C_SCL_SOURCE = HW_HAL_GPIO::getGPIO_PinSource(I2C_SCL_PIN);
+
+  /* SDA pin config */
+  I2C_SDA_GPIO_PORT = HW_HAL_GPIO::getSTM32Port(sdaPin);
+  I2C_SDA_GPIO_CLK = HW_HAL_GPIO::getRCC_APB1Periph_GPIOx(I2C_SDA_GPIO_PORT);
+  I2C_SDA_PIN = HW_HAL_GPIO::getSTM32Pin(sdaPin);
+  I2C_SDA_SOURCE = HW_HAL_GPIO::getGPIO_PinSource(I2C_SDA_PIN);
+
+
 }
 
 //int32_t HW_HAL_I2C::errorCheck(){

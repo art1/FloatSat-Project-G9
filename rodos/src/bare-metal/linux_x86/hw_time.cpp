@@ -47,6 +47,7 @@
 */
 
 #include <time.h>
+#include "hw_specific.h"
 namespace RODOS {
 
 /***************** Get Time functions **************/
@@ -54,7 +55,7 @@ namespace RODOS {
 // static long long timeAtStartup = 0LL;  now defined at 00globalobjects
 extern long long timeAtStartup; 
 
-long long hwGetNanoseconds() {
+unsigned long long hwGetNanoseconds() {
   struct timespec tp;
   long long timeNow;
 
@@ -69,7 +70,7 @@ void hwInitTime() {
 
 /******* abslute time (from host) for exotic function eg.random generator **/
 
-long long hwGetAbsoluteNanoseconds() {
+unsigned long long hwGetAbsoluteNanoseconds() {
 	return hwGetNanoseconds() + timeAtStartup;
 }
 }

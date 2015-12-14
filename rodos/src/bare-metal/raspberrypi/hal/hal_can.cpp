@@ -1,5 +1,6 @@
 
 #include "hal/hal_can.h"
+
 #include "rodos.h"
 
 
@@ -7,9 +8,11 @@
 namespace RODOS {
 #endif
 
-HAL_CAN::HAL_CAN(CAN_IDX canIdx){
+
+HAL_CAN::HAL_CAN(CAN_IDX canIdx, GPIO_PIN rxPin , GPIO_PIN txPin){
 
 }
+
 
 int HAL_CAN::init(unsigned int baudrate){
 return 0;

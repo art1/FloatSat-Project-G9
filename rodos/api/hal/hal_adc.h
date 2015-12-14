@@ -67,7 +67,10 @@ enum ADC_CHANNEL {  // STM32F4      AVR32       STM32F1 ...
     ADC_CH_012,     // PC2/PC2/PC2     ?            ?
     ADC_CH_013,     // PC3/PC3/PC3     ?            ?
     ADC_CH_014,     // PC4/PC4/PF4     ?            ?
-    ADC_CH_015      // PC5/PC5/PF5     ?            ?
+    ADC_CH_015,     // PC5/PC5/PF5     ?            ?
+    ADC_CH_016,     // intern          ?            ?
+    ADC_CH_017,     // intern          ?            ?
+    ADC_CH_018      // intern          ?            ?
 };
 
 

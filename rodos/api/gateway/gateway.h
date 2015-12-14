@@ -162,8 +162,8 @@ public:
      * call this method for arrived messages with topic 0 (list report).
      */
 
-    void setTopicsToForward(void* topicList);
-    void addTopicsToForward(void* topicList);
+    void setTopicsToForward(TopicListReport* topicList);
+    void addTopicsToForward(TopicListReport* topicList);
     void addTopicsToForward(TopicInterface* topicId1,TopicInterface* topicId2=0,TopicInterface* topicId3=0,TopicInterface* topicId4=0);
     void resetTopicsToForward();
 

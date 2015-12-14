@@ -13,18 +13,95 @@ RODOS Versioning
  Copyright (c) 2009 DLR, 2012 Uni Würzburg
 
 ----------------------------------------------
+
+NEXT VERSION:
+   stdlib_pico.cpp: removed compiler warnings by adding "static"
+   timemodel: updated leap seconds
+
+   stm32f4: hal_spi - added slave mode
+   stm32f4: hal_pwm - bugfix in constructor
+   stm32f4: hal_uart - bugfix noise error interrupt not cleared when DMA is enabled
+   stm32f4: hal_uart - bugfix wrong initialisation hwFlowCtrl variable 
+   stm32f4: hal_uart - bugfix reset of CTS/RTS pins when hw flow control is not enabled
+
+
+121:
+   new: generator recursive serializer/deserializer (big endian) for data comms, eg TM/TC
+        rodos-support/support_programs/serializer
+   new: added strtol() with stdlib_pico 
+
+   bare-metal-generic/thread_on_hw.cpp : checks for stack overflow for all threads to be activated
+   bytesex updated, deprecated old calls
+   topicreporter now register only active subscribers
+   
+   bugfix: in  MultipleReaderFifo::getReaderId()
+   bugfix: race condition in gateway
+   bugfix: problem in timemmodel
+   
+   stm32f4: HAL_ADC update -> + channels ADC_CH_16, ADC_CH_17, ADC_CH_18
+   stm32f4: HAL_I2C now pulses the clock several times on reset
+   stm32f4: Timer for system time changed from TIMER 7 to TIMER 11
+   stm32f4: bugfix: hwGetNanoseconds() returned wrong values, if interrupted
+
+
+120:
+   stm32f4: added SPI 4-6
+   stm32f4: added getcharNoWait()
+   stm32f4: removed SDCard folder
+   cortexA8: fixed stack alignment
+   linux, linux-makecontext, stm32f4, stm32: removed old uart implementation
+   IP_BORADCAST_ADR in userdefine.h 
+   BUG in linkinterface suspendUntilWriteFinished(CAN_TX_TIMEOUT); -> can.suspendUntilWriteFinished(NOW() + CAN_TX_TIMEOUT); 
+   bug correction: getBitField(...), setBitField(...) fixed wrong calculation of byte index
+   matlib updates for gedodetic, ecef, eci
+   removed many compiler warnings
+
+119:
+   stm32f4: Pin assignement in HAL constuctor for SPI
+
+   extention in compiler scripts to allow userconfigs
+   I2C_TIMEOUT_IN_NS now userconfig.h-able
+
+   extentions in matlib (class Rotor & class RPY)
+   extentions in mat: trust and lowpassfilter (signalprocessing.h)
+   BUG in malib.cpp Quaterion(RPY) roll and yaw was switched
+   matlib.h (removed double comments)
+   added implementation of gedodetic, ecef, eci
+   added double drand
+
+118:
+   New port: cortexA8 (including HAL GPIO + UART)
+   
+   stm32f4: make/stm32f4-set-vars, now accepts predefinitions ob sub arch & clock freq
+   stm32f4: support for STM32F427 
+   stm32f4: Pin assignement in HAL constuctor possible (I2C, CAN, UART)
+            -> This can be implemented on other ports too 
+
+   filesystem for stm32f4, discovery board
+   not a bug, only clarify: new parentisis in checksumes.cpp CRC computation
+   added in support lib double drand...
+
+   extentions in matlib (class Rotor & class RPY)
+   extentions in mat: trust and lowpassfilter (signalprocessing.h)
+   BUG in malib.cpp Quaterion(RPY) hatte roll und yaw vertauscht
+   extention in compiler scripts to allow userconfigs
+   I2C_TIMEOUT_IN_NS now userconfig.h-able
+   matlib.h (redundaten kommentaren weg)
+     gedodetic, ecef, eci umsetzungen
+
+
 117:
-	  new port: Balckfin (bf561 : adsp-bf561)
+   new port: Balckfin (bf561 : adsp-bf561)
 
-    added TopicFilter which may modify msgs before they are distributed
-    added tutorial time tirggered protocoll
+   added TopicFilter which may modify msgs before they are distributed
+   added tutorial time tirggered protocoll
 
-    make/linux-set-envs & posix-set-env:
+   make/linux-set-envs & posix-set-env:
 	    -Wno-cpp (to avoid double warnings from #warning)
-    support-lib/matlib* += Matrix6D
-    timemodell:computeNextBeat returns END_OF_TIME if periode == 0
-    activity.h & .cc from tutorials -> support_lib
-    stem32f4 Def. Stack 1k -> 2k
+   support-lib/matlib* += Matrix6D
+   timemodell:computeNextBeat returns END_OF_TIME if periode == 0
+   activity.h & .cc from tutorials -> support_lib
+   stem32f4 Def. Stack 1k -> 2k
 
 116:
     getbit & setBit functions added

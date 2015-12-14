@@ -17,14 +17,14 @@
 namespace RODOS {
 #endif
 
-uint16_t bigEndianToInt16_t(const void* buff) {
+uint16_t bigEndianToUint16_t(const void* buff) {
     uint8_t* byteStream = (uint8_t*)buff;
     if (byteStream == 0) return 0;
     return   (((uint16_t)(byteStream[0])) << 8)
            |  ((uint16_t)(byteStream[1]));
 }
 
-uint32_t bigEndianToInt32_t(const void* buff) {
+uint32_t bigEndianToUint32_t(const void* buff) {
     uint8_t* byteStream = (uint8_t*)buff;
     if (byteStream == 0) return 0;
     return    (((uint32_t)(byteStream[0])) << 24)
@@ -34,7 +34,7 @@ uint32_t bigEndianToInt32_t(const void* buff) {
 }
 
 
-uint64_t bigEndianToInt64_t(const void* buff) {
+uint64_t bigEndianToUint64_t(const void* buff) {
     uint8_t* byteStream = (uint8_t*)buff;
     if (byteStream == 0) return 0;
     return   (((uint64_t)(byteStream[0])) << 56)
@@ -70,14 +70,14 @@ double bigEndianToDouble(const void* buff) {
 
 /************ From internal representation to big-endian  byte stram  ****/
 
-void int16_tToBigEndian(void* buff, uint16_t value) {
+void uint16_tToBigEndian(void* buff, uint16_t value) {
     uint8_t* byteStream = (uint8_t*)buff;
     if (byteStream == 0) return;
     byteStream[0] = (uint8_t) ((value >> 8) & 0xFF);
     byteStream[1] = (uint8_t) ((value >> 0) & 0xFF);
 }
 
-void int32_tToBigEndian(void* buff, uint32_t value) {
+void uint32_tToBigEndian(void* buff, uint32_t value) {
     uint8_t* byteStream = (uint8_t*)buff;
     if (byteStream == 0) return;
     byteStream[0] = (uint8_t) ((value >> 24) & 0xFF);
@@ -87,7 +87,7 @@ void int32_tToBigEndian(void* buff, uint32_t value) {
 }
 
 
-void int64_tToBigEndian(void* buff, uint64_t value) {
+void uint64_tToBigEndian(void* buff, uint64_t value) {
     uint8_t* byteStream = (uint8_t*)buff;
     if (byteStream == 0) return;
     byteStream[0] = (uint8_t) ((value >> 56) & 0xFF);
@@ -98,6 +98,31 @@ void int64_tToBigEndian(void* buff, uint64_t value) {
     byteStream[5] = (uint8_t) ((value >> 16) & 0xFF);
     byteStream[6] = (uint8_t) ((value >>  8) & 0xFF);
     byteStream[7] = (uint8_t) ((value >>  0) & 0xFF);
+}
+
+
+int16_t bigEndianToInt16_t (const void* byteStream) { 
+    return static_cast<int16_t>( bigEndianToUint16_t(byteStream) ); 
+}
+
+int32_t bigEndianToInt32_t (const void* byteStream) { 
+    return static_cast<int32_t>( bigEndianToUint32_t(byteStream) ); 
+}
+
+int64_t bigEndianToInt64_t (const void* byteStream) {
+    return static_cast<int64_t>( bigEndianToUint64_t(byteStream) );
+}
+
+void int16_tToBigEndian  (void* byteStream, int16_t value) {
+    uint16_tToBigEndian(byteStream, static_cast<uint16_t>(value));
+}
+
+void int32_tToBigEndian  (void* byteStream, int32_t value) {
+    uint32_tToBigEndian(byteStream, static_cast<uint32_t>(value));
+}
+
+void int64_tToBigEndian  (void* byteStream, int64_t value) {
+    uint64_tToBigEndian(byteStream, static_cast<uint64_t>(value));
 }
 
 void floatToBigEndian(void* buff, float value_) {
@@ -152,22 +177,25 @@ int getBitFromByteStream(const void *byteStream, int bitIndex) {
 
 void setBitField(void* buffer, int bitPos, int numOfBits, uint32_t val) {
     unsigned char* buf = (unsigned char*) buffer;
-    int wordIndex = bitPos / 16;
-    bitPos        = bitPos % 16;
-    int shifts    = 16 - (bitPos + numOfBits);
+    int byteIndex = bitPos / 8;
+    bitPos        = bitPos % 8;
+    int shifts    = 24 - (bitPos + numOfBits);
     int32_t mask     = ((1 << numOfBits) -1) << shifts;
 
     val = val << shifts;
 
     // get the word as big-endian (CPU independent)
-    uint16_t word    = (buf[wordIndex] << 8) | buf[wordIndex+1];
+    uint32_t word    = (buf[byteIndex] << 16);
+	if(bitPos+numOfBits > 8 ) word |=  buf[byteIndex+1] << 8; //Do not read byte not required to avoid reading beyond the buffer
+	if(bitPos+numOfBits > 16) word |=  buf[byteIndex+2];
 
     word  &= ~ mask;        // Clear bit field
     word  |=  mask & val;   // set the correspondig bits
 
     // store the word as big-endian (CPU independent)
-    buf[wordIndex]   = (word >> 8) & 0xff; // Most Significant first
-    buf[wordIndex+1] = word & 0xff;
+    buf[byteIndex]                             = (word >> 16) & 0xff; // Most Significant first
+    if(bitPos+numOfBits > 8 ) buf[byteIndex+1] = (word >> 8 ) & 0xff;
+    if(bitPos+numOfBits > 16) buf[byteIndex+2] =  word        & 0xff;
 }
 
 
@@ -177,13 +205,15 @@ void setBitField(void* buffer, int bitPos, int numOfBits, uint32_t val) {
 
 uint32_t getBitField(void* buffer, int bitPos, int numOfBits) {
     unsigned char* buf = (unsigned char*) buffer;
-    int wordIndex = bitPos / 16;
-    bitPos        = bitPos % 16;
-    int shifts    = 16 - (bitPos + numOfBits);
+    int byteIndex = bitPos / 8;
+    bitPos        = bitPos % 8;
+    int shifts    = 24 - (bitPos + numOfBits);
     int32_t mask     = ((1 << numOfBits) -1);
 
     // get the word as big-endian (CPU independent)
-    uint16_t word    = (buf[wordIndex] << 8) | buf[wordIndex+1];
+    uint32_t word    = (buf[byteIndex] << 16);
+    if(bitPos+numOfBits > 8 ) word |=  buf[byteIndex+1] << 8; //Do not read byte not required to avoid reading beyond the buffer
+    if(bitPos+numOfBits > 16) word |=  buf[byteIndex+2];
 
     return  (word >> shifts) &  mask;
 }

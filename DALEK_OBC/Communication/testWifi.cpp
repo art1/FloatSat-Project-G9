@@ -49,9 +49,9 @@
 //	oldval = val;
 //}
 //SubscriberReceiver<uint32_t> naneNotImportant02(topicCounter1, printMsg, "readerfunc");
-//
-//
-//
-//
-//
-//
+
+
+
+
+
+

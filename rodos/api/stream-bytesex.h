@@ -1,4 +1,3 @@
-
 #pragma once
 
 /** Bytesex Convertions
@@ -16,17 +15,23 @@ namespace RODOS {
 
 /************ From a big-endian byte stream  to internal representation ****/
 
-uint16_t  bigEndianToInt16_t (const void* byteStream);
-uint32_t  bigEndianToInt32_t (const void* byteStream);
-uint64_t  bigEndianToInt64_t (const void* byteStream);
+uint16_t  bigEndianToUint16_t (const void* byteStream);
+uint32_t  bigEndianToUint32_t (const void* byteStream);
+uint64_t  bigEndianToUint64_t (const void* byteStream);
+int16_t   bigEndianToInt16_t (const void* byteStream);
+int32_t   bigEndianToInt32_t (const void* byteStream);
+int64_t   bigEndianToInt64_t (const void* byteStream);
 float  	  bigEndianToFloat   (const void* byteStream);
 double    bigEndianToDouble  (const void* byteStream);
 
 /************ From internal representation to big-endian  byte stream  ****/
 
-void int16_tToBigEndian (void* byteStream, uint16_t value);
-void int32_tToBigEndian (void* byteStream, uint32_t value);
-void int64_tToBigEndian (void* byteStream, uint64_t value);
+void uint16_tToBigEndian (void* byteStream, uint16_t value);
+void uint32_tToBigEndian (void* byteStream, uint32_t value);
+void uint64_tToBigEndian (void* byteStream, uint64_t value);
+void int16_tToBigEndian  (void* byteStream, int16_t value); 
+void int32_tToBigEndian  (void* byteStream, int32_t value);
+void int64_tToBigEndian  (void* byteStream, int64_t value);
 void floatToBigEndian   (void* byteStream, float    value);
 void doubleToBigEndian  (void* byteStream, double   value);
 
@@ -46,4 +51,5 @@ uint32_t getSetBits(const uint32_t &value);
 #ifndef NO_RODOS_NAMESPACE
 }
 #endif
+
 

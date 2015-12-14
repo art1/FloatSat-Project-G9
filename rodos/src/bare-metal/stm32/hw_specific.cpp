@@ -249,7 +249,7 @@ void hwInit()
 	SystemCoreClockUpdate(); // update a global variable holding the system clock
 
 	//led_init();	// inits GPIO PC12 as Output -> on olimex evalboard is a LED connected to this pin
-	adc_init();
+	//adc_init();
 
 	uart_stdout.init(115200);
 

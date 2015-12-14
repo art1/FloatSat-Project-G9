@@ -1,4 +1,5 @@
 
+#export RODOS_ROOT=$(dirname $(readlink -f $0))/..
 
 export RODOS_ROOT=`pwd`
 export RODOS_DIR=${RODOS_ROOT}/..

@@ -126,24 +126,24 @@ typedef enum {					// STM32F4		// AVR32 UC3A0512                   // NEXYS3-LEO
     GPIO_093, 					// PF13         // AVR32_PIN_PX07,                  // -not used-
     GPIO_094, 					// PF14         // AVR32_PIN_PX06,                  // -not used-
     GPIO_095, 					// PF15         // AVR32_PIN_PX05,                  // -not used-
-    GPIO_096,                   // PG01         // AVR32_PIN_PX04,
-    GPIO_097,                   // PG02         // AVR32_PIN_PX03,
-    GPIO_098,                   // PG03         // AVR32_PIN_PX02,
-    GPIO_099,                   // PG04         // AVR32_PIN_PX01,
+    GPIO_096,                   // PG00         // AVR32_PIN_PX04,
+    GPIO_097,                   // PG01         // AVR32_PIN_PX03,
+    GPIO_098,                   // PG02         // AVR32_PIN_PX02,
+    GPIO_099,                   // PG03         // AVR32_PIN_PX01,
 
-    GPIO_100,                   // PG05         // AVR32_PIN_PX00,
-	GPIO_101,                   // PG06         // AVR32_PIN_PX39,
-	GPIO_102,                   // PG07         // AVR32_PIN_PX38,
-	GPIO_103,                   // PG08         // AVR32_PIN_PX37,
-	GPIO_104,                   // PG09         // AVR32_PIN_PX36,
-	GPIO_105,                   // PG10         // AVR32_PIN_PX35,
-	GPIO_106,                   // PG11         // AVR32_PIN_PX14,
-	GPIO_107,                   // PG12         // AVR32_PIN_PX13,
-	GPIO_108,                   // PG13         // AVR32_PIN_PX12,
-	GPIO_109,                   // PG14         // AVR32_PIN_PX11
+    GPIO_100,                   // PG04         // AVR32_PIN_PX00,
+	GPIO_101,                   // PG05         // AVR32_PIN_PX39,
+	GPIO_102,                   // PG06         // AVR32_PIN_PX38,
+	GPIO_103,                   // PG07         // AVR32_PIN_PX37,
+	GPIO_104,                   // PG08         // AVR32_PIN_PX36,
+	GPIO_105,                   // PG09         // AVR32_PIN_PX35,
+	GPIO_106,                   // PG10         // AVR32_PIN_PX14,
+	GPIO_107,                   // PG11         // AVR32_PIN_PX13,
+	GPIO_108,                   // PG12         // AVR32_PIN_PX12,
+	GPIO_109,                   // PG13         // AVR32_PIN_PX11
 
-    GPIO_110, 					// PG15
-    GPIO_111, 					// PG16
+    GPIO_110, 					// PG14
+    GPIO_111, 					// PG15
     GPIO_112, 					// PH00
     GPIO_113, 					// PH01
     GPIO_114, 					// PH02
@@ -173,7 +173,8 @@ typedef enum {					// STM32F4		// AVR32 UC3A0512                   // NEXYS3-LEO
 	GPIO_136,                   // PI08
 	GPIO_137,                   // PI09
 	GPIO_138,                   // PI10
-	GPIO_139                    // PI11
+	GPIO_139,                   // PI11
+	GPIO_INVALID = -1
 
 }GPIO_PIN;
 

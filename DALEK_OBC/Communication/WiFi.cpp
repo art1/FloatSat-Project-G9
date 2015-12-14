@@ -30,19 +30,21 @@ void WiFi::run(){
 	wf121.enableTCPConnection(WIFI_IP,WIFI_PORT);
 	int k = wf121.status();
 	PRINTF("wifi state is: %d\n",k);
-	while(1){
-		while(!wifiBuf.isEmpty()){
-			wifiBuf.get(tmp);
-			sendNewMessage(&tmp);
-			if(wf121.isDataReady())break;
-		}
-		if(wf121.isDataReady())	getNewMessages();
-		suspendCallerUntil(NOW() + TTNC_SAMPLERATE*MILLISECONDS);
-	}
+
+
+//	while(1){
+//		while(!wifiBuf.isEmpty()){
+//			wifiBuf.get(tmp);
+//			sendNewMessage(&tmp);
+//			if(wf121.isDataReady())break;
+//		}
+//		if(wf121.isDataReady())	getNewMessages();
+//		suspendCallerUntil(NOW() + TTNC_SAMPLERATE*MILLISECONDS);
+//	}
 }
 
 void WiFi::setNewData(UDPMsg msg){
-	wifiBuf.put(msg);
+//	wifiBuf.put(msg);
 	/** TODO implement check if FIFO is full -> then stop the Telemetry! */
 }
 

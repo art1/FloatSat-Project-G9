@@ -9,6 +9,7 @@
 #include "rodos.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_can.h"
+#include "hw_hal_gpio.h"
 
 #include <new>
 
@@ -17,32 +18,23 @@
 namespace RODOS {
 #endif
 
+#ifndef STM32F401xx
+
 #define MAX_FILTERS 20
 
 #define NUM_HW_FILTER_BANKS 28
 #define NUM_CAN1_FILTER_BANKS 14
 #define NUM_CAN2_FILTER_BANKS (NUM_HW_FILTER_BANKS-NUM_CAN1_FILTER_BANKS)
 
-
-
-
-
-
-
+void CANGlobalInit();
 void CANGlobalInit(){
 	static bool init=false;
 	if(!init){
 		init=true;
 
 		RCC_APB1PeriphClockCmd((RCC_APB1Periph_CAN1 | RCC_APB1Periph_CAN2), ENABLE);
-		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_GPIOB, ENABLE);
-
-
 	}
-
 }
-
-
 
 
 struct CAN_Filter{
@@ -55,12 +47,14 @@ struct CAN_Filter{
 };
 
 
-
 class CAN_Ctrl{
 public:
 
 	bool initialized;
 	CAN_TypeDef* can;
+
+	GPIO_PIN rxPin;
+	GPIO_PIN txPin;
 
 	CAN_Filter filters[MAX_FILTERS];
 	int numFilters;
@@ -80,10 +74,7 @@ public:
 	void TxIRQHandler();
 	void RxIRQHandler();
 
-
 };
-
-
 
 class HW_HAL_CAN {
 	public:
@@ -93,20 +84,11 @@ class HW_HAL_CAN {
 	volatile bool rxFifoEmpty;
 
 
-
-
-
 	public:
 	HW_HAL_CAN();
-
-
 };
 
-
 CAN_Ctrl CANs[2] = { CAN_Ctrl(CAN1),CAN_Ctrl(CAN2)};
-
-
-
 
 
 CAN_Ctrl::CAN_Ctrl(CAN_TypeDef* _can){
@@ -114,40 +96,43 @@ CAN_Ctrl::CAN_Ctrl(CAN_TypeDef* _can){
 	can=_can;
 	numFilters=0;
 	txFifoEmpty=true;
-
+	//rxPin=GPIO_000;
+	//txPin=GPIO_000;
 }
 
 void CAN_Ctrl::init(uint32_t baudrate){
 	if(!initialized){
 		initialized=true;
 
-		GPIO_InitTypeDef  GPIO_InitStructure;
 		CAN_InitTypeDef CAN_InitStructure;
 
 		CANGlobalInit();
 
-		 /* Connect CAN pins to AF9 */
-
-
 		  /* Configure CAN RX and TX pins */
-
-		  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-		  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-		  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-		  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-
+		  uint8_t afConfig;
 		  if(can==CAN1){
-			  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
+			  if(rxPin == GPIO_000){
+				  rxPin = GPIO_048;
+				  txPin = GPIO_049;
+			  }
+			  afConfig=GPIO_AF_CAN1;
+			/*  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
 			  GPIO_PinAFConfig(GPIOD, GPIO_PinSource0, GPIO_AF_CAN1);
 			  GPIO_PinAFConfig(GPIOD, GPIO_PinSource1, GPIO_AF_CAN1);
-			  GPIO_Init(GPIOD, &GPIO_InitStructure);
-		  }else{
-			  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_13;
+			  GPIO_Init(GPIOD, &GPIO_InitStructure);*/
+		  }else{//CAN2
+			  if(rxPin == GPIO_000){
+				  rxPin = GPIO_021;
+				  txPin = GPIO_029;
+			  }
+			  afConfig=GPIO_AF_CAN2;
+			  /*GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_13;
 			  GPIO_PinAFConfig(GPIOB, GPIO_PinSource5, GPIO_AF_CAN2);
 			  GPIO_PinAFConfig(GPIOB, GPIO_PinSource13, GPIO_AF_CAN2);
-			  GPIO_Init(GPIOB, &GPIO_InitStructure);
+			  GPIO_Init(GPIOB, &GPIO_InitStructure);*/
 		  }
-
+		  HW_HAL_GPIO::configureAFPin(rxPin,afConfig);
+		  HW_HAL_GPIO::configureAFPin(txPin,afConfig);
 
 		  //Prescaler Calculation
 
@@ -156,9 +141,6 @@ void CAN_Ctrl::init(uint32_t baudrate){
 
 		  uint32_t canCtrlFreq =  RCC_ClocksStatus.PCLK1_Frequency;
 		  PRINTF("CAN Ctrl Frequency: %lud",canCtrlFreq);
-
-
-
 
 
 
@@ -207,7 +189,6 @@ void CAN_Ctrl::init(uint32_t baudrate){
 		  setupFilters();
 
 
-
 		  if(can==CAN1){
 			  CANs[1].setupFilters();
 			  NVIC_EnableIRQ(CAN1_TX_IRQn);
@@ -217,21 +198,12 @@ void CAN_Ctrl::init(uint32_t baudrate){
 			  NVIC_EnableIRQ(CAN2_RX0_IRQn);
 		  }
 
-
-
-
-
 	}
-
-
 
 }
 
 bool CAN_Ctrl::putIntoTxMailbox(CanTxMsg& msg){
-
-
 	return CAN_Transmit(can,&msg) != CAN_TxStatus_NoMailBox;
-
 }
 
 bool CAN_Ctrl::setupFilters(){
@@ -561,27 +533,36 @@ void CAN_Ctrl::RxIRQHandler(){
 }
 
 
-
-
 HW_HAL_CAN::HW_HAL_CAN(){
 
 }
 
-
-
-
-HAL_CAN::HAL_CAN(CAN_IDX canIdx){
+extern unsigned long errorCounter;
+HAL_CAN::HAL_CAN(CAN_IDX canIdx, GPIO_PIN rxPin, GPIO_PIN txPin){
 	context= new(xmalloc(sizeof(HW_HAL_CAN))) HW_HAL_CAN();
 	context->ctrl=&CANs[canIdx];
 	context->rxFifoEmpty=true;
 
+	if(rxPin != GPIO_INVALID){
+		if(context->ctrl->rxPin == GPIO_000){//Set pins if they have not been set
+			context->ctrl->rxPin = rxPin;
+			context->ctrl->txPin = txPin;
+		}else{
+			//ERROR("CAN GPIO Pins set multiple Times, only allowed once");
+			errorCounter++;
+		}
+	}
 }
 
 int HAL_CAN::init(unsigned int baudrate){
-	context->ctrl->init(baudrate);
+	if(Scheduler::isSchedulerRunning()){
+		PRIORITY_CEILING{
+			context->ctrl->init(baudrate);
+		}
+	}else{
+		context->ctrl->init(baudrate);
+	}
 	return 0;
-
-
 }
 
 void HAL_CAN::reset(){
@@ -754,7 +735,10 @@ int HAL_CAN::read(char* recBuf, uint32_t* canID, bool* isExtID,bool* rtr){
 }
 
 extern "C"{
-
+	void CAN1_TX_IRQHandler();
+	void CAN2_TX_IRQHandler();
+	void CAN1_RX0_IRQHandler();
+	void CAN2_RX0_IRQHandler();
 
 	void CAN1_TX_IRQHandler(){
 		CANs[0].TxIRQHandler();
@@ -779,7 +763,9 @@ extern "C"{
 	}
 
 }
-
+#else
+	#warning no HAL CAN supported by MCU STM32F401
+#endif // end STM32F401xx
 
 #ifndef NO_RODOS_NAMESPACE
 }

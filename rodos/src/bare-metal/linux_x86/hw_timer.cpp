@@ -96,6 +96,7 @@ extern bool isSchedulingEnabled;
 /**
 * the signal handler for SIGVTALRM (timer signal)
 */
+void timerSignalHandler(int ignore);
 void timerSignalHandler(int ignore) {
   
    if(!isSchedulingEnabled) return;

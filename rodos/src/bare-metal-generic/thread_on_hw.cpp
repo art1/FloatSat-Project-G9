@@ -1,47 +1,11 @@
 
 
-/*********************************************************** Copyright
- **
- ** Copyright (c) 2008, German Aerospace Center (DLR)
- ** All rights reserved.
- **
- ** Redistribution and use in source and binary forms, with or without
- ** modification, are permitted provided that the following conditions are
- ** met:
- **
- ** 1 Redistributions of source code must retain the above copyright
- **   notice, this list of conditions and the following disclaimer.
- **
- ** 2 Redistributions in binary form must reproduce the above copyright
- **   notice, this list of conditions and the following disclaimer in the
- **   documentation and/or other materials provided with the
- **   distribution.
- **
- ** 3 Neither the name of the German Aerospace Center nor the names of
- **   its contributors may be used to endorse or promote products derived
- **   from this software without specific prior written permission.
- **
- ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- ** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- ** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- ** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- ** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- ** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- ** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- ** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- **
- ****************************************************************************/
-
-
 /**
 * @file thread.cc
 * @date 2008/04/22 16:50
 * @author Lutz Dittrich, Sergio Montenegro
 *
-* Copyright 2008 DLR
+* Copyright 2008 DLR, 2015 Uni-Wue
 *
 * A Thread is a schedulable object with own context and stack
 *
@@ -242,6 +206,7 @@ void IdleThread::run() {
         setPriority(0); // Due to wrong usage of PRIORITY_CLING in events, once I got highest prio for Idle.
         sp_partition_yield(); // allow other linux processes or ARIC-653 paritions to run
         yield();
+
     }
 }
 
@@ -264,7 +229,6 @@ Thread* idlethreadP = &idlethread;
 Thread* Thread::findNextToRun(TTime timeNow) {
     Thread* nextThreadToRun = &idlethread; // Default, if no one else wants
     timeToTryAgainToSchedule = timeNow + TIME_SLICE_FOR_SAME_PRIORITY;
-
     ITERATE_LIST(Thread, threadList) {
         if (iter->suspendedUntil < timeNow) { // in the past
 			// - thread with highest prio will be executed immediately when this scheduler-call ends
@@ -284,6 +248,18 @@ Thread* Thread::findNextToRun(TTime timeNow) {
 			// threads with lower priority will not be executed until nextThreadToRun suspends
         }
     } // Iterate list
+
+    /** Chekc stack violations **/
+    if(((int32_t)nextThreadToRun->context - (int32_t)nextThreadToRun->stackBegin) < 300) {
+        xprintf("!StackOverflow! %x DEACTIVATED!: free %d\n", (int)nextThreadToRun, (int)nextThreadToRun->context - (int)nextThreadToRun->stackBegin );
+        nextThreadToRun->suspendedUntil = END_OF_TIME;
+        nextThreadToRun = &idlethread;
+    }
+    if ( *(uint32_t *)(nextThreadToRun->stackBegin) !=  EMPTY_MEMORY_MARKER) { // this thrads ging beyon his stack!
+        xprintf("! PANIC %x beyon stack, DEACTIVATED!\n", (int)nextThreadToRun);
+        nextThreadToRun->suspendedUntil = END_OF_TIME;
+        nextThreadToRun = &idlethread;
+    }
 
     return nextThreadToRun;
 }

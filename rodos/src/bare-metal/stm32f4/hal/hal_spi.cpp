@@ -1,7 +1,7 @@
 #include <new>
 #include "rodos.h"
-#include <stdio.h>
 #include "hal/hal_spi.h"
+#include "hw_hal_gpio.h"
 extern "C" {
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_gpio.h"
@@ -17,19 +17,24 @@ namespace RODOS {
 /** TODO:
  * - timeout for while loops
  * - read/write not "busy-waiting" -> interrupts
- * - SPI4/5/6 -> STM32F42x/43x
  * - reset()
  * - spi slave
  * - status()
  * - config()
  */
 #define SPI_IDX_MIN SPI_IDX1
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
+#define SPI_IDX_MAX SPI_IDX6
+#else
 #define SPI_IDX_MAX SPI_IDX3
+#endif
+
 
 class HW_HAL_SPI {
 public:
 	SPI_IDX idx;
 	bool initialized;
+	bool slave;
 	SPI_TypeDef *SPIx;
 	uint32_t baudrate;
 
@@ -52,6 +57,7 @@ public:
 	static DMA_InitTypeDef DMA_InitStructure;
 
 public:
+   HW_HAL_SPI(SPI_IDX idx, GPIO_PIN sckPin, GPIO_PIN misoPin, GPIO_PIN mosiPin);
 	HW_HAL_SPI(SPI_IDX idx);
 
 	HW_HAL_SPI() {
@@ -62,11 +68,54 @@ public:
 	void waitOnTransferReady();
 
 	int32_t setBaudrate(uint32_t baudrate);
+
+  void initMembers(SPI_IDX idx, GPIO_PIN sckPin, GPIO_PIN misoPin, GPIO_PIN mosiPin);
 };
 
 DMA_InitTypeDef HW_HAL_SPI::DMA_InitStructure;
 
+HW_HAL_SPI::HW_HAL_SPI(SPI_IDX idx, GPIO_PIN sckPin, GPIO_PIN misoPin, GPIO_PIN mosiPin) {
+  if(idx < SPI_IDX_MIN) ERROR("SPI index out of range");
+  if(idx > SPI_IDX_MAX) ERROR("SPI index out of range");
+  initMembers(idx, sckPin, misoPin, mosiPin);
+}
+
 HW_HAL_SPI::HW_HAL_SPI(SPI_IDX idx) {
+
+	switch(idx){
+	case SPI_IDX1:
+    //SCK = PB3, MISO = PB4, MOSI = PB5
+    initMembers(idx, GPIO_019, GPIO_020, GPIO_021);
+		break;
+	case SPI_IDX2:
+    //SCK = PB13, MISO = PB14, MOSI = PB15
+    initMembers(idx, GPIO_029, GPIO_030, GPIO_031);
+		break;
+	case SPI_IDX3:
+    //SCK = PC10, MISO = PC11, MOSI = PC12
+    initMembers(idx, GPIO_042, GPIO_043, GPIO_044);
+		break;
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
+	case SPI_IDX4:
+    //SCK = PE12, MISO = PE13, MOSI = PE14
+    initMembers(idx, GPIO_076, GPIO_077, GPIO_078);
+		break;
+	case SPI_IDX5:
+    //SCK = PF7, MISO = PF8, MOSI = PF9
+    initMembers(idx, GPIO_087, GPIO_088, GPIO_089);
+		break;
+	case SPI_IDX6:
+    //SCK = PG13, MISO = PG12, MOSI = PG14
+    initMembers(idx, GPIO_109, GPIO_108, GPIO_110);
+		break;
+#endif
+	default:
+		ERROR("SPI index out of range");
+	}
+
+}
+
+void HW_HAL_SPI::initMembers(SPI_IDX idx, GPIO_PIN sckPin, GPIO_PIN misoPin, GPIO_PIN mosiPin) {
 	this->idx = idx;
 	this->initialized = false;
 
@@ -83,6 +132,14 @@ HW_HAL_SPI::HW_HAL_SPI(SPI_IDX idx) {
 	pDMA_Init->DMA_MemoryBurst = DMA_MemoryBurst_Single;
 	pDMA_Init->DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 
+
+    GPIO_Pin_SCK   = HW_HAL_GPIO::getSTM32Pin(sckPin);
+	GPIO_Port_SCK  = HW_HAL_GPIO::getSTM32Port(sckPin);
+	GPIO_Pin_MISO  = HW_HAL_GPIO::getSTM32Pin(misoPin);
+	GPIO_Port_MISO = HW_HAL_GPIO::getSTM32Port(misoPin);
+	GPIO_Pin_MOSI  = HW_HAL_GPIO::getSTM32Pin(mosiPin);
+	GPIO_Port_MOSI = HW_HAL_GPIO::getSTM32Port(mosiPin);
+
 	switch(idx){
 	case SPI_IDX1:
 		SPIx = SPI1;
@@ -92,12 +149,6 @@ HW_HAL_SPI::HW_HAL_SPI(SPI_IDX idx) {
 		DMA_Stream_TX_FLAG_TCIFx = DMA_FLAG_TCIF3;
 		DMA_Channel_RX = DMA_Channel_3;
 		DMA_Channel_TX = DMA_Channel_3;
-		GPIO_Pin_SCK   = GPIO_Pin_5;
-		GPIO_Port_SCK  = GPIOA;
-		GPIO_Pin_MISO  = GPIO_Pin_6;
-		GPIO_Port_MISO = GPIOA;
-		GPIO_Pin_MOSI  = GPIO_Pin_7;
-		GPIO_Port_MOSI = GPIOA;
 		GPIO_AF = GPIO_AF_SPI1;
 		break;
 	case SPI_IDX2:
@@ -108,12 +159,6 @@ HW_HAL_SPI::HW_HAL_SPI(SPI_IDX idx) {
 		DMA_Stream_TX_FLAG_TCIFx = DMA_FLAG_TCIF4;
 		DMA_Channel_RX = DMA_Channel_0;
 		DMA_Channel_TX = DMA_Channel_0;
-		GPIO_Pin_SCK   = GPIO_Pin_13;
-		GPIO_Port_SCK  = GPIOB;
-		GPIO_Pin_MISO  = GPIO_Pin_14;
-		GPIO_Port_MISO = GPIOB;
-		GPIO_Pin_MOSI  = GPIO_Pin_15;
-		GPIO_Port_MOSI = GPIOB;
 		GPIO_AF = GPIO_AF_SPI2;
 		break;
 	case SPI_IDX3:
@@ -124,14 +169,40 @@ HW_HAL_SPI::HW_HAL_SPI(SPI_IDX idx) {
 		DMA_Stream_TX_FLAG_TCIFx = DMA_FLAG_TCIF5;
 		DMA_Channel_RX = DMA_Channel_0;
 		DMA_Channel_TX = DMA_Channel_0;
-		GPIO_Pin_SCK   = GPIO_Pin_10;
-		GPIO_Port_SCK  = GPIOC;
-		GPIO_Pin_MISO  = GPIO_Pin_11;
-		GPIO_Port_MISO = GPIOC;
-		GPIO_Pin_MOSI  = GPIO_Pin_12;
-		GPIO_Port_MOSI = GPIOC;
 		GPIO_AF = GPIO_AF_SPI3;
 		break;
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
+	case SPI_IDX4:
+		SPIx = SPI4;
+		DMA_Stream_RX = DMA2_Stream0; // or DMA2_Stream3
+		DMA_Stream_TX = DMA2_Stream1; // or DMA2_Stream4
+		DMA_Stream_RX_FLAG_TCIFx = DMA_FLAG_TCIF0;
+		DMA_Stream_TX_FLAG_TCIFx = DMA_FLAG_TCIF1;
+		DMA_Channel_RX = DMA_Channel_4;
+		DMA_Channel_TX = DMA_Channel_4;
+		GPIO_AF = GPIO_AF_SPI4;
+		break;
+	case SPI_IDX5:
+		SPIx = SPI5;
+		DMA_Stream_RX = DMA2_Stream3; // or DMA2_Stream5
+		DMA_Stream_TX = DMA2_Stream4; // or DMA2_Stream6
+		DMA_Stream_RX_FLAG_TCIFx = DMA_FLAG_TCIF3;
+		DMA_Stream_TX_FLAG_TCIFx = DMA_FLAG_TCIF4;
+		DMA_Channel_RX = DMA_Channel_2;
+		DMA_Channel_TX = DMA_Channel_2;
+		GPIO_AF = GPIO_AF_SPI5;
+		break;
+	case SPI_IDX6:
+		SPIx = SPI6;
+		DMA_Stream_RX = DMA2_Stream6;
+		DMA_Stream_TX = DMA2_Stream5;
+		DMA_Stream_RX_FLAG_TCIFx = DMA_FLAG_TCIF6;
+		DMA_Stream_TX_FLAG_TCIFx = DMA_FLAG_TCIF5;
+		DMA_Channel_RX = DMA_Channel_1;
+		DMA_Channel_TX = DMA_Channel_1;
+		GPIO_AF = GPIO_AF_SPI6;
+		break;
+#endif
 	default:
 		ERROR("SPI index out of range");
 	}
@@ -167,6 +238,11 @@ int32_t HW_HAL_SPI::setBaudrate(uint32_t baudrate){
     case SPI_IDX1: pclk = sysClks.PCLK2_Frequency; break;
     case SPI_IDX2: pclk = sysClks.PCLK1_Frequency; break;
     case SPI_IDX3: pclk = sysClks.PCLK1_Frequency; break;
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
+    case SPI_IDX4: pclk = sysClks.PCLK2_Frequency; break;
+    case SPI_IDX5: pclk = sysClks.PCLK2_Frequency; break;
+    case SPI_IDX6: pclk = sysClks.PCLK2_Frequency; break;
+#endif
     default: ERROR("SPI index out of range"); return -1;
     }
 
@@ -198,6 +274,14 @@ int32_t HW_HAL_SPI::setBaudrate(uint32_t baudrate){
 
 HW_HAL_SPI SPIcontextArray[SPI_IDX_MAX];
 
+HAL_SPI::HAL_SPI(SPI_IDX idx, GPIO_PIN sckPin, GPIO_PIN misoPin, GPIO_PIN mosiPin) {
+	if (idx < SPI_IDX_MIN || idx > SPI_IDX_MAX) {
+		ERROR("SPI index out of range");
+	} else {
+		context = new (&SPIcontextArray[idx - 1]) HW_HAL_SPI(idx,sckPin,misoPin,mosiPin); // placement new to avoid dynamic memory allocation
+	}
+}
+
 HAL_SPI::HAL_SPI(SPI_IDX idx) {
 	if (idx < SPI_IDX_MIN || idx > SPI_IDX_MAX) {
 		ERROR("SPI index out of range");
@@ -213,7 +297,8 @@ HAL_SPI::HAL_SPI(SPI_IDX idx) {
  * @param baudrate
  * @return baudrate that is really configured, considering APB clock and possible baudrate prescaler (2,4,8,16,32,64,128,256)
  */
-int32_t HAL_SPI::init(uint32_t baudrate) {
+int32_t HAL_SPI::init(uint32_t baudrate, bool slave) {
+	context->slave = slave;
 	/* enable peripheral clock */
 	switch(context->idx){
 	case SPI_IDX1:
@@ -228,6 +313,20 @@ int32_t HAL_SPI::init(uint32_t baudrate) {
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, ENABLE);
 		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE); // used by SPI2/3
 		break;
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
+  case SPI_IDX4:
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI4, ENABLE);
+		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+		break;
+  case SPI_IDX5:
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI5, ENABLE);
+		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+		break;
+  case SPI_IDX6:
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI6, ENABLE);
+		RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+		break;
+#endif
 	default: ERROR("SPI index out of range"); return -1;
 	}
 
@@ -291,13 +390,19 @@ int32_t HAL_SPI::init(uint32_t baudrate) {
 	 */
 	SPI_InitTypeDef SPI_InitStruct;
 	SPI_InitStruct.SPI_Direction = SPI_Direction_2Lines_FullDuplex; // set to full duplex mode, separate MOSI and MISO lines
-	SPI_InitStruct.SPI_Mode = SPI_Mode_Master;                      // transmit in master mode, NSS pin has to be always high
 	SPI_InitStruct.SPI_DataSize = SPI_DataSize_8b;                  // one packet of data is 8 bits wide
 	SPI_InitStruct.SPI_CPOL = SPI_CPOL_Low;                         // clock is low when idle
 	SPI_InitStruct.SPI_CPHA = SPI_CPHA_1Edge;                       // data sampled at first edge
-	SPI_InitStruct.SPI_NSS = SPI_NSS_Soft | SPI_NSSInternalSoft_Set; // set the NSS management to internal and pull internal NSS high
 	SPI_InitStruct.SPI_BaudRatePrescaler = 0;                       // will be set in setBaudrate()
 	SPI_InitStruct.SPI_FirstBit = SPI_FirstBit_MSB;                 // data is transmitted MSB first
+	SPI_InitStruct.SPI_NSS = SPI_NSS_Soft; 								 // set the NSS management to internal
+
+	if(slave) {
+		SPI_InitStruct.SPI_Mode = SPI_Mode_Slave;                      // transmit in slave mode, NSS pin has to be always high
+	} else {
+		SPI_InitStruct.SPI_Mode = SPI_Mode_Master;                      // transmit in master mode, NSS pin has to be always high
+	}
+
 	SPI_Init(context->SPIx, &SPI_InitStruct);
 
 	context->setBaudrate(baudrate);
@@ -317,6 +422,11 @@ void HAL_SPI::reset() {
     case SPI_IDX1: RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, DISABLE); break;
     case SPI_IDX2: RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2, DISABLE); break;
     case SPI_IDX3: RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI3, DISABLE); break;
+#if defined (STM32F427_437xx) || defined (STM32F429_439xx)
+    case SPI_IDX4: RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI4, DISABLE); break;
+    case SPI_IDX5: RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI5, DISABLE); break;
+    case SPI_IDX6: RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI6, DISABLE); break;
+#endif
     default: ERROR("SPI index out of range"); return;
     }
 
@@ -398,7 +508,6 @@ bool HAL_SPI::isReadFinished(){
  * DMA write, busy waiting
  */
 int32_t HAL_SPI::write(const uint8_t* sendBuf, uint32_t len) {
-	PRINTF("got to send: %d",sendBuf[0]);
 
 	if(!context->initialized) return -1;
 
@@ -441,8 +550,34 @@ int32_t HAL_SPI::write(const uint8_t* sendBuf, uint32_t len) {
  * read() - DMA read, busy waiting
  */
 int32_t HAL_SPI::read(uint8_t* recBuf, uint32_t maxLen) {
+	if(!context->slave)
+		return writeRead(recBuf, maxLen, recBuf, maxLen);
 
-	return writeRead(recBuf, maxLen, recBuf, maxLen);
+	if(!context->initialized) return -1;
+
+	/* configure receive DMA */
+	DMA_InitTypeDef *pDMA_Init = &context->DMA_InitStructure;
+	pDMA_Init->DMA_PeripheralBaseAddr = (uint32_t) &(context->SPIx->DR);
+	pDMA_Init->DMA_Channel = context->DMA_Channel_RX;
+	pDMA_Init->DMA_DIR = DMA_DIR_PeripheralToMemory;
+	pDMA_Init->DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
+	pDMA_Init->DMA_Memory0BaseAddr = (uint32_t)recBuf;
+	pDMA_Init->DMA_BufferSize = maxLen;
+	DMA_Init(context->DMA_Stream_RX, pDMA_Init);
+	DMA_ITConfig(context->DMA_Stream_RX, DMA_IT_TC, DISABLE);
+	DMA_Cmd(context->DMA_Stream_RX, ENABLE);
+	SPI_I2S_DMACmd(context->SPIx, SPI_I2S_DMAReq_Rx, ENABLE);
+
+	while (!DMA_GetFlagStatus(context->DMA_Stream_RX, context->DMA_Stream_RX_FLAG_TCIFx )){}
+	DMA_ClearFlag(context->DMA_Stream_RX, context->DMA_Stream_RX_FLAG_TCIFx );
+
+	context->waitOnTransferReady();
+
+	SPI_I2S_DMACmd(context->SPIx, SPI_I2S_DMAReq_Rx | SPI_I2S_DMAReq_Tx, DISABLE);
+
+	upCallReadFinished();
+
+	return maxLen;
 
 /* The following read-implementation works, but generates spi clock for a few more bytes than requested,
  * because the RXONLY-flag is cleared to late.
@@ -543,7 +678,7 @@ int32_t HAL_SPI::writeRead(const uint8_t* sendBuf, uint32_t len, uint8_t* recBuf
 	context->waitOnTransferReady();
 
 	/*end TX/RX*/
-	SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Rx | SPI_I2S_DMAReq_Tx, DISABLE);
+	SPI_I2S_DMACmd(context->SPIx, SPI_I2S_DMAReq_Rx | SPI_I2S_DMAReq_Tx, DISABLE);
 
 	upCallReadFinished();
 

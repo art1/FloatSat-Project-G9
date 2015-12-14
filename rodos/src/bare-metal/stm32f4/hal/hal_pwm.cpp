@@ -54,7 +54,7 @@ HAL_PWM::HAL_PWM(PWM_IDX idx) {
 
 int HAL_PWM::init(int frequency, int increments) {
 
-    if ((context->PwmIdx < PWM_IDX00) || (context->PwmIdx > PWM_IDX15)) {
+    if ((static_cast<int>(context->PwmIdx) < static_cast<int>(PWM_IDX00)) || (static_cast<int>(context->PwmIdx) > static_cast<int>(PWM_IDX15))) {
         return -1;
     }
 
@@ -270,7 +270,7 @@ int HAL_PWM::init(int frequency, int increments) {
 }
 
 int HAL_PWM::config(PWM_PARAMETER_TYPE type, int paramVal) {
-    if ((context->PwmIdx < PWM_IDX00) || (context->PwmIdx > PWM_IDX15)) {
+    if ((static_cast<int>(context->PwmIdx) < static_cast<int>(PWM_IDX00)) || (static_cast<int>(context->PwmIdx) > static_cast<int>(PWM_IDX15))) {
         return -1;
     }
 
@@ -298,7 +298,7 @@ int HAL_PWM::config(PWM_PARAMETER_TYPE type, int paramVal) {
 }
 
 void HAL_PWM::reset() {
-    if ((context->PwmIdx < PWM_IDX00) || (context->PwmIdx > PWM_IDX15)) {
+	if ((static_cast<int>(context->PwmIdx) < static_cast<int>(PWM_IDX00)) || (static_cast<int>(context->PwmIdx) > static_cast<int>(PWM_IDX15))) {
         return;
     }
 
@@ -395,7 +395,7 @@ void HAL_PWM::reset() {
 }
 
 int HAL_PWM::write(unsigned int pulseWidthInIncs) {
-    if ((context->PwmIdx < PWM_IDX00) || (context->PwmIdx > PWM_IDX15)) {
+	if ((static_cast<int>(context->PwmIdx) < static_cast<int>(PWM_IDX00)) || (static_cast<int>(context->PwmIdx) > static_cast<int>(PWM_IDX15))) {
         return -1;
     }
 
@@ -460,7 +460,7 @@ HW_HAL_PWM::HW_HAL_PWM(PWM_IDX idx){
     GPIO_Pin = 0;
     GPIO_Port = NULL;
 
-    if ( (idx < PWM_IDX00) || (idx > PWM_IDX15) ) {
+    if ((static_cast<int>(idx) < static_cast<int>(PWM_IDX00)) || (static_cast<int>(idx) > static_cast<int>(PWM_IDX15))) {
         ERROR("Invalid PWM Index\n");
         return;
     }

@@ -26,6 +26,8 @@
 namespace RODOS {
 #endif
 
+void sharedmemorySignalHandler(int signum);
+
 typedef struct {
 	int32_t magicWord;
 	int32_t lockFlag;

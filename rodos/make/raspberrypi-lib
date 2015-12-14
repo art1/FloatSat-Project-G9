@@ -36,7 +36,9 @@ ${AR} -rc librodos.a build/*.o
 
 # compile support libs
 source ${RODOS_MAKES}/check_rodos_support
-cd ${RODOS_SUPPORT_LIBS}/filesystem/
+echo ""
+echo "Building support-libs ..."
+cd ${RODOS_SUPPORT_LIBS}
 source doit-raspberrypi
 
 cd ${RODOS_ROOT}

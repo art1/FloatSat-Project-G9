@@ -4,8 +4,7 @@
 
 
 #include "genericIO.h"
-#include <stdio.h>
-
+#include "hal_gpio.h"
 #include <stdint.h>
 
 
@@ -42,7 +41,7 @@ class HAL_I2C : public GenericIOInterface {
 	HW_HAL_I2C *context;
 public:
 	HAL_I2C(I2C_IDX idx);
-
+	HAL_I2C(I2C_IDX idx, GPIO_PIN sclPin, GPIO_PIN sdaPin);
    /**
 	 * Initialize I2C interface
 	 * default: master, 7Bit address

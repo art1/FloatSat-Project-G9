@@ -1,5 +1,9 @@
-#include "stm32f4xx_i2c.h"
+#ifndef _HW_HAL_I2C_H_
+#define _HW_HAL_I2C_H_
 
+
+#include "stm32f4xx_i2c.h"
+#include "hw_hal_gpio.h"
 #ifndef NO_RODOS_NAMESPACE
 namespace RODOS {
 #endif
@@ -40,6 +44,7 @@ public:
 	int32_t mstrReadNoStart(const uint8_t addr, uint8_t* rxBuf, uint32_t rxBufSize);
 	int32_t mstrRead(const uint8_t addr, uint8_t* rxBuf, uint32_t rxBufSize);
 
+  void initMembers(HAL_I2C* halI2C, I2C_IDX i2cIdx, GPIO_PIN sclPin, GPIO_PIN sdaPin);
 	//int32_t errorCheck();
 
 private:
@@ -51,4 +56,4 @@ private:
 #ifndef NO_RODOS_NAMESPACE
 }
 #endif
-
+#endif // _HW_HAL_I2C_H_

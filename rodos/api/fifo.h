@@ -134,6 +134,7 @@ public:
     }
     bool isFull()  { return advanceIndex(writeX)==readX; } ///< warning: not absolutelly threadsafe
     bool isEmpty() { return readX == writeX;}              ///< warning: not absolutelly threadsafe
+    void clear()   { readX = writeX = 0; }                 ///< erases all content
 };
 
 /**********************************************************************/
@@ -272,7 +273,7 @@ public:
 
     int getReaderId() { //< Warning: not threade safe!!!
         int myId = readerCnt++;
-        if(myId > numOfreaders) return -1; // no more readers!
+        if(myId >= numOfreaders) return -1; // no more readers!
         return myId;
     }
 

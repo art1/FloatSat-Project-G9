@@ -12,14 +12,16 @@
 
 #pragma once
 
-#define RODOS_VERSION 117
-#define RODOS_VERSION_TEXT "RODOS-117"
+#define RODOS_VERSION 121
+#define RODOS_VERSION_TEXT "RODOS-121"
 
 #include <stdint.h>
 
 #include "hw_predefines.h"
+// #include "macros_bits_bytes.h" due to conflicts with imported drivers, you habe to incllude it by yourself
 
 #include "string_pico.h"
+//#include "stdlib_pico.h"
 #include "debug.h"
 
 #include "hostinfos.h"  /* architecture dependent */

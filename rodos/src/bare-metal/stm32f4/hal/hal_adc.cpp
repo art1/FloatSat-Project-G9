@@ -13,7 +13,9 @@
 /*
  * HAL_ADC STM32F4
  * - there are 3 ADCs
- * - each ADC has 16 general purpose channels, BUT the channels share same pins!!!
+ * - each ADC has 19 channels:
+ * -> 3 channels for internal use (temperature, battery voltage)
+ * -> 16 general purpose channels, BUT the channels share same pins!!!
  * -> so there are a maximum of 24 analog inputs (instead of 3x16)
  * pin      ADC         channel
  * ----------------------------
@@ -53,7 +55,7 @@ namespace RODOS {
 #define STM32F4_MAX_ADC_IDX     ADC_IDX3
 
 #define STM32F4_MIN_ADC_CHAN    ADC_CH_000
-#define STM32F4_MAX_ADC_CHAN    ADC_CH_015
+#define STM32F4_MAX_ADC_CHAN    ADC_CH_018
 
 
 
@@ -66,6 +68,7 @@ public:
 
 
 class HW_HAL_ADC{
+    friend class HAL_ADC;
 public:
     ADC_TypeDef *adc;
     int32_t idx;
@@ -104,6 +107,7 @@ public:
         memset(channelsInUse,-1,sizeof(channelsInUse));
     }
 
+private:
     ADCChannelProps getChannelProperties(ADC_CHANNEL channel);
 };
 
@@ -112,7 +116,7 @@ HW_HAL_ADC adcContextArray[STM32F4_MAX_ADC_IDX];
 
 
 HAL_ADC::HAL_ADC(ADC_IDX idx) {
-    if ( (idx < STM32F4_MIN_ADC_IDX) || (idx > STM32F4_MAX_ADC_IDX) ) {
+    if ( (static_cast<int>(idx) < static_cast<int>(STM32F4_MIN_ADC_IDX)) || (static_cast<int>(idx) > static_cast<int>(STM32F4_MAX_ADC_IDX)) ) {
         context->idx = STM32F4_MAX_ADC_IDX + 1; // set idx bigger than STM32F4_MAX_ADC_IDX to easily find out that idx is wrong (in all other methods)
         return;
     }
@@ -122,23 +126,25 @@ HAL_ADC::HAL_ADC(ADC_IDX idx) {
 
 
 int32_t HAL_ADC::init(ADC_CHANNEL channel){
-    if (context->idx > STM32F4_MAX_ADC_IDX) return ADC_ERR_INVALID_INDEX;
-    if ((channel < STM32F4_MIN_ADC_CHAN) || (channel > STM32F4_MAX_ADC_CHAN)) return ADC_ERR_INVALID_CHANNEL;
+    if (static_cast<int>(context->idx) > static_cast<int>(STM32F4_MAX_ADC_IDX)) return ADC_ERR_INVALID_INDEX;
+    if ( (static_cast<int>(channel) > static_cast<int>(STM32F4_MAX_ADC_CHAN))) return ADC_ERR_INVALID_CHANNEL;
 
     context->channelsInUse[channel] = channel;
 
-    ADCChannelProps props = context->getChannelProperties(channel);
+    if (channel < ADC_CH_016){
+        ADCChannelProps props = context->getChannelProperties(channel);
 
-    RCC_AHB1PeriphClockCmd(props.RCC_AHB1Periph_GPIOx, ENABLE);
+        RCC_AHB1PeriphClockCmd(props.RCC_AHB1Periph_GPIOx, ENABLE);
 
-	/*--- PORT X -------------------------------*/
-	/* Configure PXX (ADC Channel XX) as analog input */
-    GPIO_InitTypeDef gpioInit;
-	gpioInit.GPIO_Pin = props.pin;
-	gpioInit.GPIO_Mode = GPIO_Mode_AN;
-	gpioInit.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	gpioInit.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(props.port, &gpioInit);
+        /*--- PORT X -------------------------------*/
+        /* Configure PXX (ADC Channel XX) as analog input */
+        GPIO_InitTypeDef gpioInit;
+        gpioInit.GPIO_Pin = props.pin;
+        gpioInit.GPIO_Mode = GPIO_Mode_AN;
+        gpioInit.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        gpioInit.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_Init(props.port, &gpioInit);
+    }
 
 
 	if (context->initialized) return 0;
@@ -177,7 +183,7 @@ int32_t HAL_ADC::init(ADC_CHANNEL channel){
 
 
 int32_t HAL_ADC::config(ADC_PARAMETER_TYPE type, int32_t value){
-    if (context->idx > STM32F4_MAX_ADC_IDX) return ADC_ERR_INVALID_INDEX;
+    if (static_cast<int>(context->idx) > static_cast<int>(STM32F4_MAX_ADC_IDX)) return ADC_ERR_INVALID_INDEX;
 
     ADC_InitTypeDef ADC_InitStructure;
     ADC_StructInit(&ADC_InitStructure);
@@ -204,18 +210,19 @@ int32_t HAL_ADC::config(ADC_PARAMETER_TYPE type, int32_t value){
 
 
 void HAL_ADC::reset(){
-    if (context->idx > STM32F4_MAX_ADC_IDX) return;
+    if (static_cast<int>(context->idx) > static_cast<int>(STM32F4_MAX_ADC_IDX)) return;
 
     /* reset ADC */
     RCC_APB2PeriphResetCmd(context->RCC_APB2Periph_ADCx, ENABLE);
     RCC_APB2PeriphResetCmd(context->RCC_APB2Periph_ADCx, DISABLE);
+
 
     /* reset GPIOs */
     GPIO_InitTypeDef gpioInit;
     GPIO_StructInit(&gpioInit); // set default values in struct
 
     ADCChannelProps props;
-    for(uint32_t i=0;i<sizeof(context->channelsInUse);i++){
+    for(uint32_t i=0;i<ADC_CH_016;i++){
         if(context->channelsInUse[i] != -1){
             props = context->getChannelProperties((ADC_CHANNEL)context->channelsInUse[i]);
             gpioInit.GPIO_Pin = props.pin;
@@ -230,8 +237,8 @@ void HAL_ADC::reset(){
  * - with current settings one conversion takes about 12+15 cycles = 0.642us
  */
 int32_t HAL_ADC::read(ADC_CHANNEL channel) {
-    if (context->idx > STM32F4_MAX_ADC_IDX) return ADC_ERR_INVALID_INDEX;
-    if ((channel < STM32F4_MIN_ADC_CHAN) || (channel > STM32F4_MAX_ADC_CHAN)) return ADC_ERR_INVALID_CHANNEL;
+    if (static_cast<int>(context->idx) > static_cast<int>(STM32F4_MAX_ADC_IDX)) return ADC_ERR_INVALID_INDEX;
+    if ( (static_cast<int>(channel) > static_cast<int>(STM32F4_MAX_ADC_CHAN))) return ADC_ERR_INVALID_CHANNEL;
     if(!context->initialized) return ADC_ERR_NO_INIT;
 
     ADC_Cmd(context->adc, ENABLE);  // Enable ADC

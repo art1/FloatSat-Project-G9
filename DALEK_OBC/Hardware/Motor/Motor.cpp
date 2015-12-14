@@ -75,6 +75,7 @@ int Motor::setspeed(int16_t duty){
 //		PRINTF("motor wasnt enabled, starting\n");
 //		startMotor();
 //	}
+
 //	int k = dcdc_read.readPins();
 //	PRINTF("power is: %d\n",k);
 //	k = hbridge_enable.readPins();

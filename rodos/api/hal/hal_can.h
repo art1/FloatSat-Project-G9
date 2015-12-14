@@ -10,8 +10,7 @@
 
 #include <stdint.h>
 #include "hal/genericIO.h"
-
-
+#include "hal/hal_gpio.h"
 
 
 #ifndef NO_RODOS_NAMESPACE
@@ -56,7 +55,7 @@ private:
 /* public functions */
 
 public:
-	HAL_CAN(CAN_IDX canIdx);
+	HAL_CAN(CAN_IDX canIdx, GPIO_PIN rxPin = GPIO_INVALID , GPIO_PIN txPin = GPIO_INVALID);
 
 	/* Initialization of uart interface: mode 8N1, no HW flow control*/
 	int init(unsigned int baudrate);
