@@ -263,6 +263,7 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 	//	PRINTF("raw Magn:  %d  %d  %d\n",magn_raw[0],magn_raw[1],magn_raw[2]);
 	samples++;
 	newData.currentSampleTime = SECONDS_NOW();
+//	PRINTF("seconds now %f\n",newData.currentSampleTime);
 //	samplerateTime = SECONDS_NOW();
 
 	newData = scaleData();

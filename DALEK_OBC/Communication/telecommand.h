@@ -32,7 +32,7 @@ private:
 	uint8_t recBuf[512];
 	uint8_t transBuf[512];
 
-	void sendErrorMessage(UDPMsg invalidMsg);
+	void sendErrorMessageHere(UDPMsg invalidMsg);
 
 
 };

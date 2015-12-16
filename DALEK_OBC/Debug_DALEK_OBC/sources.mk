@@ -29,7 +29,6 @@ CPP_DEPS :=
 SUBDIRS := \
 Basic \
 Communication \
-. \
 Hardware/AHRS/Filter \
 Hardware/AHRS \
 Hardware/Audio \
@@ -37,4 +36,5 @@ Hardware/Camera \
 Hardware/Camera/Supps \
 Hardware \
 Hardware/Motor \
+. \
 

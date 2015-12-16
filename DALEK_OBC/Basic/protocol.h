@@ -37,7 +37,8 @@
 #define MSG_SEPERATOR ';'
 #define VALUE_SEPERATOR ','
 
-
+#define FRAME_SIZE		58
+#define COMMAND_SIZE	24
 
 
 

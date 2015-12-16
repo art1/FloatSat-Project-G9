@@ -26,7 +26,6 @@
 #include "Hardware/SolarPanels.h"
 #include "Hardware/InfraredSensors.h"
 #include "Hardware/ThermalKnife.h"
-#include "ControlThread.h"
 
 
 class mainThread : public Thread {

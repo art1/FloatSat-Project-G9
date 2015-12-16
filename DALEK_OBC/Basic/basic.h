@@ -33,9 +33,10 @@ extern "C" HAL_UART bt_uart;
 #define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-#define IMU_ENABLE
+//#define IMU_ENABLE
 #define TTNC_ENABLE
-#define FUSION_ENABLE
+#define TELEMETRY_DISABLE
+//#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 #define MOTOR_ENABLE
@@ -45,8 +46,9 @@ extern "C" HAL_UART bt_uart;
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
+#define MADGWICK_TWO							// enbales the other madgwick filter
 	#ifndef MADGWICK
-		#define COMPLEMENTARY					// enables the complementary filter -> used when madgwick is disabled!
+//		#define COMPLEMENTARY					// enables the complementary filter -> used when madgwick is disabled!
 	#endif
 #endif
 /****************************** LED STUFF ************************************************/
@@ -76,7 +78,7 @@ extern "C" HAL_UART bt_uart;
 #define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
-#define BLUETOOTH_BUFFER		36				// in bytes, should be enough for Command Frames! (currently 24 needed)
+#define BLUETOOTH_BUFFER		512				// in bytes, should be enough for Command Frames! (currently 24 needed)
 
 /****************************** IMU STUFF ************************************************/
 #define IMU_RESET_PIN			GPIO_055

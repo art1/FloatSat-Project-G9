@@ -14,7 +14,7 @@ static Application mainThread("mainThread",20);
 
 // load all appropriate classes (-> must be public, initializing classes within a class is not working... ?)
 //GPIO_LED leds("LEDs");
-ControlThread control;
+
 #ifdef IMU_ENABLE
 IMU imu;
 #endif
@@ -140,6 +140,7 @@ struct receiver_telecommand : public Subscriber, public Thread {
 	receiver_telecommand() : Subscriber(tcRaw,"TC Raw Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		tc.setNewData(*(UDPMsg*)data);
+		PRINTF("im here\n");
 		tc.resume();
 		return 1;
 	}
@@ -166,6 +167,8 @@ struct receiver_tcControl : public Subscriber, public Thread {
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		//		this.setNewData(*(COMMAND_FRAME*)data);
 		mainT.setNewData(*(COMMAND_FRAME*)data);
+		PRINTF("setting control data\n");
+
 		//		control.resume();
 		mainT.resume();
 		return 1;
@@ -179,7 +182,8 @@ mainThread::mainThread(const char* name) : Thread(name){
 }
 
 void mainThread::setNewData(COMMAND_FRAME _t){
-
+	this->cmd = _t;
+	PRINTF("set new values %f\n",cmd.commandValue);
 }
 
 void mainThread::init(){
@@ -201,7 +205,8 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-	currentSystemMode.activeMode = STANDBY;
+	currentSystemMode.activeMode = MOTOR_CONTROL;
+	cmd.command = -1;
 
 }
 
@@ -242,24 +247,29 @@ void mainThread::run(){
 
 	while(1){
 		//check which mode
-
+		PRINTF("hello!\n");
 		if(cmd.command == GOTO_MODE){
 			currentSystemMode.activeMode = (int) cmd.commandValue;
+			PRINTF("here cmd\n");
 		} else {
+			PRINTF("hello active %d\n",currentSystemMode.activeMode);
 			switch (currentSystemMode.activeMode) {
 			case STANDBY:
 				// do nothing, only blink a led or some shit
+				PRINTF("waiting for the DALEK Brain for commands!\n");
 				break;
 			case SUN_FINDING:
 				// here: search for sun,
 				PRINTF("sun finding mode!\n");
 				break;
 			case MOTOR_CONTROL:
+#ifdef MOTOR_ENABLE
 				// seting motor speed,
-				PRINTF("motor control mode\n");
+				PRINTF("motor control mode with command %d\n",cmd.command);
 
 				switch (cmd.command) {
 					case SET_ROTATION_SPEED:
+
 						motorControl.setMotorSpeed(cmd.commandValue);
 						break;
 					case CONTROL_MOTOR:
@@ -272,14 +282,17 @@ void mainThread::run(){
 					case GOTO_ANGLE:
 						break;
 					default:
+
 						break;
 				}
+#endif
 				break;
 			case MISSION:
 				// execute mission
 				PRINTF("mission mode!\n");
 				break;
 			default:
+				PRINTF("default shit\n");
 				break;
 			}
 		}

@@ -43,31 +43,44 @@ void Bluetooth::setNewData(UDPMsg msg){
 
 void Bluetooth::getNewMessages(){
 	UDPMsg temp;
+	temp.length = 0;
+//	memset(temp.data,0,sizeof(temp.data));
+	memset(recBuf,0,sizeof(recBuf));
 
-	while(bt_uart.isDataReady()){
-		bt_uart.read(recBuf,BLUETOOTH_BUFFER);
-		for(int i=0;i<BLUETOOTH_BUFFER;i++){
-			if((recBuf[i] == FRAME_END) && (recBuf[i-1] == VALUE_SEPERATOR)){
-				temp.length = i;
-				break;
+	PRINTF("Received!\n");
+	int number = 0;
+
+	if(bt_uart.isDataReady()){
+
+		int k = bt_uart.read(recBuf,BLUETOOTH_BUFFER);
+		PRINTF("read %d chars\n",k);
+
+		if(k >= COMMAND_SIZE){
+			for(int i=0;i<COMMAND_SIZE;i++)
+			{
+				temp.data[i] = recBuf[i];
+				PRINTF("%d ",recBuf[i]);
+				temp.length++;
 			}
-		}
+			PRINTF("\n length is %d\n",temp.length);
 
-		for(int i=0;i<temp.length;i++){
-			temp.data[i] = recBuf[i];
-		}
 
-		if(temp.length<5) {sendErrorMessage(temp);}
-		else {
+
+			if(temp.length<5) {
+				sendErrorMessageHere(temp);
+
+			}
+			else {
 #ifdef COMMAND_ECHO
-			sendEchoMessage(temp);
+				sendErrorMessageHere(temp);
 #endif
-			tcRaw.publish(temp);
+				tcRaw.publish(temp);
+			}
 		}
 	}
 }
 
-void Bluetooth::sendErrorMessage(UDPMsg invalidMsg){
+void Bluetooth::sendErrorMessageHere(UDPMsg invalidMsg){
 	UDPMsg tmp;
 
 	tmp.length = invalidMsg.length+7;

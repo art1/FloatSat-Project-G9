@@ -30,7 +30,7 @@ private:
 	COMMAND_FRAME cmdTmp;
 	char recBuf[BLUETOOTH_BUFFER];
 	void sendNewMessage(UDPMsg *msg);
-	void sendErrorMessage(UDPMsg invalidMsg);
+	void sendErrorMessageHere(UDPMsg invalidMsg);
 	void sendEchoMessage(UDPMsg echoMsg);
 };
 

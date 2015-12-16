@@ -27,7 +27,7 @@ void MotorControlThread::run(){
 	bool spin = false;
 
 	while(1){
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
+//		suspendCallerUntil(NOW()+100*MILLISECONDS);
 //		motor.setspeed(cnt);
 //		cnt++;
 //
@@ -38,13 +38,14 @@ void MotorControlThread::run(){
 ////				PRINTF("switching direction\n");
 //			}
 //		}
-
 //		PRINTF("couting.. %d\n",cnt);
 		ORANGE_TOGGLE;
 	}
 }
 
 void MotorControlThread::setMotorSpeed(float speedCylce){
+	PRINTF("setting motor speed to %f\n",speedCylce);
+
 	motor.setspeed(speedCylce);
 }
 

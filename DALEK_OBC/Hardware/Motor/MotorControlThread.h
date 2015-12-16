@@ -22,6 +22,7 @@ public:
 	void setMotor(bool _val);
 private:
 	Motor motor;
+	int16_t currentDutyCycle;
 };
 
 #endif /* HARDWARE_MOTOR_MOTORCONTROLTHREAD_H_ */

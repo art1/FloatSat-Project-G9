@@ -91,6 +91,7 @@ uint64_t charToLongLong(uint8_t* _number){
 	return out;
 }
 
+
 void longToChar(uint8_t* _target, uint32_t _number){
 	_target[0] = ((_number >> 24) & 0xFF);
 	_target[1] = ((_number >> 16) & 0xFF);
