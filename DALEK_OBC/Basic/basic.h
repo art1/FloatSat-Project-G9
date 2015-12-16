@@ -33,22 +33,22 @@ extern "C" HAL_UART bt_uart;
 #define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
+#define IMU_ENABLE
 #define TTNC_ENABLE
 #define TELEMETRY_DISABLE
-//#define FUSION_ENABLE
+#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
-#define MOTOR_ENABLE
+//#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
 #define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
-#define MADGWICK_TWO							// enbales the other madgwick filter
+//#define MADGWICK_TWO							// enbales the other madgwick filter
 	#ifndef MADGWICK
-//		#define COMPLEMENTARY					// enables the complementary filter -> used when madgwick is disabled!
+		#define COMPLEMENTARY					// enables the complementary filter -> used when madgwick is disabled!
 	#endif
 #endif
 /****************************** LED STUFF ************************************************/

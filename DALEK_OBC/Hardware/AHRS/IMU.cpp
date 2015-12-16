@@ -215,7 +215,7 @@ void IMU::regInit(){
 int IMU::resetIMU(){
 	//cycle PD7 off->on for reset //TODO: but how fast???
 	//	leds.blinkAll(100,0);
-	//	suspendCallerUntil(NOW()+200*MILLISECONDS);
+		suspendCallerUntil(NOW()+200*MILLISECONDS);
 
 	// reset I2C lines
 	i2c2.reset();
@@ -241,10 +241,14 @@ IMU_DATA_RAW IMU::scaleData(){
 	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity; // TODO scale Data after calibration!!!
 	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;
+//	tmp.MAGNETIC_RAW_X = (tmp.MAGNETIC_RAW_X - MAG_MIN_X) / (MAG_MAX_X - MAG_MIN_X) * 2 - 1.0;
+//	tmp.MAGNETIC_RAW_Y = (tmp.MAGNETIC_RAW_Y - MAG_MIN_Y) / (MAG_MAX_Y - MAG_MIN_Y) * 2 - 1.0;
+//	tmp.MAGNETIC_RAW_Z = (tmp.MAGNETIC_RAW_Z - MAG_MIN_Z) / (MAG_MAX_Z - MAG_MIN_Z) * 2 - 1.0;
 	tmp.ANGULAR_RAW_X *= TO_RAD;
 	tmp.ANGULAR_RAW_Y *= TO_RAD;
 	tmp.ANGULAR_RAW_Z *= TO_RAD;
 	return tmp;
+
 }
 
 IMU_DATA_RAW IMU::readIMU_Data(){
@@ -261,12 +265,14 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 	//	PRINTF("\nraw Gyro:  %d  %d  %d\n",gyro_raw[0],gyro_raw[1],gyro_raw[2]);
 	//	PRINTF("raw Accl:  %d  %d  %d\n",accl_raw[0],accl_raw[1],accl_raw[2]);
 	//	PRINTF("raw Magn:  %d  %d  %d\n",magn_raw[0],magn_raw[1],magn_raw[2]);
-	samples++;
-	newData.currentSampleTime = SECONDS_NOW();
-//	PRINTF("seconds now %f\n",newData.currentSampleTime);
+//	samples++;
+	double tmp = SECONDS_NOW();
+
 //	samplerateTime = SECONDS_NOW();
 
 	newData = scaleData();
+	newData.currentSampleTime = tmp;
+//	PRINTF("seconds now %f\n",tmp);
 
 	//			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  rad/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 
@@ -585,7 +591,7 @@ void IMU::run(){
 #endif
 		if(cnt>printValues){
 #ifndef FUSION_ENABLE
-//			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
+			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 			PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
 			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 #endif

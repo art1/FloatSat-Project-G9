@@ -9,7 +9,7 @@
 
 #include "sensorFusion.h"
 
-#define GAIN	0.6f
+#define GAIN	0.025f
 
 //static Application senderName("RPY Publisher",501);
 
@@ -70,16 +70,20 @@ void sensorFusion::run(){
 
 		suspendCallerUntil(END_OF_TIME);
 		//		PRINTF("\nFUSIOOOOOOON\n\n");
-//		dataFusion(&gyro,&accl,&magn);
+
 		integrationTime = samplerateTime - oldSamplerateTime;
-//		PRINTF("integrationTime: %f\n",integrationTime);
-//		integrationTime = 1.0f / 50.0f;
+
 		oldSamplerateTime = samplerateTime;
+#ifdef MADGWICK_TWO
 		MadgwickAHRSupdate(gyro.x,gyro.y,gyro.z,accl.x,accl.y,accl.z,magn.x,magn.y,magn.z);
+#else
+		dataFusion(&gyro,&accl,&magn);
+#endif
 		if(cnt>printValues){
 			//			PRINTF("QUAT: %f  %f  %f  %f\n",quat.q0,quat.q.x,quat.q.y,quat.q.z);
 			//			PRINTF("roll:   %f   pitch:   %f   yaw:   %f\n",bank*TO_DEG,pitch*TO_DEG,heading*TO_DEG);
-//			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL,filtered.PITCH,filtered.YAW);
+			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL*TO_DEG,filtered.PITCH*TO_DEG,filtered.YAW*TO_DEG);
+			PRINTF("heading: %f\n",angleRPY.MAG_YAW*TO_DEG);
 			imu_filtered.publish(filtered);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW,angleRPY.ACCL_PITCH,angleRPY.ACCL_ROLL);
@@ -445,6 +449,21 @@ void sensorFusion::rawToRPY(){
 	// use accl pitch and roll for tilt compensation
 	angleRPY.MAG_YAW = atan(((magn.x*sin(angleRPY.ACCL_ROLL)*sin(angleRPY.ACCL_PITCH))+(magn.y*cos(angleRPY.ACCL_ROLL))-(magn.z*sin(angleRPY.ACCL_ROLL)*cos(angleRPY.ACCL_PITCH)))
 			/((magn.x*cos(angleRPY.ACCL_PITCH)) + (magn.z*sin(angleRPY.ACCL_PITCH))));
+//	PRINTF("comp1: %f  ",angleRPY.MAG_YAW);
+
+	// normalize accl measurements
+	normalize3DVector(&accl);
+	Vector3D tmp = (Vector3D){0,-1,0};
+	Vector3D tmp2;
+	Vector3D tmp3;
+	cross_product(&magn,&accl,&tmp2);
+	normalize3DVector(&tmp2);
+	cross_product(&accl,&tmp2,&tmp3);
+	angleRPY.MAG_YAW = atan2((scalar_product3D(&tmp2,&tmp)),(scalar_product3D(&tmp3,&tmp)));
+	if(angleRPY.MAG_YAW < 0.0) angleRPY.MAG_YAW += M_PI;
+//	PRINTF(" %f  ",angleRPY.MAG_YAW);
+
+
 
 	// convert everything to DEGREE
 

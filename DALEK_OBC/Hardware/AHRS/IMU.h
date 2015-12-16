@@ -31,8 +31,13 @@
 #define MAGN_8GAUSS_SENSITIVITY		0.00032f
 #define MAGN_12GAUSS_SENSITIVITY	0.00048f
 
-
-
+/** TODO find appropriate values */
+#define MAG_MAX_X 660
+#define MAG_MAX_Y 6922
+#define MAG_MAX_Z 2779
+#define MAG_MIN_X -7194
+#define MAG_MIN_Y -562
+#define MAG_MIN_Z -7053
 
 // Data register adresses
 enum IMU_DATA_REG_ADD{
