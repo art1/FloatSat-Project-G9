@@ -16,16 +16,16 @@
 #else
 #include "Communication/Bluetooth.h"
 #endif
-//#include "Hardware/AHRS/IMU.h"
-//#include "Hardware/Camera/Camera.h"
+#include "Hardware/AHRS/IMU.h"
+#include "Hardware/Camera/Camera.h"
 #ifdef FUSION_ENABLE
 #include "Hardware/AHRS/Filter/sensorFusion.h"
 #endif
-//#include "Hardware/LightSensor.h"
-//#include "Hardware/Motor/MotorControlThread.h"
-//#include "Hardware/SolarPanels.h"
-//#include "Hardware/InfraredSensors.h"
-//#include "Hardware/ThermalKnife.h"
+#include "Hardware/LightSensor.h"
+#include "Hardware/Motor/MotorControlThread.h"
+#include "Hardware/SolarPanels.h"
+#include "Hardware/InfraredSensors.h"
+#include "Hardware/ThermalKnife.h"
 #include "ControlThread.h"
 
 

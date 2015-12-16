@@ -13,6 +13,8 @@
 #include "stm32f4xx_conf.h"
 #include "support_libs.h"
 #include "protocol.h"
+#include "stm324xg_eval.h"
+#include "stm32f4xx_rcc.h"
 #include "../support_libs/wifi/wf121.h"
 
 
@@ -31,16 +33,15 @@ extern "C" HAL_UART bt_uart;
 #define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
+#define IMU_ENABLE
 #define TTNC_ENABLE
-//#define FUSION_ENABLE
+#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
-//#define KNIFE_ENABLE
-//#define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
+#define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -67,14 +68,12 @@ extern "C" HAL_UART bt_uart;
 #define BLUE_OFF				GPIOD->BSRRH = LED_BLUE
 #define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
 
-
 /****************************** WIFI & BT STUFF ******************************************/
 #define WIFI_SSID				"YETENet"
 #define WIFI_SSID_PW			"yeteyete"
 #define WIFI_IP					0xFF01A8C0 // in hex and reverse
-#define WIFI_PORT				1235
+#define WIFI_PORT				1234
 #define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
-
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
 #define BLUETOOTH_BUFFER		36				// in bytes, should be enough for Command Frames! (currently 24 needed)
@@ -161,26 +160,25 @@ struct IR_DATA{
 	int32_t sensorThree;
 };
 
-/* ***************************************** Thermal Knife STUFF **********************************************/
-
-struct KNIFE_DATA{
-	bool activated;
-};
 /* ***************************************** TM TC STUFF **********************************************/
 #ifdef TTNC_ENABLE
-
-#define COMMAND_ECHO							// if not commented, every command is echoed back
-#endif
-#define TM_SAMPLERATE			1000			// in milliseconds
-
-struct ACTIVE_SYSTEM_MODE{
-	int activeMode;
-};
 struct TELEMETRY{
 	PAYLOAD_FRAME plFrame;
 	TELEMETRY_FRAME tmFrame;
 	int updated; // 0 or 1 for pl or tm frame
 };
+#define TM_SAMPLERATE			500			// in milliseconds
+#define COMMAND_ECHO							// if not commented, every command is echoed back
+#endif
+struct ACTIVE_SYSTEM_MODE{
+	int activeMode;
+};
+/* ***************************************** Thermal Knife STUFF ******************************************/
+
+struct KNIFE_DATA{
+	bool activated;
+};
+
 /***************************************** TOPICS ***************************************************/
 // now define the topics stuff for the RODOS middleware
 extern Topic<IMU_DATA_RAW>	imu_rawData;
@@ -198,5 +196,23 @@ extern Topic<COMMAND_FRAME> commandFrame;
 extern Topic<ACTIVE_SYSTEM_MODE> systemModeControl;
 
 
-#endif /* BASIC_BASIC_H_ */
 
+
+
+
+
+
+/*********************************** FUNCTIONS ***************************************/
+void floatToChar(uint8_t* _target, float _number);
+void doubleToChar(uint8_t* _target, double _number);
+void longToChar(uint8_t* _target, uint32_t _number);
+void shortToChar(uint8_t* _target, uint16_t _number);
+void longLongToChar(uint8_t* _target, uint64_t _number);
+
+float charToFloat(uint8_t* _number);
+double charToDouble(uint8_t* _number);
+uint64_t charToLongLong(uint8_t* _number);
+uint16_t charToShort(uint8_t* _number);
+uint32_t charToLong(uint8_t* _number);
+
+#endif /* BASIC_BASIC_H_ */

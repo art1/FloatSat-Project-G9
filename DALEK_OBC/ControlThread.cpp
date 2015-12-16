@@ -16,7 +16,9 @@ ControlThread::~ControlThread() {
 }
 
 void ControlThread::run(){
+	while(1){
 
+	}
 }
 
 void ControlThread::init(){

@@ -31,10 +31,6 @@ private:
 	uint8_t recBuf[512];
 	uint8_t transBuf[512];
 
-	void floatToChar(uint8_t* target, float number);
-	void doubleToChar(uint8_t* target, double number);
-	float charToFloat(uint8_t *_number);
-	double charToDouble(uint8_t *_number);
 	void sendErrorMessage(UDPMsg invalidMsg);
 
 

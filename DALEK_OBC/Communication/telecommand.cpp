@@ -110,39 +110,3 @@ void Telecommand::run(){
 void Telecommand::sendErrorMessage(UDPMsg invalidMsg){
 
 }
-/**
- * puts double number to target as 8 bytes
- */
-void Telecommand::doubleToChar(uint8_t* _target, double _number){
-	char *tmp = (char *) &_number;
-	for(int i=0;i<8;i++){
-		_target[i] = tmp[i];
-	}
-}
-
-/**
- * puts float-bytes to target array
- */
-void Telecommand::floatToChar(uint8_t* _target, float _number){
-	char *tmp = (char *) &_number;
-	for(int i=0;i<4;i++){
-		_target[i] = tmp[i];
-	}
-}
-
-float Telecommand::charToFloat(uint8_t* _number){
-	float out;
-	uint8_t * ptr = (uint8_t *) &out;
-	for(int i=0;i<4;i++){
-		ptr[i] = _number[i];
-	}
-	return out;
-}
-double Telecommand::charToDouble(uint8_t* _number){
-	double out;
-	uint8_t *ptr = (uint8_t *) &out;
-	for(int i=0;i<8;i++){
-		ptr[i] = _number[i];
-	}
-	return out;
-}
