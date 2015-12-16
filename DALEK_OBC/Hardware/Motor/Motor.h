@@ -26,6 +26,7 @@ public:
 	void spinUpTo(int _currentSpeed, int _finalVal);
 private:
 	int16_t dutyCycle;
+	bool clockwise;
 
 
 };

@@ -48,7 +48,6 @@ InfraredSensors irSensors;
 #ifdef KNIFE_ENABLE
 ThermalKnife knife;
 #endif
-HAL_GPIO HBRIDGE_EN(GPIO_066);
 
 //RESUMER THREADS
 /**************************** IMU MESSAGES **************************************/
@@ -128,7 +127,7 @@ struct receiver_knife : public Subscriber, public Thread {
 struct receiver_camera : public Subscriber, public Thread {
 	receiver_camera() : Subscriber(cam_control,"Camera Control") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-//		camera.setNewData(*(CAM_CONTROL*)data);
+		//		camera.setNewData(*(CAM_CONTROL*)data);
 		camera.resume();
 		return 1;
 	}
@@ -165,8 +164,10 @@ struct receiver_telemetry : public Subscriber, public Thread {
 struct receiver_tcControl : public Subscriber, public Thread {
 	receiver_tcControl() : Subscriber(commandFrame,"TC COntrol Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		control.setNewData(*(COMMAND_FRAME*)data);
-		control.resume();
+		//		this.setNewData(*(COMMAND_FRAME*)data);
+		mainT.setNewData(*(COMMAND_FRAME*)data);
+		//		control.resume();
+		mainT.resume();
 		return 1;
 	}
 	void run(){}
@@ -174,6 +175,10 @@ struct receiver_tcControl : public Subscriber, public Thread {
 #endif
 
 mainThread::mainThread(const char* name) : Thread(name){
+
+}
+
+void mainThread::setNewData(COMMAND_FRAME _t){
 
 }
 
@@ -196,7 +201,7 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-
+	currentSystemMode.activeMode = STANDBY;
 
 }
 
@@ -206,14 +211,13 @@ void mainThread::run(){
 #ifdef BLUETOOTH_FALLBACK
 	bt_uart.init(BLUETOOTH_BAUDRATE);
 #endif
-    HBRIDGE_EN.init(true, 1, 1);
 
 	//enable ADC1 channel with 12 Bit Resolution
 	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);
-	#ifdef IMU_ENABLE
+#ifdef IMU_ENABLE
 	imu.regInit();
 	imu.setTime(500*MILLISECONDS);
-	#endif
+#endif
 
 #ifdef LIGHT_ENABLE
 	LUX_DATA temp;
@@ -225,20 +229,65 @@ void mainThread::run(){
 	IR_DATA tmp2;
 	irSensors.init();
 	tmp2.activated = true;
-//	PRINTF("publishing Data\n");
+	//	PRINTF("publishing Data\n");
 	ir_data.publish(tmp2);
 #endif
-//#ifdef CAMERA_ENABLE
-//	PRINTF("enabling cam\n");
-//	CAM_CONTROL tmp3;
-//	tmp3.shoot = true;
-//	cam_control.publish(tmp3);
-//#endif
+	//#ifdef CAMERA_ENABLE
+	//	PRINTF("enabling cam\n");
+	//	CAM_CONTROL tmp3;
+	//	tmp3.shoot = true;
+	//	cam_control.publish(tmp3);
+	//#endif
 
 
 	while(1){
-		suspendCallerUntil(NOW()+500*MILLISECONDS);
-		RED_TOGGLE;
+		//check which mode
+
+		if(cmd.command == GOTO_MODE){
+			currentSystemMode.activeMode = (int) cmd.commandValue;
+		} else {
+			switch (currentSystemMode.activeMode) {
+			case STANDBY:
+				// do nothing, only blink a led or some shit
+				break;
+			case SUN_FINDING:
+				// here: search for sun,
+				PRINTF("sun finding mode!\n");
+				break;
+			case MOTOR_CONTROL:
+				// seting motor speed,
+				PRINTF("motor control mode\n");
+
+				switch (cmd.command) {
+					case SET_ROTATION_SPEED:
+						motorControl.setMotorSpeed(cmd.commandValue);
+						break;
+					case CONTROL_MOTOR:
+						if((int)cmd.commandValue == 1){
+							motorControl.setMotor(true);
+						} else if((int)cmd.commandValue == 0){
+							motorControl.setMotor(false);
+						}
+						break;
+					case GOTO_ANGLE:
+						break;
+					default:
+						break;
+				}
+				break;
+			case MISSION:
+				// execute mission
+				PRINTF("mission mode!\n");
+				break;
+			default:
+				break;
+			}
+		}
+		suspendCallerUntil(END_OF_TIME);
 	}
+
+
+	RED_TOGGLE;
+
 }
 

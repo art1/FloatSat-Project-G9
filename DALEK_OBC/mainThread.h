@@ -34,6 +34,10 @@ public:
 	mainThread(const char* name);
 	void init();
 	void run();
+	void setNewData(COMMAND_FRAME _t);
+private:
+	COMMAND_FRAME cmd;
+	ACTIVE_SYSTEM_MODE currentSystemMode;
 };
 
 mainThread mainT("main");

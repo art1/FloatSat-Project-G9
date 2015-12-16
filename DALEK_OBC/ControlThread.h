@@ -19,6 +19,9 @@ public:
 	void setNewData(COMMAND_FRAME _cmd);
 private:
 	COMMAND_FRAME cmd;
+
+	ACTIVE_SYSTEM_MODE currentSystemMode;
+
 };
 
 #endif /* CONTROLTHREAD_H_ */

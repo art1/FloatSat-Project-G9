@@ -27,6 +27,7 @@ private:
 	UDPMsg currentMsg;
 	COMMAND_FRAME tempFrame;
 	uint8_t tmpBuf[255]; //255 max value from UDPMsg
+	uint8_t smaBuf[255];
 	string message;
 	uint8_t recBuf[512];
 	uint8_t transBuf[512];

@@ -49,7 +49,7 @@ void Telemetry::setNewData(IR_DATA _ir){
 	this->ir.put(_ir);
 }
 void Telemetry::setNewData(ACTIVE_SYSTEM_MODE _mode){
-	this->systemMode.activeMode = _mode.activeMode;
+	this->systemMode = _mode;
 }
 uint32_t Telemetry::getCurrentFrameNumber(){
 	return this->frameNumber;

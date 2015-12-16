@@ -25,37 +25,31 @@ void MotorControlThread::run(){
 	motor.init();
 	int cnt = 0;
 	bool spin = false;
-	while(1){
-		suspendCallerUntil(NOW()+10*MILLISECONDS);
-		motor.setspeed(cnt);
-		cnt++;
-//		if(spin){
-//			if(cnt < 2){
-//				spin = false;
-//			}
-//			cnt--;
-//		} else {
-//			if(cnt > 999){
-//				spin = true;
-//			}
-//			cnt++;
-//		}
-//		cnt++;
 
-//		if(cnt > 999) cnt = -999;
-		if(cnt == 1000){
-			while(1){
-				motor.switchDirection(cnt);
-				suspendCallerUntil(NOW()+5000*MILLISECONDS);
-//				PRINTF("switching direction\n");
-			}
-		}
+	while(1){
+		suspendCallerUntil(NOW()+100*MILLISECONDS);
+//		motor.setspeed(cnt);
+//		cnt++;
+//
+//		if(cnt == 1000){
+//			while(1){
+//				motor.switchDirection(cnt);
+//				suspendCallerUntil(NOW()+5000*MILLISECONDS);
+////				PRINTF("switching direction\n");
+//			}
+//		}
 
 //		PRINTF("couting.. %d\n",cnt);
 		ORANGE_TOGGLE;
 	}
 }
 
-void MotorControlThread::setMotorSpeed(int16_t speedCylce){
+void MotorControlThread::setMotorSpeed(float speedCylce){
 	motor.setspeed(speedCylce);
+}
+
+void MotorControlThread::setMotor(bool _val){
+	if(_val){
+		motor.startMotor();
+	} else motor.stopMotor();
 }

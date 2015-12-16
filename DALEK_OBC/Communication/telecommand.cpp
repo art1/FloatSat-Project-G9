@@ -52,59 +52,45 @@ void Telecommand::run(){
 		}
 		if(!checkFrame){
 			// message seems to be valid
-			int pos = CMD_FRAMETYPE;
+			int currentPos = 0;
 			int lastSeparator = 1;
 			int valLength = 0;
-			for(int i=2;i<currentMsg.length;i++){
-				if(currentMsg.data[i] == VALUE_SEPERATOR){
-					valLength = i - lastSeparator;
-					for(int j=0;j<valLength;j++){
-						tmpBuf[j] = currentMsg.data[j];
-					}
-					switch (pos) {
-						case CMD_FRAMETYPE:
-							if(valLength > 1) {isValid = false;}
-							else if(tmpBuf[0] != CMD) {isValid = false;}
-							else{
-								tempFrame.frameType = tmpBuf[0];
-							}
-							break;
-						case CMD_FRAMENUMBER:
-							/** TODO uint32_t aus uint8_ts zusammenbasteln */
-							break;
-						case COMMAND:
-							if(valLength > 1) {isValid = false;}
-							else{
-								tempFrame.command = tmpBuf[0];
-							}
-							break;
-						case COMMAND_VALUE:
-							if(valLength != 4){isValid = false;}
-							else{
-								tempFrame.commandValue = charToFloat(tmpBuf);
-							}
-							break;
-						case CMD_LOCALTIME:
-							/** TODO zusammenbasteln der localtime */
-							break;
-						default:
-							isValid = false;
-							sendErrorMessage(currentMsg);
-							break;
-					}
-					lastSeparator = i;
-					pos++;
-				}
-				if(!isValid){
+			// remove start and end chars
+
+			for(int i=3;i<currentMsg.length-3;i++){
+				tmpBuf[i-3] = currentMsg.data[i];
+			}
+			int messageLength = currentMsg.length-6;// -6 because frame start end end chars
+			for(int i=0;i<5;i++){
+				switch (i) {
+				case CMD_FRAMETYPE:
+					tempFrame.frameType = tmpBuf[currentPos++];
+					break;
+				case CMD_FRAMENUMBER:
+					forLoop(j,4) smaBuf[j] = tmpBuf[currentPos++];
+					tempFrame.frameNumber = charToLong(smaBuf);
+					break;
+				case COMMAND:
+					tempFrame.command = tmpBuf[currentPos++];
+					break;
+				case COMMAND_VALUE:
+					forLoop(j,4) smaBuf[j] = tmpBuf[currentPos++];
+					tempFrame.commandValue = charToFloat(smaBuf);
+					break;
+				case CMD_LOCALTIME:
+					forLoop(j,8) smaBuf[j] = tmpBuf[currentPos++];
+					tempFrame.localTime = charToLongLong(smaBuf);
+					break;
+				default:
+					isValid = false;
 					sendErrorMessage(currentMsg);
-					break; // ??????? TODO ?
+					break;
 				}
 			}
 			if(isValid) commandFrame.publish(tempFrame);
 
 		} else sendErrorMessage(currentMsg);
 	}
-
 }
 
 void Telecommand::sendErrorMessage(UDPMsg invalidMsg){

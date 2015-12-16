@@ -38,7 +38,7 @@ extern "C" HAL_UART bt_uart;
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
-//#define MOTOR_ENABLE
+#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
 #define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
@@ -72,7 +72,7 @@ extern "C" HAL_UART bt_uart;
 #define WIFI_SSID				"YETENet"
 #define WIFI_SSID_PW			"yeteyete"
 #define WIFI_IP					0xFF01A8C0 // in hex and reverse
-#define WIFI_PORT				1234
+#define WIFI_PORT				1111
 #define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2

@@ -8,14 +8,12 @@
 #include "Motor.h"
 //HAL_GPIO hbridgeA_inA(GPIO_036); /* declare HAL_GPIO for GPIO_036 = PC4 (HBRIDGE-A INA pin) */
 //HAL_GPIO hbridgeA_inB(GPIO_017); /* declare HAL_GPIO for GPIO_017 = PB1 (HBRIDGE-B INA pin) */
-//HAL_GPIO hbridge_enable(GPIO_066); /* declare HAL_GPIO for GPIO_066 = PE2 (HBRIDGE Power Enable pin) */
+HAL_GPIO hbridge_enable(GPIO_066); /* declare HAL_GPIO for GPIO_066 = PE2 (HBRIDGE Power Enable pin) */
 
 HAL_GPIO dcdc_read(GPIO_067);
 
 
-//HAL_GPIO GreenLED(LED_GREEN);
-//HAL_GPIO blinkingFucker(LED_BLUE);
-//HAL_UART TeleUart(UART_IDX3);
+
 
 HAL_GPIO HBRIDGE_A_INA (GPIO_036);
 HAL_GPIO HBRIDGE_A_INB (GPIO_017);
@@ -30,6 +28,7 @@ HAL_PWM MotorPWM(PWM_IDX12);
 Motor::Motor() {
 	// TODO Auto-generated constructor stub
 	dutyCycle = 0;
+	clockwise = true;
 }
 
 Motor::~Motor() {
@@ -39,7 +38,7 @@ Motor::~Motor() {
 void Motor::init(){
 //	hbridgeA_inA.init(true,1,1);
 //	hbridgeA_inB.init(true,1,0);
-//	hbridge_enable.init(true,1,0);
+	hbridge_enable.init(true,1,0);
 //	dcdc_read.init(false,1,0);
 //	pwm.init(5000,1000); // 84Hz
 //	pwm.write(250);
@@ -51,7 +50,7 @@ void Motor::init(){
 
 void Motor::run(){
 	PRINTF("Starting Motor\n");
-//	startMotor();
+	startMotor();
 //	pwm.write(250);
 //	int cnt = 0;
 //	while(1){
@@ -71,10 +70,19 @@ void Motor::run(){
 
 
 int Motor::setspeed(int16_t duty){
-//	if(hbridge_enable.readPins() == 0) {
-//		PRINTF("motor wasnt enabled, starting\n");
-//		startMotor();
-//	}
+
+	if(hbridge_enable.readPins() == 0) {
+		PRINTF("motor wasnt enabled, starting\n");
+		startMotor();
+	}
+
+	if((duty < 0) && clockwise){
+		switchDirection(duty);
+		clockwise = false;
+	} else if ((duty > 0) && (clockwise == false)){
+		switchDirection(duty);
+		clockwise = true;
+	} else MotorPWM.write(duty);
 
 //	int k = dcdc_read.readPins();
 //	PRINTF("power is: %d\n",k);
@@ -83,7 +91,7 @@ int Motor::setspeed(int16_t duty){
 //	switchDirection(duty);
 //	pwm.write(abs(duty));
 //	dutyCycle = duty;
-	MotorPWM.write(duty);
+//	MotorPWM.write(duty);
 }
 
 int Motor::startMotor(){
@@ -109,14 +117,14 @@ int Motor::switchDirection(int currentSpeed){
 
 void Motor::despinTo(int _currentSpeed,int _finalVal){
 	for(int i=_currentSpeed;i>_finalVal;i--){
-		setspeed(i);
+		MotorPWM.write(i);
 	}
 
 }
 
 void Motor::spinUpTo(int _currentSpeed,int _finalVal){
 	for(int i=_currentSpeed;i<_finalVal;i++){
-		setspeed(i);
+		MotorPWM.write(i);
 	}
 }
 

@@ -18,7 +18,8 @@ public:
 	virtual ~MotorControlThread();
 	void init();
 	void run();
-	void setMotorSpeed(int16_t speedCycle);
+	void setMotorSpeed(float _speedCycle);
+	void setMotor(bool _val);
 private:
 	Motor motor;
 };

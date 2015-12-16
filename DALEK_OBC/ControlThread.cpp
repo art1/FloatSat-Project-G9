@@ -17,7 +17,28 @@ ControlThread::~ControlThread() {
 
 void ControlThread::run(){
 	while(1){
+		//check which mode
+		if(cmd.command == GOTO_MODE){
+			currentSystemMode.activeMode = (int) cmd.commandValue;
+		} else {
+			switch (currentSystemMode.activeMode) {
+			case STANDBY:
 
+				break;
+			case SUN_FINDING:
+				// here: search for sun,
+				break;
+			case MOTOR_CONTROL:
+
+				break;
+			case MISSION:
+
+				break;
+			default:
+				break;
+			}
+		}
+		suspendCallerUntil(END_OF_TIME);
 	}
 }
 

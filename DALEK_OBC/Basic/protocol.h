@@ -97,8 +97,11 @@ enum frametype{
 enum commands{
 	GOTO_MODE,
 	RESET_DALEK,
-	SET_ROTATION_SPEED,
+	// Motor Stuff
+	SET_ROTATION_SPEED, // dutycycle, value between 0 and 1000
+	CONTROL_MOTOR, //with command value 0 -> stop and command val 1 -> start motor
 	GOTO_ANGLE,
+	// Mission Stuff
 	TAKE_PICTURE_AT
 };
 
