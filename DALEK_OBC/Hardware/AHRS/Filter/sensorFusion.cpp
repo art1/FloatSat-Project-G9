@@ -9,7 +9,7 @@
 
 #include "sensorFusion.h"
 
-#define GAIN	0.025f
+#define GAIN	0.6f
 
 //static Application senderName("RPY Publisher",501);
 
@@ -82,7 +82,8 @@ void sensorFusion::run(){
 		if(cnt>printValues){
 			//			PRINTF("QUAT: %f  %f  %f  %f\n",quat.q0,quat.q.x,quat.q.y,quat.q.z);
 			//			PRINTF("roll:   %f   pitch:   %f   yaw:   %f\n",bank*TO_DEG,pitch*TO_DEG,heading*TO_DEG);
-			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL*TO_DEG,filtered.PITCH*TO_DEG,filtered.YAW*TO_DEG);
+//			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL*TO_DEG,filtered.PITCH*TO_DEG,filtered.YAW*TO_DEG);
+			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL,filtered.PITCH,filtered.YAW);
 			PRINTF("heading: %f\n",angleRPY.MAG_YAW*TO_DEG);
 			imu_filtered.publish(filtered);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);

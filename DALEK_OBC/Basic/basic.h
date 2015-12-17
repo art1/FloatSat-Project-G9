@@ -36,7 +36,7 @@ extern "C" HAL_UART bt_uart;
 #define IMU_ENABLE
 #define TTNC_ENABLE
 #define TELEMETRY_DISABLE
-#define FUSION_ENABLE
+//#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
