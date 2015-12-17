@@ -71,10 +71,13 @@ void Motor::run(){
 
 int Motor::setspeed(int16_t duty){
 
+
 	if(hbridge_enable.readPins() == 0) {
 		PRINTF("motor wasnt enabled, starting\n");
 		startMotor();
 	}
+
+
 
 	if((duty < 0) && (dutyCycle > 0)){
 		switchDirection(duty);

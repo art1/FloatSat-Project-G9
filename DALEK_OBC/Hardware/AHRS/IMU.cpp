@@ -302,7 +302,8 @@ void IMU::convertToRPY(){
 	deltaRoll = cosFactor * ((cosf(angleRPY.GYRO_PITCH) * (newData.ANGULAR_RAW_X)) + (sinf(angleRPY.GYRO_ROLL)*sinf(angleRPY.GYRO_PITCH)*(newData.ANGULAR_RAW_Y)) + (cosf(angleRPY.GYRO_ROLL)*sin(angleRPY.GYRO_PITCH)*(newData.ANGULAR_RAW_Z )));
 	deltaYaw = cosFactor * ((sinf(angleRPY.GYRO_ROLL) * (newData.ANGULAR_RAW_Y )) + (cosf(angleRPY.GYRO_ROLL)*(newData.ANGULAR_RAW_Z )));
 
-	float sampleDiff = samplerateTime - oldSamplerateTime;
+//	float sampleDiff = samplerateTime - oldSamplerateTime;
+	float sampleDiff = 1.0f / 50.0f;
 
 	angleRPY.GYRO_YAW += (deltaYaw*sampleDiff);
 	angleRPY.GYRO_PITCH += (deltaPitch*sampleDiff);
@@ -578,17 +579,21 @@ void IMU::run(){
 		cnt++;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
 		this->readIMU_Data();
+		this->convertToRPY();
+
 #ifdef FUSION_ENABLE
 		imu_rawData.publish(newData);
 #else
 		this->convertToRPY();
+		imu_rawData.publish(newData);
+
 #endif
 		if(cnt>printValues){
-#ifndef FUSION_ENABLE
-//			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
+//#ifndef FUSION_ENABLE
+			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 			PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
 			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
-#endif
+//#endif
 			cnt =0;
 			GREEN_TOGGLE;
 		}

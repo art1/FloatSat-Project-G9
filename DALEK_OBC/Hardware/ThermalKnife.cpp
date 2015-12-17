@@ -14,7 +14,7 @@ HAL_PWM knifePWM(PWM_IDX14);
 
 
 ThermalKnife::ThermalKnife() {
-	data.activated = false;
+	data.activated = true;
 }
 
 ThermalKnife::~ThermalKnife() {
@@ -35,7 +35,10 @@ void ThermalKnife::setNewData(KNIFE_DATA _data){
 void ThermalKnife::run(){
 	while(1){
 
-		suspendCallerUntil(END_OF_TIME);
+//		suspendCallerUntil(END_OF_TIME);
+		suspendCallerUntil(NOW()+5000*MILLISECONDS);
+		suspendCallerUntil(NOW()+5000*MILLISECONDS);
+//		suspendCallerUntil(NOW()+5000*MILLISECONDS);
 
 		if(data.activated){
 			PRINTF("cutting wire\n");

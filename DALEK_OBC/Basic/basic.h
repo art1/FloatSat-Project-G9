@@ -33,16 +33,18 @@ extern "C" HAL_UART bt_uart;
 #define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
+#define IMU_ENABLE
 #define TTNC_ENABLE
 #define TELEMETRY_DISABLE
-//#define FUSION_ENABLE
+#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CAMERA_ENABLE
 #define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
 #define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
+#define KNIFE_ENABLE
+
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -97,7 +99,7 @@ extern "C" HAL_UART bt_uart;
 #define IMU_SAMPLERATE			20				// read and fuse IMU data every XX milliseconds
 #define IMU_PRINT_VALUES		500				// print values over UART USB every XX  ms
 #define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
-#define RESET_IMU_AFTER			5				// resets the IMU if reading data failed for XXX times (e.g. same data is read, or IMU hangs)
+#define RESET_IMU_AFTER			30				// resets the IMU if reading data failed for XXX times (e.g. same data is read, or IMU hangs)
 
 struct IMU_DATA_RAW{
 	float ANGULAR_RAW_X;
@@ -169,7 +171,7 @@ struct TELEMETRY{
 	TELEMETRY_FRAME tmFrame;
 	int updated; // 0 or 1 for pl or tm frame
 };
-#define TM_SAMPLERATE			500			// in milliseconds
+#define TM_SAMPLERATE			1000			// in milliseconds
 #define COMMAND_ECHO							// if not commented, every command is echoed back
 #endif
 struct ACTIVE_SYSTEM_MODE{

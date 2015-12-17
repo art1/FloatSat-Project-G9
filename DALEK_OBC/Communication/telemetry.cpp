@@ -23,14 +23,15 @@ void Telemetry::init(){
 void Telemetry::run(){
 	/** TODO add function to activate and eactivate telemetry */
 	while(1){
-#ifdef TELEMETRY_DISABLE
-		suspendCallerUntil(END_OF_TIME);
-#endif
+//#ifdef TELEMETRY_DISABLE
+//		suspendCallerUntil(END_OF_TIME);
+//#endif
 		buildFrame();
 		tmPlFrame.publish(msg);
 		frameNumber++;
 		PRINTF("sent %d bytes\n",msg.length);
 		suspendCallerUntil(NOW()+TM_SAMPLERATE*MILLISECONDS);
+		BLUE_TOGGLE;
 	}
 }
 
