@@ -12,6 +12,7 @@
 
 #include "genericIO.h"
 #include <stdint.h>
+extern "C" uint8_t test;
 
 
 

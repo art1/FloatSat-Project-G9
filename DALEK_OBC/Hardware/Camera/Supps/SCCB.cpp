@@ -1,20 +1,13 @@
 /*
- * SCCB.cpp
+ * Sccb.cpp
  *
- *  Created on: Nov 28, 2015
- *      Author: arthur
+ *  Created on: 12.01.2015
+ *      Author: Andreas Schartel
  */
 
-#include "SCCB.h"
-#include "inttypes.h"
+#include "Sccb.h"
 
-#include "stm32f4xx.h"
-#include "stm32f4xx_usart.h"
-#include "stm32f4xx_gpio.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_i2c.h"
-
-void SCCB::I2CInit(void) {
+void Sccb::I2CInit(void) {
 	GPIO_InitTypeDef GPIO_InitStructure; // this is for the GPIO pins used as I2C1SDA and I2C1SCL
 	I2C_InitTypeDef I2C_InitStructure; // this is for the I2C1 initilization
 
@@ -65,7 +58,7 @@ void SCCB::I2CInit(void) {
 	I2C_Cmd(I2C1, ENABLE);
 }
 
-void SCCB::I2C_start(I2C_TypeDef* I2Cx, uint8_t address, uint8_t direction) {
+void Sccb::I2C_start(I2C_TypeDef* I2Cx, uint8_t address, uint8_t direction) {
 	while (I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSY))
 		asm("nop");
 	I2C_GenerateSTART(I2Cx, ENABLE);
@@ -83,14 +76,13 @@ void SCCB::I2C_start(I2C_TypeDef* I2Cx, uint8_t address, uint8_t direction) {
 	}
 }
 
-void SCCB::I2C_write(I2C_TypeDef* I2Cx, uint8_t data) {
+void Sccb::I2C_write(I2C_TypeDef* I2Cx, uint8_t data) {
 	I2C_SendData(I2Cx, data);
 	while (!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
 		asm("nop");
-
 }
 
-uint8_t SCCB::I2C_read_ack(I2C_TypeDef* I2Cx) {
+uint8_t Sccb::I2C_read_ack(I2C_TypeDef* I2Cx) {
 	uint8_t data;
 	I2C_AcknowledgeConfig(I2Cx, ENABLE);
 	while (!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_BYTE_RECEIVED))
@@ -99,7 +91,7 @@ uint8_t SCCB::I2C_read_ack(I2C_TypeDef* I2Cx) {
 	return data;
 }
 
-uint8_t SCCB::I2C_read_nack(I2C_TypeDef* I2Cx) {
+uint8_t Sccb::I2C_read_nack(I2C_TypeDef* I2Cx) {
 	uint8_t data;
 	I2C_AcknowledgeConfig(I2Cx, DISABLE);
 	while (!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_BYTE_RECEIVED))
@@ -108,11 +100,11 @@ uint8_t SCCB::I2C_read_nack(I2C_TypeDef* I2Cx) {
 	return data;
 }
 
-void SCCB::I2C_stop(I2C_TypeDef* I2Cx) {
+void Sccb::I2C_stop(I2C_TypeDef* I2Cx) {
 	I2C_GenerateSTOP(I2Cx, ENABLE);
 }
 
-uint8_t SCCB::ov7670_get(uint8_t reg) {
+uint8_t Sccb::ov7670_get(uint8_t reg) {
 	uint8_t data = 0;
 	delayx(1000);
 	I2C_start(I2C1, 0x42, I2C_Direction_Transmitter);
@@ -130,7 +122,7 @@ uint8_t SCCB::ov7670_get(uint8_t reg) {
 	return data;
 }
 
-uint8_t SCCB::ov7670_set(uint8_t reg, uint8_t data) {
+uint8_t Sccb::ov7670_set(uint8_t reg, uint8_t data) {
 	delayx(1000);
 	I2C_start(I2C1, 0x42, I2C_Direction_Transmitter);
 	delayx(1000);
@@ -143,10 +135,11 @@ uint8_t SCCB::ov7670_set(uint8_t reg, uint8_t data) {
 	return 0;
 }
 
-void SCCB::delayx(unsigned int ms) {
+void Sccb::delayx(unsigned int ms) {
 	//4694 = 1 ms
 	while (ms > 1) {
 		ms--;
 		asm("nop");
 	}
 }
+

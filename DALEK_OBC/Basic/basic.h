@@ -16,6 +16,7 @@
 #include "stm324xg_eval.h"
 #include "stm32f4xx_rcc.h"
 #include "../support_libs/wifi/wf121.h"
+#include "sysDelay/systick.h"
 
 
 /************* BASIC STUFF AND I2C/SPI/UART Things **************************************/
@@ -23,6 +24,7 @@
 extern "C" HAL_I2C i2c2;
 extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 extern "C" HAL_UART bt_uart;
+extern "C" uint8_t VSync;					// camera, for IRQ handler
 
 #define ADC1_RESOLUTION			12				// Resolution for ADC Channel 1
 
@@ -33,12 +35,12 @@ extern "C" HAL_UART bt_uart;
 #define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-#define IMU_ENABLE
-#define TTNC_ENABLE
+//#define IMU_ENABLE
+//#define TTNC_ENABLE
 #define TELEMETRY_DISABLE
 //#define FUSION_ENABLE
 //#define LIGHT_ENABLE
-//#define CAMERA_ENABLE
+#define CAMERA_ENABLE
 //#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
@@ -138,7 +140,8 @@ struct LUX_DATA{
 #define DCMI_CAPTURERATE		DCMI_CaptureRate_All_Frame
 
 struct CAM_CONTROL{
-	bool shoot;
+	bool activateCamera;
+	bool capture;
 };
 
 
@@ -164,16 +167,18 @@ struct IR_DATA{
 
 /* ***************************************** TM TC STUFF **********************************************/
 #ifdef TTNC_ENABLE
+
+#define COMMAND_ECHO							// if not commented, every command is echoed back
+#endif
+#define TM_SAMPLERATE			500			// in milliseconds
+
+struct ACTIVE_SYSTEM_MODE{
+	int activeMode;
+};
 struct TELEMETRY{
 	PAYLOAD_FRAME plFrame;
 	TELEMETRY_FRAME tmFrame;
 	int updated; // 0 or 1 for pl or tm frame
-};
-#define TM_SAMPLERATE			500			// in milliseconds
-#define COMMAND_ECHO							// if not commented, every command is echoed back
-#endif
-struct ACTIVE_SYSTEM_MODE{
-	int activeMode;
 };
 /* ***************************************** Thermal Knife STUFF ******************************************/
 

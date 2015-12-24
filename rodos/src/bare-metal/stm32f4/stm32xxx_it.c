@@ -114,6 +114,7 @@ void UsageFault_Handler(){
 
 void WWDG_IRQHandlerFunc();
 void WWDG_IRQHandlerFunc(){
+//	WWDG_ClearFlag();
 	while(1){}
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

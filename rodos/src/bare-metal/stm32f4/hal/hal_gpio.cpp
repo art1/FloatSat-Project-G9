@@ -4,7 +4,7 @@
 #include "hw_hal_gpio.h"
 
 #include "stm32f4xx_gpio.h"
-
+uint8_t test = 0;
 #ifndef NO_RODOS_NAMESPACE
 namespace RODOS {
 #endif
@@ -23,7 +23,7 @@ void initEXTInterrupts(){
 		NVIC_EnableIRQ(EXTI2_IRQn);
 		NVIC_EnableIRQ(EXTI3_IRQn);
 		NVIC_EnableIRQ(EXTI4_IRQn);
-		NVIC_EnableIRQ(EXTI9_5_IRQn);
+//		NVIC_EnableIRQ(EXTI9_5_IRQn);  --> disabled because needed in irqHandler.cpp for DALEK_OBC!
 		NVIC_EnableIRQ(EXTI15_10_IRQn);
 	}
 }
@@ -343,9 +343,9 @@ extern "C" {
 	void EXTI3_IRQHandler();
 	void EXTI4_IRQHandler();
 	void EXTI4_IRQHandler();
-	void EXTI9_5_IRQHandler();
+//	void EXTI9_5_IRQHandler(); --> disabled because needed in irqHandler.cpp for DALEK_OBC!
 	void EXTI15_10_IRQHandler();
-
+/** TODO IRQ: hier den exti9_5 handler auskommentiert weil gebraucht in irqHandler.cpp */
 	void EXTI0_IRQHandler(){
 		if(extInterruptLines[0]){
 			extInterruptLines[0]->EXTIRQHandler();
@@ -377,15 +377,17 @@ extern "C" {
 		NVIC_ClearPendingIRQ(EXTI4_IRQn);
 	}
 
-	void EXTI9_5_IRQHandler(){
-		uint32_t pending = EXTI->PR;
-		for(int i=5;i<=9;i++){
-			if(((pending >> i) & 0x01) && extInterruptLines[i]){
-				extInterruptLines[i]->EXTIRQHandler();
-			}
-		}
-		NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
-	}
+//	void EXTI9_5_IRQHandler(){
+//		PRINTF("helloooouuu\n");
+////		test++;
+//		uint32_t pending = EXTI->PR;
+//		for(int i=5;i<=9;i++){
+//			if(((pending >> i) & 0x01) && extInterruptLines[i]){
+//				extInterruptLines[i]->EXTIRQHandler();
+//			}
+//		}
+//		NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
+//	}
 	void EXTI15_10_IRQHandler(){
 		uint32_t pending = EXTI->PR;
 		for(int i=10;i<=15;i++){

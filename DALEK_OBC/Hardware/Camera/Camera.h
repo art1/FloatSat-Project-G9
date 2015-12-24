@@ -8,14 +8,17 @@
 #ifndef CAMERA_HPP_
 
 #include "../../Basic/basic.h"
-#include "Supps/SCCB.h"
-#include "Supps/myDCMI.h"
+#include "Supps/mySCCB.h"
+#include "Supps/ov7670.h"
+#include "Supps/initRegister.h"
 
-#define WIDTH						160
-#define HEIGHT						121
 
-#define CAPTUREMODE					DCMI_CaptureMode_SnapShot
-#define FRAMERATE					DCMI_CaptureRate_All_Frame
+
+//#define WIDTH						160
+//#define HEIGHT						121
+
+//#define CAPTUREMODE					DCMI_CaptureMode_SnapShot
+//#define FRAMERATE					DCMI_CaptureRate_All_Frame
 //#define CAPTUREMODE				DCMI_CaptureMode_Continuous
 //#define FRAMERATE					DCMI_CaptureRate_1of4_Frame
 
@@ -32,24 +35,19 @@ public:
 	void Capture();
 
 	void ProcessData();
+	void setNewData(CAM_CONTROL data);
 private:
+	CAM_CONTROL daten;
 	void initTimer();
 	void OV7670_SCCB();
-	void delayx(unsigned int ms);
-	uint8_t* getPicture();
-	void sendPicture();
-	void turnOn(void);
-	void turnOff(void);
-
-	SCCB sccb = SCCB();
-	myDCMI dcmi = myDCMI(IMAGESIZE, (uint32_t) DCMI_Buffer, FRAMERATE, CAPTUREMODE);
-	uint8_t DCMI_Buffer[IMAGESIZE];
+	ov7670 cam;
 
 	HAL_GPIO ledo;
 	HAL_GPIO reset;
 	HAL_GPIO power;
 
-	bool active;
+	bool isActive;
+	bool captureImage;
 	bool processData;
 	bool sendPic;
 };

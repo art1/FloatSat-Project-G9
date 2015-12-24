@@ -16,6 +16,7 @@ RM := rm -rf
 -include Hardware/AHRS/subdir.mk
 -include Hardware/subdir.mk
 -include Communication/subdir.mk
+-include Basic/sysDelay/subdir.mk
 -include Basic/subdir.mk
 -include subdir.mk
 -include objects.mk

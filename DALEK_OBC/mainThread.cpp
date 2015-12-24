@@ -127,7 +127,7 @@ struct receiver_knife : public Subscriber, public Thread {
 struct receiver_camera : public Subscriber, public Thread {
 	receiver_camera() : Subscriber(cam_control,"Camera Control") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		//		camera.setNewData(*(CAM_CONTROL*)data);
+		camera.setNewData(*(CAM_CONTROL*)data);
 		camera.resume();
 		return 1;
 	}
@@ -237,12 +237,20 @@ void mainThread::run(){
 	//	PRINTF("publishing Data\n");
 	ir_data.publish(tmp2);
 #endif
-	//#ifdef CAMERA_ENABLE
-	//	PRINTF("enabling cam\n");
-	//	CAM_CONTROL tmp3;
-	//	tmp3.shoot = true;
-	//	cam_control.publish(tmp3);
-	//#endif
+#ifdef CAMERA_ENABLE
+	PRINTF("enabling cam\n");
+	CAM_CONTROL tmp3;
+	tmp3.activateCamera = true;
+	tmp3.capture = true;
+#endif
+	while(1){
+		PRINTF("enabling cam in 1 secs...\n");
+		Delay_millis(100);
+		PRINTF("should be enabled in a few msecs\n");
+		cam_control.publish(tmp3);
+		PRINTF("and now im here\n");
+		suspendCallerUntil(END_OF_TIME);
+	}
 
 
 	while(1){
@@ -268,32 +276,32 @@ void mainThread::run(){
 				PRINTF("motor control mode with command %d\n",cmd.command);
 
 				switch (cmd.command) {
-					case SET_ROTATION_SPEED:
+				case SET_ROTATION_SPEED:
 
-						motorControl.setMotorSpeed(cmd.commandValue);
-						break;
-					case CONTROL_MOTOR:
-						if((int)cmd.commandValue == 1){
-							motorControl.setMotor(true);
-						} else if((int)cmd.commandValue == 0){
-							motorControl.setMotor(false);
-						}
-						break;
-					case GOTO_ANGLE:
-						break;
-					default:
+					motorControl.setMotorSpeed(cmd.commandValue);
+					break;
+				case CONTROL_MOTOR:
+					if((int)cmd.commandValue == 1){
+						motorControl.setMotor(true);
+					} else if((int)cmd.commandValue == 0){
+						motorControl.setMotor(false);
+					}
+					break;
+				case GOTO_ANGLE:
+					break;
+				default:
 
-						break;
+					break;
 				}
 #endif
 				break;
-			case MISSION:
-				// execute mission
-				PRINTF("mission mode!\n");
-				break;
-			default:
-				PRINTF("default shit\n");
-				break;
+				case MISSION:
+					// execute mission
+					PRINTF("mission mode!\n");
+					break;
+				default:
+					PRINTF("default shit\n");
+					break;
 			}
 		}
 		suspendCallerUntil(END_OF_TIME);

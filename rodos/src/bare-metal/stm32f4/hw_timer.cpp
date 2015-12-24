@@ -17,7 +17,7 @@
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_dbgmcu.h"
 #include "core_cm4.h"
-
+#include "../../../../DALEK_OBC/Basic/sysDelay/systick.h"
 
 
 #ifndef NO_RODOS_NAMESPACE
@@ -53,6 +53,8 @@ extern "C" {
 void SysTick_Handler();
 void SysTick_Handler() {
 
+	TimingDelay_Decrement();
+
 	if(!isSchedulingEnabled) return;
 
 	long long timeNow = NOW();  // comment this out to improve performance, but: no time events any more
@@ -75,15 +77,15 @@ void SysTick_Handler() {
  */
 static __INLINE uint32_t SysTick_Config_New(uint32_t ticks)
 {
-  if (ticks > SysTick_LOAD_RELOAD_Msk)  return (1);            /* Reload value impossible */
+	if (ticks > SysTick_LOAD_RELOAD_Msk)  return (1);            /* Reload value impossible */
 
-  SysTick->LOAD  = (ticks & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
-  NVIC_SetPriority (SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);  /* set Priority for Cortex-M0 System Interrupts */
-  SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
-//  SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
-//                   SysTick_CTRL_TICKINT_Msk   |
-//                   SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
-  return (0);                                                  /* Function successful */
+	SysTick->LOAD  = (ticks & SysTick_LOAD_RELOAD_Msk) - 1;      /* set reload register */
+	NVIC_SetPriority (SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);  /* set Priority for Cortex-M0 System Interrupts */
+	SysTick->VAL   = 0;                                          /* Load the SysTick Counter Value */
+	//  SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
+	//                   SysTick_CTRL_TICKINT_Msk   |
+	//                   SysTick_CTRL_ENABLE_Msk;                    /* Enable SysTick IRQ and SysTick Timer */
+	return (0);                                                  /* Function successful */
 }
 
 static __INLINE uint32_t SysTick_IRQEnable(void)
@@ -104,8 +106,8 @@ static __INLINE uint32_t SysTick_IRQDisable(void)
 static __INLINE uint32_t SysTick_Enable(void)
 {
 	SysTick->CTRL = 	// SysTick_CTRL_CLKSOURCE_Msk	| // if set clock source = CPU_CLK else CPU_CLK/8
-						SysTick_CTRL_TICKINT_Msk	|
-						SysTick_CTRL_ENABLE_Msk;
+			SysTick_CTRL_TICKINT_Msk	|
+			SysTick_CTRL_ENABLE_Msk;
 
 	return (0);
 }
@@ -122,8 +124,8 @@ static __INLINE uint32_t SysTick_Disable(void)
 } // end extern "C"
 
 /** 
-* the timer interval
-*/
+ * the timer interval
+ */
 long long Timer::microsecondsInterval = PARAM_TIMER_INTERVAL;
 
 void Timer::init() 
@@ -132,8 +134,8 @@ void Timer::init()
 }
 
 /**
-* start timer 
-*/
+ * start timer
+ */
 void Timer::start() 
 {
 	SysTick_Config_New((SystemCoreClock/8) * Timer::microsecondsInterval / 1000000); // initialization of systick timer
@@ -141,18 +143,18 @@ void Timer::start()
 }
 
 /**
-* stop timer 
-*/
+ * stop timer
+ */
 void Timer::stop() 
 {
 	SysTick_Disable();
 }
 
 /**
-* set timer interval 
-*/
+ * set timer interval
+ */
 void Timer::setInterval(const long long microsecondsInterval) {
-  Timer::microsecondsInterval = microsecondsInterval;
+	Timer::microsecondsInterval = microsecondsInterval;
 }
 
 
@@ -229,58 +231,58 @@ extern "C" {
 void TIMx_IRQHandler();
 void TIMx_IRQHandler()
 {
-   TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
-   NVIC_ClearPendingIRQ(TIMx_IRQn);
-   nanoTime += 10000000; // 10M ns for each 10ms-tick
+	TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
+	NVIC_ClearPendingIRQ(TIMx_IRQn);
+	nanoTime += 10000000; // 10M ns for each 10ms-tick
 }
 } // end extern "C"
 
 void TIMx_init();
 void TIMx_init(){
-    // local variables to initialize timer
-    TIM_TimeBaseInitTypeDef timStruct;
-    unsigned char timClockMultiplier = 0;
-    RCC_ClocksTypeDef clocks;
+	// local variables to initialize timer
+	TIM_TimeBaseInitTypeDef timStruct;
+	unsigned char timClockMultiplier = 0;
+	RCC_ClocksTypeDef clocks;
 
-    // init timer for system time
-    RCC_APBnPeriphClockCmd(RCC_APBnPeriph_TIMx, ENABLE);
-    RCC_APBnPeriphResetCmd(RCC_APBnPeriph_TIMx, DISABLE);
-    RCC_GetClocksFreq(&clocks);
+	// init timer for system time
+	RCC_APBnPeriphClockCmd(RCC_APBnPeriph_TIMx, ENABLE);
+	RCC_APBnPeriphResetCmd(RCC_APBnPeriph_TIMx, DISABLE);
+	RCC_GetClocksFreq(&clocks);
 
-    TIM_DeInit(TIMx);
+	TIM_DeInit(TIMx);
 
-    // if the APBn Prescaler is bigger than 1, the PCLKn is multiplied by 2 infront of the timer
-    if(clocks.HCLK_Frequency/clocks.PCLKn_Frequency > 1)
-    { timClockMultiplier = 2; }
-    else
-    { timClockMultiplier = 1; }
+	// if the APBn Prescaler is bigger than 1, the PCLKn is multiplied by 2 infront of the timer
+	if(clocks.HCLK_Frequency/clocks.PCLKn_Frequency > 1)
+	{ timClockMultiplier = 2; }
+	else
+	{ timClockMultiplier = 1; }
 
-    // TIM_Period = timer-clk divided by 100 to get an interrupt every 10ms
-    timStruct.TIM_Period = timerClock / 100;
+	// TIM_Period = timer-clk divided by 100 to get an interrupt every 10ms
+	timStruct.TIM_Period = timerClock / 100;
 
-    // Prescaler
-    // fCK_CNT = fCK_PSC/(TIM_Prescaler+1) -> TIM_Prescaler = (fCK_PSC/fCK_CNT)-1
-    timStruct.TIM_Prescaler         = ((clocks.PCLKn_Frequency*timClockMultiplier) / timerClock) -1;;
+	// Prescaler
+	// fCK_CNT = fCK_PSC/(TIM_Prescaler+1) -> TIM_Prescaler = (fCK_PSC/fCK_CNT)-1
+	timStruct.TIM_Prescaler         = ((clocks.PCLKn_Frequency*timClockMultiplier) / timerClock) -1;;
 
-    // timer mode is "count up"
-    timStruct.TIM_CounterMode       = TIM_CounterMode_Up;
+	// timer mode is "count up"
+	timStruct.TIM_CounterMode       = TIM_CounterMode_Up;
 
-    // TIM_ClockDivision = division ratio between the timer clock (CK_INT)
-    // frequency and sampling clock used by the digital filters
-    // -> not interesting for our purpose !!!
-    timStruct.TIM_ClockDivision     = TIM_CKD_DIV1;
+	// TIM_ClockDivision = division ratio between the timer clock (CK_INT)
+	// frequency and sampling clock used by the digital filters
+	// -> not interesting for our purpose !!!
+	timStruct.TIM_ClockDivision     = TIM_CKD_DIV1;
 
-    // only valid for TIM1 and TIM8
-    timStruct.TIM_RepetitionCounter = 0;
+	// only valid for TIM1 and TIM8
+	timStruct.TIM_RepetitionCounter = 0;
 
-    TIM_TimeBaseInit(TIMx,&timStruct);
-    TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
-    DBGMCU_Config(DBGMCU_TIMx_STOP, ENABLE);            // stop Timer during debug break
-    TIM_Cmd(TIMx, ENABLE);
+	TIM_TimeBaseInit(TIMx,&timStruct);
+	TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
+	DBGMCU_Config(DBGMCU_TIMx_STOP, ENABLE);            // stop Timer during debug break
+	TIM_Cmd(TIMx, ENABLE);
 
-    NVIC_SetPriority(TIMx_IRQn, 255);
-    // enable timer-interrupt in interrupt controller
-    NVIC_EnableIRQ(TIMx_IRQn);
+	NVIC_SetPriority(TIMx_IRQn, 255);
+	// enable timer-interrupt in interrupt controller
+	NVIC_EnableIRQ(TIMx_IRQn);
 }
 
 unsigned long long hwGetNanoseconds() {

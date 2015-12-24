@@ -11,6 +11,7 @@
 HAL_I2C i2c2(I2C_IDX2);
 HAL_ADC adc1(ADC_IDX1);
 HAL_UART bt_uart(BLUETOOTH_PORT);
+uint8_t VSync = 0;
 
 //declaring topics for RODOS middleware inter-Thread Communication
 Topic<IMU_DATA_RAW> imu_rawData(1,"IMU Raw Data");
