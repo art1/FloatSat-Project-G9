@@ -231,11 +231,19 @@ void mainThread::run(){
 	//enable ADC1 channel with 12 Bit Resolution
 	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);
 #ifdef IMU_ENABLE
+	i2c2.init(400000);
 	imu.regInit();
 	imu.setTime(500*MILLISECONDS);
 #endif
 
+#ifdef CAMERA_ENABLE
+	PRINTF("enabling cam\n");
+	CAM_CONTROL tmp3;
+	tmp3.activateCamera = true;
+	tmp3.capture = true;
+#endif
 #ifdef LIGHT_ENABLE
+	i2c1.init(400000);
 	LUX_DATA temp;
 	temp.activated = true;
 	lux_data.publish(temp);
@@ -248,12 +256,7 @@ void mainThread::run(){
 	//	PRINTF("publishing Data\n");
 	ir_data.publish(tmp2);
 #endif
-#ifdef CAMERA_ENABLE
-	PRINTF("enabling cam\n");
-	CAM_CONTROL tmp3;
-	tmp3.activateCamera = true;
-	tmp3.capture = true;
-#endif
+
 	while(1){
 
 #ifdef CAMERA_ENABLE

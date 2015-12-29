@@ -30,13 +30,10 @@ void lightSensor::init(){
 	pub_data.LUX = 0;
 	pub_data.activated = false;
 
-	/* TODO check if i2c was already initialised!! */
-	k = i2c2.init(400000);
-//	PRINTF("init i2c2 successful: %d\n",k);
 	//turn on the light sensor
 	transBuf[0] = REG_CONTROL;
 	transBuf[1] = TURN_ON;
-	k = i2c2.writeRead(DEVICE_ADRESS,transBuf,2,recBuf,1);
+	k = i2c1.writeRead(DEVICE_ADRESS,transBuf,2,recBuf,1);
 //	PRINTF("turn on return: %d\n",recBuf[0]);
 	if(recBuf[0] != TURN_ON){
 		PRINTF("error turning on the light sensor! please check connections!\n");
@@ -65,7 +62,7 @@ void lightSensor::init(){
 			default:
 				break;
 		}
-		k = i2c2.write(DEVICE_ADRESS,transBuf,2);
+		k = i2c1.write(DEVICE_ADRESS,transBuf,2);
 	}
 }
 
@@ -74,18 +71,15 @@ bool lightSensor::isActive(){
 }
 
 void lightSensor::setActive(LUX_DATA val){
-	pub_data.activated = val.activated;
-//	activated = val;
+	pub_data = val;
 }
 
 void lightSensor::run(){
-	if(!activated)init();
+	if(!isActive())init();
 	while(1){
 		suspendCallerUntil(NOW()+LIGHT_SAMPLERATE*MILLISECONDS);
 		if(pub_data.activated){
-		//		calculateLux();
 		readRawData();
-//		PRINTF("lux: %"PRIu32" \n",calculateLux());
 		calculateLux();
 		lux_data.publish(pub_data);
 		} else suspendCallerUntil(END_OF_TIME);
@@ -161,11 +155,11 @@ uint32_t lightSensor::calculateLux(){
 void lightSensor::readRawData(){
 	// read channel 0 -> visible & IR
 	transBuf[0] = ((REG_DATA0_LOW & 0x0F )| 0x90); //
-	i2c2.writeRead(DEVICE_ADRESS,transBuf,1,recBuf,2);
+	i2c1.writeRead(DEVICE_ADRESS,transBuf,1,recBuf,2);
 //	PRINTF("raw high: %d low: %d",recBuf[1],recBuf[0]);
 	ch0 = (uint16_t)(recBuf[0] | (recBuf[1] << 8));
 
 	transBuf[0] = ((REG_DATA1_LOW & 0x0F)| 0x90);
-	i2c2.writeRead(DEVICE_ADRESS,transBuf,1,recBuf,2);
+	i2c1.writeRead(DEVICE_ADRESS,transBuf,1,recBuf,2);
 	ch1 = (uint16_t)(recBuf[0] | (recBuf[1] << 8));
 }

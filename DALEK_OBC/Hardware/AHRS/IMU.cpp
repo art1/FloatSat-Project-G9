@@ -56,7 +56,6 @@ void IMU::regInit(){
 
 	//init i2c
 	//	if(i2c2.context)
-	i2c2.init(400000);
 
 	//init array
 	memset(recBuf,0,sizeof(recBuf));
