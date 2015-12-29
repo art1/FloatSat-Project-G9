@@ -56,7 +56,9 @@ struct receiver_Fusion : public Subscriber, public Thread {
 	receiver_Fusion() : Subscriber(imu_rawData,"IMU Raw Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		fusion.newData(*(IMU_DATA_RAW*)data);
+#ifdef TTNC_ENABLE
 		tm.setNewData(*(IMU_DATA_RAW*)data);
+#endif
 		fusion.resume();
 		return 1;
 	}
@@ -66,7 +68,9 @@ struct receiver_Fusion : public Subscriber, public Thread {
 struct receiver_filtered : public Subscriber, public Thread {
 	receiver_filtered() : Subscriber(imu_filtered,"IMU Filtered Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+#ifdef TTNC_ENABLE
 		tm.setNewData(*(IMU_RPY_FILTERED*)data);
+#endif
 		return 1;
 	}
 	void run(){}
@@ -78,7 +82,9 @@ struct receiver_light : public Subscriber, public Thread {
 	receiver_light() : Subscriber(lux_data,"Lux Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		light.setActive(*(LUX_DATA*)data);
+#ifdef TTNC_ENABLE
 		tm.setNewData(*(LUX_DATA*)data);
+#endif
 		light.resume();
 		return 1;
 	}
@@ -91,7 +97,9 @@ struct receiver_solar : public Subscriber, public Thread {
 	receiver_solar() : Subscriber(solar_data,"Solar Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		solar.setActive(*(SOLAR_DATA*)data);
+#ifdef TTNC_ENABLE
 		tm.setNewData(*(SOLAR_DATA*)data);
+#endif
 		solar.resume();
 		return 1;
 	}
@@ -104,7 +112,9 @@ struct receiver_irSensors : public Subscriber, public Thread {
 	receiver_irSensors() : Subscriber(ir_data,"Infrared Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		irSensors.setActive(*(IR_DATA*)data);
+#ifdef TTNC_ENABLE
 		tm.setNewData(*(IR_DATA*) data);
+#endif
 		irSensors.resume();
 		return 1;
 	}
@@ -120,7 +130,7 @@ struct receiver_knife : public Subscriber, public Thread {
 		return 1;
 	}
 	void run(){}
-} ir_sensors_receiver_thread;
+} knife_receiver_thread;
 #endif
 /**************************** Camera MESSAGES *****************************************/
 #ifdef CAMERA_ENABLE
@@ -140,7 +150,7 @@ struct receiver_telecommand : public Subscriber, public Thread {
 	receiver_telecommand() : Subscriber(tcRaw,"TC Raw Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		tc.setNewData(*(UDPMsg*)data);
-		PRINTF("im here\n");
+//		PRINTF("im here\n");
 		tc.resume();
 		return 1;
 	}
@@ -161,13 +171,14 @@ struct receiver_telemetry : public Subscriber, public Thread {
 	}
 	void run(){}
 } wifi_receiver_thread;
+
 // and now COmmand Messages to Main Control Thread
 struct receiver_tcControl : public Subscriber, public Thread {
-	receiver_tcControl() : Subscriber(commandFrame,"TC COntrol Data") {}
+	receiver_tcControl() : Subscriber(commandFrame,"TC Control Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		//		this.setNewData(*(COMMAND_FRAME*)data);
 		mainT.setNewData(*(COMMAND_FRAME*)data);
-		PRINTF("setting control data\n");
+//		PRINTF("setting control data\n");
 
 		//		control.resume();
 		mainT.resume();
@@ -244,10 +255,13 @@ void mainThread::run(){
 	tmp3.capture = true;
 #endif
 	while(1){
+
+#ifdef CAMERA_ENABLE
 		PRINTF("enabling cam in 1 secs...\n");
 		Delay_millis(100);
 		PRINTF("should be enabled in a few msecs\n");
 		cam_control.publish(tmp3);
+#endif
 		PRINTF("and now im here\n");
 		suspendCallerUntil(END_OF_TIME);
 	}
@@ -255,7 +269,7 @@ void mainThread::run(){
 
 	while(1){
 		//check which mode
-		PRINTF("hello!\n");
+		PRINTF("SYSTEM HELLO!\n");
 		if(cmd.command == GOTO_MODE){
 			currentSystemMode.activeMode = (int) cmd.commandValue;
 			PRINTF("here cmd\n");

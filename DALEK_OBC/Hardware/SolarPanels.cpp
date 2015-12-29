@@ -30,7 +30,7 @@ void SolarPanels::run(){
 		suspendCallerUntil(NOW()+SOLAR_SAMPLERATE*MILLISECONDS);
 		if(isActive()){
 			solData.Voltage = adc1.read(SolarVoltageADC);
-			PRINTF("read solar Voltage: %d\n",solData.Voltage);
+//			PRINTF("read solar Voltage: %d\n",solData.Voltage);
 			solar_data.publish(solData);
 		} else suspendCallerUntil(END_OF_TIME);
 	}

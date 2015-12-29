@@ -27,6 +27,7 @@ void MotorControlThread::run(){
 	bool spin = false;
 
 	while(1){
+		suspendCallerUntil(END_OF_TIME);
 //		suspendCallerUntil(NOW()+100*MILLISECONDS);
 //		motor.setspeed(cnt);
 //		cnt++;

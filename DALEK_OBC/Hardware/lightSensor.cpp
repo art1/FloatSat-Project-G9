@@ -32,12 +32,12 @@ void lightSensor::init(){
 
 	/* TODO check if i2c was already initialised!! */
 	k = i2c2.init(400000);
-	PRINTF("init i2c2 successful: %d\n",k);
+//	PRINTF("init i2c2 successful: %d\n",k);
 	//turn on the light sensor
 	transBuf[0] = REG_CONTROL;
 	transBuf[1] = TURN_ON;
 	k = i2c2.writeRead(DEVICE_ADRESS,transBuf,2,recBuf,1);
-	PRINTF("turn on return: %d\n",recBuf[0]);
+//	PRINTF("turn on return: %d\n",recBuf[0]);
 	if(recBuf[0] != TURN_ON){
 		PRINTF("error turning on the light sensor! please check connections!\n");
 		activated =false;
@@ -85,7 +85,8 @@ void lightSensor::run(){
 		if(pub_data.activated){
 		//		calculateLux();
 		readRawData();
-		PRINTF("lux: %"PRIu32" \n",calculateLux());
+//		PRINTF("lux: %"PRIu32" \n",calculateLux());
+		calculateLux();
 		lux_data.publish(pub_data);
 		} else suspendCallerUntil(END_OF_TIME);
 	}
