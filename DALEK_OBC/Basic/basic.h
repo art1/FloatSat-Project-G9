@@ -35,8 +35,8 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
-//#define TTNC_ENABLE
+#define IMU_ENABLE
+#define TTNC_ENABLE
 #define TELEMETRY_DISABLE
 //#define FUSION_ENABLE
 //#define LIGHT_ENABLE
