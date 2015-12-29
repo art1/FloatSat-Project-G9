@@ -223,6 +223,7 @@ private:
 	bool calibrationFinished;
 	int k =0;
 
+	int debugTime =0;
 
 
 

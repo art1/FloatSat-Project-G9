@@ -214,11 +214,13 @@ void IMU::regInit(){
 int IMU::resetIMU(){
 	//cycle PD7 off->on for reset //TODO: but how fast???
 	//	leds.blinkAll(100,0);
-		suspendCallerUntil(NOW()+200*MILLISECONDS);
+//		suspendCallerUntil(NOW()+200*MILLISECONDS);
 
 	// reset I2C lines
 	i2c2.reset();
 	reset.setPins(0);
+	suspendCallerUntil(NOW()+200*MILLISECONDS);
+
 	reset.setPins(1);
 	suspendCallerUntil(NOW()+200*MILLISECONDS);
 	regInit();
@@ -290,6 +292,10 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 		PRINTF("IMU Hang detected! Resetting IMU\n");
 		RED_ON;
 		//		suspendCallerUntil(END_OF_TIME);
+		long tmp = SECONDS_NOW();
+		long timeSinceStart = tmp - debugTime;
+		PRINTF("Hang after %d seconds!",timeSinceStart);
+		suspendCallerUntil(END_OF_TIME);
 		this->resetIMU();
 		//		init();
 		//				i2c2.reset();
@@ -571,7 +577,7 @@ void IMU::calibrateSensors(){
 void IMU::run(){
 	PRINTF("run called\n");
 	int tmp = 0;
-
+	debugTime = NOW()*SECONDS;
 //	calibrateSensors();
 //	while(!calibrationFinished){
 //		suspendCallerUntil(NOW()+500*MILLISECONDS);
