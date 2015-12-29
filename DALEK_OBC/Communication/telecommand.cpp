@@ -15,7 +15,7 @@
 //HAL_UART uart3(UART_IDX3); // USB-UART
 //WF121 wf121(&uart3);
 
-Telecommand::Telecommand() {
+Telecommand::Telecommand() : Thread("Telecommand",102){
 	// TODO Auto-generated constructor stub
 
 

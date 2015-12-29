@@ -23,6 +23,7 @@ public:
 	void setNewData(SOLAR_DATA _sol);
 	void setNewData(IR_DATA _ir);
 	void setNewData(ACTIVE_SYSTEM_MODE _mode);
+	void setNewData(INTERCOMM _interComm);
 
 	uint32_t getCurrentFrameNumber();
 

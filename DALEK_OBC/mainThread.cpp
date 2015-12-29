@@ -39,11 +39,11 @@ SolarPanels solar;
 #ifdef CAMERA_ENABLE
 Camera camera; // needs to be extern because interrupt handler!
 #endif
-#ifdef MOTOR_ENABLE
-MotorControlThread motorControl;
-#endif
 #ifdef IR_ENABLE
 InfraredSensors irSensors;
+#endif
+#ifdef MOTOR_ENABLE
+MotorControlThread motorControl;
 #endif
 #ifdef KNIFE_ENABLE
 ThermalKnife knife;
@@ -53,7 +53,7 @@ ThermalKnife knife;
 /**************************** IMU MESSAGES **************************************/
 #ifdef FUSION_ENABLE
 struct receiver_Fusion : public Subscriber, public Thread {
-	receiver_Fusion() : Subscriber(imu_rawData,"IMU Raw Data") {}
+	receiver_Fusion(const char* _name) : Subscriber(imu_rawData,"IMU Raw Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		fusion.newData(*(IMU_DATA_RAW*)data);
 #ifdef TTNC_ENABLE
@@ -63,7 +63,7 @@ struct receiver_Fusion : public Subscriber, public Thread {
 		return 1;
 	}
 	void run(){}
-} fusion_receiver_thread;
+} fusion_receiver_thread("Fusion Receiver");
 
 struct receiver_filtered : public Subscriber, public Thread {
 	receiver_filtered() : Subscriber(imu_filtered,"IMU Filtered Data") {}
@@ -76,86 +76,20 @@ struct receiver_filtered : public Subscriber, public Thread {
 	void run(){}
 } filtered_receiver_thread;
 #endif
-/**************************** LIGHT MESSAGES ************************************/
-#ifdef LIGHT_ENABLE
-struct receiver_light : public Subscriber, public Thread {
-	receiver_light() : Subscriber(lux_data,"Lux Data") {}
-	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		light.setActive(*(LUX_DATA*)data);
-#ifdef TTNC_ENABLE
-		tm.setNewData(*(LUX_DATA*)data);
-#endif
-		light.resume();
-		return 1;
-	}
-	void run(){}
-} light_receiver_thread;
-#endif
-/**************************** Solar Panel MESSAGES ************************************/
-#ifdef SOLAR_ADC_ENABLE
-struct receiver_solar : public Subscriber, public Thread {
-	receiver_solar() : Subscriber(solar_data,"Solar Data") {}
-	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		solar.setActive(*(SOLAR_DATA*)data);
-#ifdef TTNC_ENABLE
-		tm.setNewData(*(SOLAR_DATA*)data);
-#endif
-		solar.resume();
-		return 1;
-	}
-	void run(){}
-} solar_receiver_thread;
-#endif
-/**************************** IR Sensors MESSAGES ************************************/
-#ifdef IR_ENABLE
-struct receiver_irSensors : public Subscriber, public Thread {
-	receiver_irSensors() : Subscriber(ir_data,"Infrared Data") {}
-	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		irSensors.setActive(*(IR_DATA*)data);
-#ifdef TTNC_ENABLE
-		tm.setNewData(*(IR_DATA*) data);
-#endif
-		irSensors.resume();
-		return 1;
-	}
-	void run(){}
-} ir_sensors_receiver_thread;
-#endif
-/**************************** TTnC MESSAGES **************************************/
-#ifdef KNIFE_ENABLE
-struct receiver_knife : public Subscriber, public Thread {
-	receiver_knife() : Subscriber(knife_data,"Knife Data") {}
-	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		knife.setNewData(*(KNIFE_DATA*)data);
-		return 1;
-	}
-	void run(){}
-} knife_receiver_thread;
-#endif
-/**************************** Camera MESSAGES *****************************************/
-#ifdef CAMERA_ENABLE
-struct receiver_camera : public Subscriber, public Thread {
-	receiver_camera() : Subscriber(cam_control,"Camera Control") {}
-	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		camera.setNewData(*(CAM_CONTROL*)data);
-		camera.resume();
-		return 1;
-	}
-	void run(){}
-} camera_receiver_thread;
-#endif
+
 /**************************** TTnC MESSAGES **************************************/
 #ifdef TTNC_ENABLE
 struct receiver_telecommand : public Subscriber, public Thread {
-	receiver_telecommand() : Subscriber(tcRaw,"TC Raw Data") {}
+	receiver_telecommand(const char* _name,int _prio, int _stackSize) : Subscriber(tcRaw,"TC Raw Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		tc.setNewData(*(UDPMsg*)data);
-//		PRINTF("im here\n");
+		//		PRINTF("im here\n");
 		tc.resume();
 		return 1;
 	}
 	void run(){}
-} tc_receiver_thread;
+} tc_receiver_thread("TC Receiver",102,200);
+
 // and now the other way round -> TM to Wifi
 struct receiver_telemetry : public Subscriber, public Thread {
 	receiver_telemetry() : Subscriber(tmPlFrame,"TelemetryPayloadFrame") {}
@@ -174,19 +108,70 @@ struct receiver_telemetry : public Subscriber, public Thread {
 
 // and now COmmand Messages to Main Control Thread
 struct receiver_tcControl : public Subscriber, public Thread {
-	receiver_tcControl() : Subscriber(commandFrame,"TC Control Data") {}
+	receiver_tcControl(const char* _name,int _prio, int _stackSize) : Subscriber(commandFrame,"TC Control Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-		//		this.setNewData(*(COMMAND_FRAME*)data);
 		mainT.setNewData(*(COMMAND_FRAME*)data);
-//		PRINTF("setting control data\n");
-
-		//		control.resume();
 		mainT.resume();
 		return 1;
 	}
 	void run(){}
-} tcControl_receiver_thread;
+} tcControl_receiver_thread("TC Control Receiver", 100, 500);
 #endif
+
+
+// the following thread is for Inter-Thread Communication of Sensors only, except for IMU Data!
+// Why? because the amount of threads got too high and RODOS doesn't like that! (-> xmalloc for threads?? -> see github commit history in ahrs branch)
+struct sensorsCommThread : public Subscriber, public Thread {
+	sensorsCommThread(const char* _name) : Subscriber(interThreadComm,"Inter Thread Communication for Sensors") {}
+	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
+		INTERCOMM tmp = *(INTERCOMM*)data;
+		switch (tmp.changedVal) {
+		case LUX_CHANGED:
+#ifdef LIGHT_ENABLE
+			light.setActive(tmp.luxData);
+#ifdef TTNC_ENABLE
+			tm.setNewData(tmp.luxData);
+#endif
+			light.resume();
+#endif
+			break;
+		case SOLAR_CHANGED:
+#ifdef SOLAR_ADC_ENABLE
+			solar.setNewData(tmp.solData);
+#ifdef TTNC_ENABLE
+			tm.setNewData(tmp.solData);
+#endif
+			solar.resume();
+#endif
+			break;
+		case IR_CHANGED:
+#ifdef IR_ENABLE
+			irSensors.setNewData(tmp.irData);
+#ifdef TTNC_ENABLE
+			tm.setNewData(tmp.irData);
+#endif
+			irSensors.resume();
+#endif
+			break;
+		case KNIFE_CHANGED:
+#ifdef KNIFE_ENABLE
+			knife.setNewData(tmp.knifeData);
+			knife.resume();
+#endif
+			break;
+		case CAM_CHANGED:
+#ifdef CAMERA_ENABLE
+			camera.setNewData(tmp.camControl);
+			camera.resume();
+#endif
+			break;
+		default:
+			break;
+		}
+		return 1;
+	}
+	void run(){}
+} sensorsComm("Inter-Thread Comm");
 
 mainThread::mainThread(const char* name) : Thread(name){
 
@@ -223,7 +208,7 @@ void mainThread::init(){
 
 
 void mainThread::run(){
-
+	INTERCOMM tempComm;
 #ifdef BLUETOOTH_FALLBACK
 	bt_uart.init(BLUETOOTH_BAUDRATE);
 #endif
@@ -236,17 +221,13 @@ void mainThread::run(){
 	imu.setTime(500*MILLISECONDS);
 #endif
 
-#ifdef CAMERA_ENABLE
-	PRINTF("enabling cam\n");
-	CAM_CONTROL tmp3;
-	tmp3.activateCamera = true;
-	tmp3.capture = true;
-#endif
 #ifdef LIGHT_ENABLE
 	i2c1.init(400000);
 	LUX_DATA temp;
 	temp.activated = true;
-	lux_data.publish(temp);
+	tempComm.luxData = temp;
+	tempComm.changedVal = LUX_CHANGED;
+	interThreadComm.publish(tempComm);
 #endif
 
 #ifdef IR_ENABLE
@@ -254,7 +235,9 @@ void mainThread::run(){
 	irSensors.init();
 	tmp2.activated = true;
 	//	PRINTF("publishing Data\n");
-	ir_data.publish(tmp2);
+	tempComm.irData = tmp2;
+	tempComm.changedVal = IR_CHANGED;
+	interThreadComm.publish(tempComm);
 #endif
 
 	while(1){
@@ -263,16 +246,21 @@ void mainThread::run(){
 		PRINTF("enabling cam in 1 secs...\n");
 		Delay_millis(100);
 		PRINTF("should be enabled in a few msecs\n");
-		cam_control.publish(tmp3);
+		CAM_CONTROL tmp3;
+		tmp3.activateCamera = true;
+		tmp3.capture = true;
+		tempComm.camControl = tmp3;
+		tempComm.changedVal = CAM_CHANGED;
+		interThreadComm.publish(tempComm);
 #endif
 		PRINTF("and now im here\n");
 		suspendCallerUntil(END_OF_TIME);
 	}
 
+	PRINTF("SYSTEM HELLO!\n");
 
 	while(1){
 		//check which mode
-		PRINTF("SYSTEM HELLO!\n");
 		if(cmd.command == GOTO_MODE){
 			currentSystemMode.activeMode = (int) cmd.commandValue;
 			PRINTF("here cmd\n");

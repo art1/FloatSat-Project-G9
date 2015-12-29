@@ -17,7 +17,7 @@ public:
 	virtual ~SolarPanels();
 	void init();
 	void run();
-	void setActive(SOLAR_DATA sol);
+	void setNewData(SOLAR_DATA sol);
 	bool isActive();
 
 private:

@@ -13,7 +13,7 @@ static Application senderName("Lux_Data_Publisher",500);
 
 
 
-lightSensor::lightSensor() {
+lightSensor::lightSensor() : Thread("Light Sensor",108, 1000){
 	// TODO Auto-generated constructor stub
 }
 
@@ -22,6 +22,10 @@ lightSensor::~lightSensor() {
 }
 
 void lightSensor::init(){
+
+}
+
+void lightSensor::initSensor(){
 	int k=0;
 	lux = 0.0f;
 	activated =false;
@@ -75,13 +79,16 @@ void lightSensor::setActive(LUX_DATA val){
 }
 
 void lightSensor::run(){
-	if(!isActive())init();
+	INTERCOMM tmp;
+	tmp.changedVal = LUX_CHANGED;
+	if(!isActive())initSensor();
 	while(1){
 		suspendCallerUntil(NOW()+LIGHT_SAMPLERATE*MILLISECONDS);
 		if(pub_data.activated){
 		readRawData();
 		calculateLux();
-		lux_data.publish(pub_data);
+		tmp.luxData = pub_data;
+		interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
 	}
 }

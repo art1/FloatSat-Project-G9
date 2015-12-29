@@ -16,7 +16,7 @@
 
 
 
-sensorFusion::sensorFusion(){
+sensorFusion::sensorFusion() : Thread("sensorFusion Thread",101){
 	// TODO Auto-generated constructor stub
 	beta = GAIN;
 	integrationDelta = 20000.0f;

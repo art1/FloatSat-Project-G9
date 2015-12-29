@@ -17,7 +17,7 @@ public:
 	virtual ~InfraredSensors();
 	void init();
 	void run();
-	void setActive(IR_DATA dat);
+	void setNewData(IR_DATA dat);
 	bool isActive();
 
 private:

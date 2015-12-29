@@ -7,7 +7,7 @@
 
 #include "MotorControlThread.h"
 
-MotorControlThread::MotorControlThread() {
+MotorControlThread::MotorControlThread() : Thread("Motor Control",105){
 	// TODO Auto-generated constructor stub
 
 }

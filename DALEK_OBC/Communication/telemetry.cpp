@@ -7,11 +7,11 @@
 
 #include "telemetry.h"
 
-Telemetry::Telemetry() {
+Telemetry::Telemetry() : Thread("Telemetry",109){
 	this->frameNumber = 0;
 }
 
-Telemetry::~Telemetry() {
+Telemetry::~Telemetry(){
 }
 
 
@@ -50,6 +50,9 @@ void Telemetry::setNewData(SOLAR_DATA _sol){
 }
 void Telemetry::setNewData(IR_DATA _ir){
 	this->ir.put(_ir);
+}
+void Telemetry::setNewData(INTERCOMM _interComm){
+
 }
 void Telemetry::setNewData(ACTIVE_SYSTEM_MODE _mode){
 	this->systemMode = _mode;

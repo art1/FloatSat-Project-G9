@@ -10,7 +10,7 @@
 
 #include "../Basic/basic.h"
 
-class ThermalKnife : public Thread{
+class ThermalKnife : public Thread {
 public:
 	ThermalKnife();
 	virtual ~ThermalKnife();

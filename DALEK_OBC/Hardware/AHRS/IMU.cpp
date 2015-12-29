@@ -27,7 +27,7 @@ uint16_t samples = 0;
 
 
 
-IMU::IMU() {
+IMU::IMU() : Thread ("IMU Thread",101){
 	//TODO: insert correct baudrate
 	cnt_failedReads = 0;
 	samples = 0;

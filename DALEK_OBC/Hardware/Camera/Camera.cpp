@@ -16,7 +16,7 @@
 
 
 
-Camera::Camera(){
+Camera::Camera() : Thread("Camera",99){
 	reset = HAL_GPIO(GPIO_010); //PA10
 	power = HAL_GPIO(GPIO_033); //PC01
 	isActive = false;

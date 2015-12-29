@@ -72,6 +72,7 @@ public:
 	void run();
 	void setActive(LUX_DATA val);
 private:
+	void initSensor();
 	float lux;
 	bool isActive();
 	bool activated;

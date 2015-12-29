@@ -7,7 +7,7 @@
 
 #include "SolarPanels.h"
 
-SolarPanels::SolarPanels() {
+SolarPanels::SolarPanels() : Thread("SolarPanels",104, 500){
 	// TODO Auto-generated constructor stub
 	solData.activated = false;
 	solData.Voltage = 0;
@@ -23,6 +23,8 @@ void SolarPanels::init(){
 }
 
 void SolarPanels::run(){
+	INTERCOMM tmp;
+	tmp.changedVal = SOLAR_CHANGED;
 	suspendCallerUntil(END_OF_TIME);
 //	if(!isActive) init();
 
@@ -31,14 +33,15 @@ void SolarPanels::run(){
 		if(isActive()){
 			solData.Voltage = adc1.read(SolarVoltageADC);
 //			PRINTF("read solar Voltage: %d\n",solData.Voltage);
-			solar_data.publish(solData);
+			tmp.solData = solData;
+			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
 	}
 
 }
 
 
-void SolarPanels::setActive(SOLAR_DATA sol){
+void SolarPanels::setNewData(SOLAR_DATA sol){
 	this->solData.activated = sol.activated;
 }
 

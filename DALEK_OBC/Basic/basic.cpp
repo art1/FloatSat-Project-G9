@@ -15,18 +15,14 @@ uint8_t VSync = 0;
 
 //declaring topics for RODOS middleware inter-Thread Communication
 Topic<IMU_DATA_RAW> imu_rawData(1,"IMU Raw Data");
-Topic<LUX_DATA> lux_data(2,"LUX Data");
-Topic<SOLAR_DATA> solar_data(3,"Solar Voltage Data");
-Topic<IR_DATA> ir_data(4,"Infrared Sensor Data");
-Topic<CAM_CONTROL> cam_control(5,"Camera Control");
-Topic<TELEMETRY> tm_data(6,"Telemetry Data");
-Topic<UDPMsg> tcRaw(7,"Command Data Raw");
-Topic<UDPMsg> tmPlFrame(8,"Telemetry Payload Frame");
-Topic<COMMAND_FRAME> commandFrame(9,"Command Frame Data");
-Topic<IMU_RPY_FILTERED> imu_filtered(10,"IMU Data filtered");
-Topic<ACTIVE_SYSTEM_MODE> systemMode(11,"active System Mode");
-Topic<KNIFE_DATA> knife_data(12,"Thermal Knife Data");
+Topic<IMU_RPY_FILTERED> imu_filtered(2,"IMU Data filtered");
+Topic<INTERCOMM> interThreadComm(3,"Inter-Thread Communication");
 
+Topic<TELEMETRY> tm_data(4,"Telemetry Data");
+Topic<UDPMsg> tcRaw(5,"Command Data Raw");
+Topic<UDPMsg> tmPlFrame(6,"Telemetry Payload Frame");
+Topic<COMMAND_FRAME> commandFrame(7,"Command Frame Data");
+Topic<ACTIVE_SYSTEM_MODE> systemMode(8,"active System Mode");
 
 
 

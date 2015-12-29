@@ -13,7 +13,7 @@ HAL_GPIO HBRIDGE_C_INA (GPIO_072);
 HAL_PWM knifePWM(PWM_IDX14);
 
 
-ThermalKnife::ThermalKnife() {
+ThermalKnife::ThermalKnife() : Thread("Thermal Knife",105, 500){
 	data.activated = false;
 }
 
@@ -31,6 +31,8 @@ void ThermalKnife::init(){
 void ThermalKnife::setNewData(KNIFE_DATA _data){
 	this->data = _data;
 }
+
+
 
 void ThermalKnife::run(){
 	while(1){

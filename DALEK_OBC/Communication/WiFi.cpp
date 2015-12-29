@@ -68,7 +68,7 @@ void WiFi::sendErrorMessage(UDPMsg invalidMsg){
 			tmpArray[i] = invalidMsg.data[i];
 		}
 	}
-	sendNewMessage(&tmp);
+	this->sendNewMessage(&tmp);
 }
 void WiFi::sendNewMessage(UDPMsg *msg){
 	wf121.write(msg);
