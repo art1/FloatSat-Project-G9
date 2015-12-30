@@ -22,10 +22,13 @@
 #include "Hardware/AHRS/Filter/sensorFusion.h"
 #endif
 #include "Hardware/LightSensor.h"
-#include "Hardware/Motor/MotorControlThread.h"
+#include "Hardware/ACS/MotorControlThread.h"
 #include "Hardware/SolarPanels.h"
 #include "Hardware/InfraredSensors.h"
 #include "Hardware/ThermalKnife.h"
+#include "Mission/SunFinder.h"
+
+INTERCOMM tempComm;
 
 
 class mainThread : public Thread {
@@ -37,6 +40,7 @@ public:
 private:
 	COMMAND_FRAME cmd;
 	ACTIVE_SYSTEM_MODE currentSystemMode;
+
 };
 
 mainThread mainT("main");

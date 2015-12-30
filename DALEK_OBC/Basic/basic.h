@@ -195,13 +195,15 @@ struct INTERCOMM{
 	IR_DATA irData;
 	KNIFE_DATA knifeData;
 	CAM_CONTROL camControl;
+	IMU_RPY_FILTERED imuData;
 };
 enum INTERCOMM_CHANGED{
 	LUX_CHANGED,
 	SOLAR_CHANGED,
 	IR_CHANGED,
 	KNIFE_CHANGED,
-	CAM_CHANGED
+	CAM_CHANGED,
+	IMU_CHANGED
 };
 
 /***************************************** TOPICS ***************************************************/

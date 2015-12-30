@@ -11,7 +11,7 @@ const uint8_t invalidBuf[7] = {'I','N','V','A','L','I','D'};
 const uint8_t echoBuf[4] = {'E','C','H','O'};
 
 
-Bluetooth::Bluetooth() : Thread("Bluetooth",110) {
+Bluetooth::Bluetooth() : Thread("Bluetooth",110,1000) {
 
 }
 

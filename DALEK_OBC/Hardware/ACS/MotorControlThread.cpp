@@ -5,9 +5,9 @@
  *      Author: arthur
  */
 
-#include "MotorControlThread.h"
+#include "../ACS/MotorControlThread.h"
 
-MotorControlThread::MotorControlThread() : Thread("Motor Control",105){
+MotorControlThread::MotorControlThread() : Thread("Motor Control",105,500){
 	// TODO Auto-generated constructor stub
 
 }

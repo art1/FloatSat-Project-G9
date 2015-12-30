@@ -88,6 +88,7 @@ void sensorFusion::run(){
 			if((filtered.YAW) < 0) head = 360.0 + filtered.YAW;
 			else head = filtered.YAW;
 			PRINTF("heading: %f\n",head);
+			filtered.YAW = head;
 			imu_filtered.publish(filtered);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW,angleRPY.ACCL_PITCH,angleRPY.ACCL_ROLL);

@@ -5,11 +5,11 @@
  *      Author: arthur
  */
 
-#ifndef HARDWARE_MOTOR_MOTORCONTROLTHREAD_H_
-#define HARDWARE_MOTOR_MOTORCONTROLTHREAD_H_
+#ifndef HARDWARE_ACS_MOTORCONTROLTHREAD_H_
+#define HARDWARE_ACS_MOTORCONTROLTHREAD_H_
 
 #include "../../Basic/basic.h"
-#include "Motor.h"
+#include "../ACS/Motor.h"
 
 
 class MotorControlThread :public Thread{
@@ -25,4 +25,4 @@ private:
 	int16_t currentDutyCycle;
 };
 
-#endif /* HARDWARE_MOTOR_MOTORCONTROLTHREAD_H_ */
+#endif /* HARDWARE_ACS_MOTORCONTROLTHREAD_H_ */

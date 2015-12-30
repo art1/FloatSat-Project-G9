@@ -13,7 +13,6 @@
 static Application mainThread("mainThread",20);
 
 // load all appropriate classes (-> must be public, initializing classes within a class is not working... ?)
-//GPIO_LED leds("LEDs");
 
 #ifdef IMU_ENABLE
 IMU imu;
@@ -37,7 +36,7 @@ lightSensor light;
 SolarPanels solar;
 #endif
 #ifdef CAMERA_ENABLE
-Camera camera; // needs to be extern because interrupt handler!
+Camera camera;
 #endif
 #ifdef IR_ENABLE
 InfraredSensors irSensors;
@@ -48,6 +47,9 @@ MotorControlThread motorControl;
 #ifdef KNIFE_ENABLE
 ThermalKnife knife;
 #endif
+
+// now load crucial Threads for Mission (mission and sunfinding..)
+SunFinder sunFinder;
 
 //RESUMER THREADS
 /**************************** IMU MESSAGES **************************************/
@@ -71,6 +73,8 @@ struct receiver_filtered : public Subscriber, public Thread {
 #ifdef TTNC_ENABLE
 		tm.setNewData(*(IMU_RPY_FILTERED*)data);
 #endif
+		// if sunfinder is active, set the data to the INTERCOMM too, to avoid corrupted data!
+		if(sunFinder.isActive())tempComm.imuData = *(IMU_RPY_FILTERED*)data;
 		return 1;
 	}
 	void run(){}
@@ -83,7 +87,6 @@ struct receiver_telecommand : public Subscriber, public Thread {
 	receiver_telecommand(const char* _name,int _prio, int _stackSize) : Subscriber(tcRaw,"TC Raw Data") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		tc.setNewData(*(UDPMsg*)data);
-		//		PRINTF("im here\n");
 		tc.resume();
 		return 1;
 	}
@@ -122,11 +125,16 @@ struct receiver_tcControl : public Subscriber, public Thread {
 // the following thread is for Inter-Thread Communication of Sensors only, except for IMU Data!
 // Why? because the amount of threads got too high and RODOS doesn't like that! (-> xmalloc for threads?? -> see github commit history in ahrs branch)
 struct sensorsCommThread : public Subscriber, public Thread {
-	sensorsCommThread(const char* _name) : Subscriber(interThreadComm,"Inter Thread Communication for Sensors") {}
+	sensorsCommThread(const char* _name,int _prio,int _stacksize) : Subscriber(interThreadComm,"Inter Thread Communication for Sensors") {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		INTERCOMM tmp = *(INTERCOMM*)data;
 		switch (tmp.changedVal) {
 		case LUX_CHANGED:
+			//update sunfinder lux AND IMU data at the same time, to have the same amount of lux and imu measurements
+			if(sunFinder.isActive()){
+				sunFinder.setNewData(tempComm.imuData); // imu Data has been set to the intercomm temp !
+				sunFinder.setNewData(tmp.luxData);
+			}
 #ifdef LIGHT_ENABLE
 			light.setActive(tmp.luxData);
 #ifdef TTNC_ENABLE
@@ -171,7 +179,7 @@ struct sensorsCommThread : public Subscriber, public Thread {
 		return 1;
 	}
 	void run(){}
-} sensorsComm("Inter-Thread Comm");
+} sensorsComm("Inter-Thread Comm",101,500);
 
 mainThread::mainThread(const char* name) : Thread(name){
 
@@ -201,14 +209,16 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-	currentSystemMode.activeMode = MOTOR_CONTROL;
+	currentSystemMode.activeMode = STANDBY;
 	cmd.command = -1;
 
 }
 
-
+/**
+ * mainThread used to control the different satellite modes
+ * Thread is resumed when new commands from the groundstatoin arrives!
+ */
 void mainThread::run(){
-	INTERCOMM tempComm;
 #ifdef BLUETOOTH_FALLBACK
 	bt_uart.init(BLUETOOTH_BAUDRATE);
 #endif
@@ -253,8 +263,8 @@ void mainThread::run(){
 		tempComm.changedVal = CAM_CHANGED;
 		interThreadComm.publish(tempComm);
 #endif
-		PRINTF("and now im here\n");
-		suspendCallerUntil(END_OF_TIME);
+		//		PRINTF("and now im here\n");
+		//		suspendCallerUntil(END_OF_TIME);
 	}
 
 	PRINTF("SYSTEM HELLO!\n");
@@ -265,15 +275,16 @@ void mainThread::run(){
 			currentSystemMode.activeMode = (int) cmd.commandValue;
 			PRINTF("here cmd\n");
 		} else {
-			PRINTF("hello active %d\n",currentSystemMode.activeMode);
+			//			PRINTF("hello, active Mode: %d\n",currentSystemMode.activeMode);
 			switch (currentSystemMode.activeMode) {
 			case STANDBY:
 				// do nothing, only blink a led or some shit
-				PRINTF("waiting for the DALEK Brain for commands!\n");
+				PRINTF("DALEK waiting for commands!\n");
 				break;
 			case SUN_FINDING:
 				// here: search for sun,
 				PRINTF("sun finding mode!\n");
+				sunFinder.setActive(true);
 				break;
 			case MOTOR_CONTROL:
 #ifdef MOTOR_ENABLE

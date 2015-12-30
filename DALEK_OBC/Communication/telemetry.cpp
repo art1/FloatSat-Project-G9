@@ -7,7 +7,7 @@
 
 #include "telemetry.h"
 
-Telemetry::Telemetry() : Thread("Telemetry",109){
+Telemetry::Telemetry() : Thread("Telemetry",109,1000){
 	this->frameNumber = 0;
 }
 
