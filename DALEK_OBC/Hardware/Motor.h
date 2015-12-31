@@ -5,10 +5,10 @@
  *      Author: arthur
  */
 
-#ifndef HARDWARE_ACS_MOTOR_H_
-#define HARDWARE_ACS_MOTOR_H_
+#ifndef HARDWARE_MOTOR_H_
+#define HARDWARE_MOTOR_H_
 
-#include "../../Basic/basic.h"
+#include "../Basic/basic.h"
 
 
 
@@ -33,4 +33,4 @@ private:
 };
 
 
-#endif /* HARDWARE_ACS_MOTOR_H_ */
+#endif /* HARDWARE_MOTOR_H_ */

@@ -12,13 +12,12 @@ RM := rm -rf
 -include Hardware/Camera/Supps/subdir.mk
 -include Hardware/Camera/subdir.mk
 -include Hardware/Audio/subdir.mk
--include Hardware/AHRS/Filter/subdir.mk
--include Hardware/AHRS/subdir.mk
--include Hardware/ACS/subdir.mk
 -include Hardware/subdir.mk
 -include Communication/subdir.mk
 -include Basic/sysDelay/subdir.mk
 -include Basic/subdir.mk
+-include AHRS/Filter/subdir.mk
+-include ACS/subdir.mk
 -include subdir.mk
 -include objects.mk
 

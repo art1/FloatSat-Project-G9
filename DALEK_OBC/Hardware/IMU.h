@@ -10,7 +10,7 @@
 
 #include "math.h"
 #include "hal.h"
-#include "../../Basic/basic.h"
+#include "../Basic/basic.h"
 
 
 #define GYRO_ADDRESS 				0x6B
