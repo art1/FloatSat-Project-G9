@@ -5,10 +5,10 @@
  *      Author: arthur
  */
 
-#ifndef COMMUNICATION_BLUETOOTH_H_
-#define COMMUNICATION_BLUETOOTH_H_
+#ifndef HARDWARE_COMM_BLUETOOTH_H_
+#define HARDWARE_COMM_BLUETOOTH_H_
 
-#include "../Basic/basic.h"
+#include "../../Basic/basic.h"
 
 
 
@@ -34,4 +34,4 @@ private:
 	void sendEchoMessage(UDPMsg echoMsg);
 };
 
-#endif /* COMMUNICATION_BLUETOOTH_H_ */
+#endif /* HARDWARE_COMM_BLUETOOTH_H_ */

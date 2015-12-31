@@ -5,12 +5,12 @@
  *      Author: arthur
  */
 
-#ifndef HARDWARE_IMU_H_
-#define HARDWARE_IMU_H_
+#ifndef HARDWARE_SENSORS_IMU_H_
+#define HARDWARE_SENSORS_IMU_H_
 
 #include "math.h"
 #include "hal.h"
-#include "../Basic/basic.h"
+#include "../../Basic/basic.h"
 
 
 #define GYRO_ADDRESS 				0x6B
@@ -229,4 +229,4 @@ private:
 
 };
 
-#endif /* HARDWARE_IMU_H_ */
+#endif /* HARDWARE_SENSORS_IMU_H_ */

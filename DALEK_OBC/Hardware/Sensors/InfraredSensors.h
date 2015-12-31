@@ -5,11 +5,10 @@
  *      Author: arthur
  */
 
-#ifndef HARDWARE_INFRAREDSENSORS_H_
-#define HARDWARE_INFRAREDSENSORS_H_
+#ifndef HARDWARE_SENSORS_INFRAREDSENSORS_H_
+#define HARDWARE_SENSORS_INFRAREDSENSORS_H_
 
-#include "../Basic/basic.h"
-
+#include "../../Basic/basic.h"
 
 class InfraredSensors : public Thread {
 public:
@@ -24,4 +23,4 @@ private:
 	IR_DATA irData;
 };
 
-#endif /* HARDWARE_INFRAREDSENSORS_H_ */
+#endif /* HARDWARE_SENSORS_INFRAREDSENSORS_H_ */

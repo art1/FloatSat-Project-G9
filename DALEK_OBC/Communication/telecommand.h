@@ -8,7 +8,7 @@
 #ifndef COMMUNICATION_TELECOMMAND_H_
 #define COMMUNICATION_TELECOMMAND_H_
 #include "../Basic/basic.h"
-#include "WiFi.h"
+#include "../Hardware/Comm/WiFi.h"
 
 
 class Telecommand : public Thread {

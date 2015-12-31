@@ -5,10 +5,10 @@
  *      Author: arthur
  */
 
-#ifndef COMMUNICATION_WIFI_H_
-#define COMMUNICATION_WIFI_H_
+#ifndef HARDWARE_COMM_WIFI_H_
+#define HARDWARE_COMM_WIFI_H_
 
-#include "../Basic/basic.h"
+#include "../../Basic/basic.h"
 
 
 
@@ -29,4 +29,4 @@ private:
 	void sendErrorMessage(UDPMsg invalidMsg);
 };
 
-#endif /* COMMUNICATION_WIFI_H_ */
+#endif /* HARDWARE_COMM_WIFI_H_ */

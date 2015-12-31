@@ -5,10 +5,10 @@
  *      Author: arthur
  */
 
-#ifndef HARDWARE_LIGHTSENSOR_H_
-#define HARDWARE_LIGHTSENSOR_H_
+#ifndef HARDWARE_SENSORS_LIGHTSENSOR_H_
+#define HARDWARE_SENSORS_LIGHTSENSOR_H_
 
-#include "../Basic/basic.h"
+#include "../../Basic/basic.h"
 
 #define LIGHT_INTEGRATION_TIME		101		// values to choose: 402, 13, 101 -> scling then done automatically!
 #define LIGHT_INTEGRATION_ADRESS	0x81
@@ -87,4 +87,4 @@ private:
 	LUX_DATA pub_data;
 };
 
-#endif /* HARDWARE_LIGHTSENSOR_H_ */
+#endif /* HARDWARE_SENSORS_LIGHTSENSOR_H_ */

@@ -12,19 +12,19 @@
 #include "Communication/telecommand.h"
 #include "Communication/telemetry.h"
 #ifndef BLUETOOTH_FALLBACK
-#include "Communication/WiFi.h"
+#include "Hardware/Comm/WiFi.h"
 #else
-#include "Communication/Bluetooth.h"
+#include "Hardware/Comm/Bluetooth.h"
 #endif
-#include "Hardware/IMU.h"
+#include "Hardware/Sensors/IMU.h"
 #include "Hardware/Camera/Camera.h"
 #ifdef FUSION_ENABLE
 #include "AHRS/Filter/sensorFusion.h"
 #endif
-#include "Hardware/LightSensor.h"
+#include "Hardware/Sensors/LightSensor.h"
 #include "ACS/MotorControlThread.h"
-#include "Hardware/SolarPanels.h"
-#include "Hardware/InfraredSensors.h"
+#include "Hardware/Sensors/SolarPanels.h"
+#include "Hardware/Sensors/InfraredSensors.h"
 #include "Hardware/ThermalKnife.h"
 #include "Mission/SunFinder.h"
 

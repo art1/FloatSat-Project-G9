@@ -74,14 +74,15 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
 
 /****************************** WIFI & BT STUFF ******************************************/
-#define WIFI_SSID				"YETENet"
-#define WIFI_SSID_PW			"yeteyete"
+#define WIFI_SSID				"BlackBox"
+#define WIFI_SSID_PW			"goJ6vA4freIv6jiG7wug8Ju1Ak7jAt"
 #define WIFI_IP					0xFF01A8C0 // in hex and reverse
 #define WIFI_PORT				1111
 #define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
 #define BLUETOOTH_BUFFER		512				// in bytes, should be enough for Command Frames! (currently 24 needed)
+
 
 /****************************** IMU STUFF ************************************************/
 #define IMU_RESET_PIN			GPIO_055

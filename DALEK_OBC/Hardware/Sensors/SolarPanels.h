@@ -5,11 +5,10 @@
  *      Author: arthur
  */
 
-#ifndef HARDWARE_SOLARPANELS_H_
-#define HARDWARE_SOLARPANELS_H_
+#ifndef HARDWARE_SENSORS_SOLARPANELS_H_
+#define HARDWARE_SENSORS_SOLARPANELS_H_
 
-#include "../Basic/basic.h"
-
+#include "../../Basic/basic.h"
 
 class SolarPanels : public Thread {
 public:
@@ -24,4 +23,4 @@ private:
 	SOLAR_DATA solData;
 };
 
-#endif /* HARDWARE_SOLARPANELS_H_ */
+#endif /* HARDWARE_SENSORS_SOLARPANELS_H_ */
