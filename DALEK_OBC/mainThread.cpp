@@ -47,9 +47,9 @@ MotorControlThread motorControl;
 #ifdef KNIFE_ENABLE
 ThermalKnife knife;
 #endif
-
-// now load crucial Threads for Mission (mission and sunfinding..)
+#ifdef SUNFINDER_ENABLE
 SunFinder sunFinder;
+#endif
 
 //RESUMER THREADS
 /**************************** IMU MESSAGES **************************************/
@@ -130,11 +130,13 @@ struct sensorsCommThread : public Subscriber, public Thread {
 		INTERCOMM tmp = *(INTERCOMM*)data;
 		switch (tmp.changedVal) {
 		case LUX_CHANGED:
+#ifdef SUNFINDER_ENABLE
 			//update sunfinder lux AND IMU data at the same time, to have the same amount of lux and imu measurements
 			if(sunFinder.isActive()){
 				sunFinder.setNewData(tempComm.imuData); // imu Data has been set to the intercomm temp !
 				sunFinder.setNewData(tmp.luxData);
 			}
+#endif
 #ifdef LIGHT_ENABLE
 			light.setActive(tmp.luxData);
 #ifdef TTNC_ENABLE
@@ -282,8 +284,10 @@ void mainThread::run(){
 				PRINTF("DALEK waiting for commands!\n");
 				break;
 			case SUN_FINDING:
+#ifdef SUNFINDER_ENABLE
 				PRINTF("sun finding mode!\n");
 				sunFinder.setActive(true);
+#endif
 				break;
 			case MOTOR_CONTROL:
 #ifdef MOTOR_ENABLE

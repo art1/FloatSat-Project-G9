@@ -14,16 +14,6 @@
 #include "stm32f4xx_dcmi.h"
 
 
-//extern "C" void DMA2_Stream1_IRQHandler(){
-//	/** TODO do some stuff */
-//	// and clear the flags!
-//}
-//
-//extern "C" void DCMI_IRQHandler(){
-//
-//}
-
-
 ///**
 //  * @brief  This function handles SysTick Handler.
 //  * @param  None

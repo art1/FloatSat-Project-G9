@@ -35,17 +35,18 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define forLoop(x,n)				for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-#define IMU_ENABLE
-#define TTNC_ENABLE
+//#define IMU_ENABLE
+//#define TTNC_ENABLE
 #define TELEMETRY_DISABLE
-#define FUSION_ENABLE
-#define LIGHT_ENABLE
-#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
-#define MOTOR_ENABLE
-#define SOLAR_ADC_ENABLE
-#define IR_ENABLE
-#define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
-#define KNIFE_ENABLE
+//#define FUSION_ENABLE
+//#define LIGHT_ENABLE
+//#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
+//#define MOTOR_ENABLE
+//#define SOLAR_ADC_ENABLE
+//#define IR_ENABLE
+//#define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
+//#define KNIFE_ENABLE
+//#define SUNFINDER_ENABLE
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
