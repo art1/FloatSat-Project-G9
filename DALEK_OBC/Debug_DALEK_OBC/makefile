@@ -8,12 +8,13 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include Hardware/Motor/subdir.mk
+-include Mission/subdir.mk
 -include Hardware/Camera/Supps/subdir.mk
 -include Hardware/Camera/subdir.mk
 -include Hardware/Audio/subdir.mk
 -include Hardware/AHRS/Filter/subdir.mk
 -include Hardware/AHRS/subdir.mk
+-include Hardware/ACS/subdir.mk
 -include Hardware/subdir.mk
 -include Communication/subdir.mk
 -include Basic/sysDelay/subdir.mk

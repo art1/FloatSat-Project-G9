@@ -250,7 +250,7 @@ void mainThread::run(){
 	interThreadComm.publish(tempComm);
 #endif
 
-	while(1){
+//	while(1){
 
 #ifdef CAMERA_ENABLE
 		PRINTF("enabling cam in 1 secs...\n");
@@ -265,7 +265,7 @@ void mainThread::run(){
 #endif
 		//		PRINTF("and now im here\n");
 		//		suspendCallerUntil(END_OF_TIME);
-	}
+//	}
 
 	PRINTF("SYSTEM HELLO!\n");
 
@@ -282,7 +282,6 @@ void mainThread::run(){
 				PRINTF("DALEK waiting for commands!\n");
 				break;
 			case SUN_FINDING:
-				// here: search for sun,
 				PRINTF("sun finding mode!\n");
 				sunFinder.setActive(true);
 				break;
@@ -316,7 +315,6 @@ void mainThread::run(){
 					PRINTF("mission mode!\n");
 					break;
 				default:
-					PRINTF("default shit\n");
 					break;
 			}
 		}

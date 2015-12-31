@@ -25,7 +25,9 @@ public:
 	int setNewData(IMU_RPY_FILTERED _imu);
 
 private:
-
+	float initPos;
+	float tempPos;
+	bool threeSixty;
 	bool activated;
 	Fifo<uint16_t, SUNFINDER_BUFFERSIZE> lux;
 

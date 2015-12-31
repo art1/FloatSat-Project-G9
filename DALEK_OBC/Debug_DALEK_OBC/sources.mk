@@ -30,12 +30,13 @@ SUBDIRS := \
 Basic \
 Basic/sysDelay \
 Communication \
+Hardware/ACS \
 Hardware/AHRS/Filter \
 Hardware/AHRS \
 Hardware/Audio \
 Hardware/Camera \
 Hardware/Camera/Supps \
 Hardware \
-Hardware/Motor \
+Mission \
 . \
 

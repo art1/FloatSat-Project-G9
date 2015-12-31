@@ -32,6 +32,13 @@ int SunFinder::setNewData(IMU_RPY_FILTERED _imu){
 		return -1;
 	} else {
 		heading[currentHeadingIndex++] = _imu.YAW;
+		if(currentHeadingIndex == 0){
+			initPos = heading[0];
+			threeSixty = false;
+		}else{
+			tempPos += (heading[currentHeadingIndex-1] - initPos);
+			if( tempPos > 360.0)threeSixty = true;
+		}
 		return 1;
 	}
 
@@ -66,7 +73,16 @@ void SunFinder::run(){
 		if(isActive()){
 			/** TODO sunFinder Thread */
 			PRINTF("searching for sun...\n");
-
+			while(currentHeadingIndex < 2){
+				Delay_millis(10);
+			}
+			/** TODO set Motor to rotate */
+			while(!threeSixty){
+				suspendCallerUntil(END_OF_TIME);
+			}
+			float agnel = findSunAngle();
+			/** TODO set Angle for Motor! */
+			threeSixty = false;
 			this->setActive(false);
 		}
 	}
