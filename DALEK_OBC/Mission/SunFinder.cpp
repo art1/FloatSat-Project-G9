@@ -7,7 +7,7 @@
 
 #include "SunFinder.h"
 
-SunFinder::SunFinder() : Thread("SunFinder",115, 500){
+SunFinder::SunFinder() : Thread("SunFinder",115, 1000){
 	// TODO Auto-generated constructor stub
 	activated = false;
 	currentHeadingIndex = 0;

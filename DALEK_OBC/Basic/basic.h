@@ -46,6 +46,7 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define IR_ENABLE
 #define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
 #define KNIFE_ENABLE
+#define SUNFINDER_ENABLE
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -82,7 +83,6 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
 #define BLUETOOTH_BUFFER		512				// in bytes, should be enough for Command Frames! (currently 24 needed)
-
 
 /****************************** IMU STUFF ************************************************/
 #define IMU_RESET_PIN			GPIO_055

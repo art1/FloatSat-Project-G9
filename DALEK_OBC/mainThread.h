@@ -22,11 +22,16 @@
 #include "AHRS/Filter/sensorFusion.h"
 #endif
 #include "Hardware/Sensors/LightSensor.h"
+
 #include "ACS/MotorControlThread.h"
+#include "ACS/Controller/AngleControl.h"
+#include "ACS/Controller/RotationControl.h"
+
 #include "Hardware/Sensors/SolarPanels.h"
 #include "Hardware/Sensors/InfraredSensors.h"
 #include "Hardware/ThermalKnife.h"
 #include "Mission/SunFinder.h"
+
 
 INTERCOMM tempComm;
 

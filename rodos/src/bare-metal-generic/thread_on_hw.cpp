@@ -251,6 +251,11 @@ Thread* Thread::findNextToRun(TTime timeNow) {
 
     /** Chekc stack violations **/
     if(((int32_t)nextThreadToRun->context - (int32_t)nextThreadToRun->stackBegin) < 300) {
+
+
+    	for(int i=0;i< sizeof(nextThreadToRun->name);i++){
+    		xprintf("deactivated: %d",nextThreadToRun->name[i]);
+    	}
         xprintf("!StackOverflow! %x DEACTIVATED!: free %d\n", (int)nextThreadToRun, (int)nextThreadToRun->context - (int)nextThreadToRun->stackBegin );
         nextThreadToRun->suspendedUntil = END_OF_TIME;
         nextThreadToRun = &idlethread;

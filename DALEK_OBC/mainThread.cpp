@@ -47,15 +47,16 @@ MotorControlThread motorControl;
 #ifdef KNIFE_ENABLE
 ThermalKnife knife;
 #endif
-
-// now load crucial Threads for Mission (mission and sunfinding..)
+#ifdef SUNFINDER_ENABLE
 SunFinder sunFinder;
+#endif
+
 
 //RESUMER THREADS
 /**************************** IMU MESSAGES **************************************/
 #ifdef FUSION_ENABLE
 struct receiver_Fusion : public Subscriber, public Thread {
-	receiver_Fusion(const char* _name) : Subscriber(imu_rawData,"IMU Raw Data") {}
+	receiver_Fusion(const char* _name) : Subscriber(imu_rawData,"IMU Raw Data"),Thread("IMU->Fusion Raw",119,500) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		fusion.newData(*(IMU_DATA_RAW*)data);
 #ifdef TTNC_ENABLE
@@ -68,13 +69,15 @@ struct receiver_Fusion : public Subscriber, public Thread {
 } fusion_receiver_thread("Fusion Receiver");
 
 struct receiver_filtered : public Subscriber, public Thread {
-	receiver_filtered() : Subscriber(imu_filtered,"IMU Filtered Data") {}
+	receiver_filtered() : Subscriber(imu_filtered,"IMU Filtered Data"), Thread("filtered IMU Data",118,500) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 #ifdef TTNC_ENABLE
 		tm.setNewData(*(IMU_RPY_FILTERED*)data);
 #endif
+#ifdef SUNFINDER_ENABLE
 		// if sunfinder is active, set the data to the INTERCOMM too, to avoid corrupted data!
 		if(sunFinder.isActive())tempComm.imuData = *(IMU_RPY_FILTERED*)data;
+#endif
 		return 1;
 	}
 	void run(){}
@@ -84,18 +87,18 @@ struct receiver_filtered : public Subscriber, public Thread {
 /**************************** TTnC MESSAGES **************************************/
 #ifdef TTNC_ENABLE
 struct receiver_telecommand : public Subscriber, public Thread {
-	receiver_telecommand(const char* _name,int _prio, int _stackSize) : Subscriber(tcRaw,"TC Raw Data") {}
+	receiver_telecommand() : Subscriber(tcRaw,"TC Raw Data"), Thread("Comm->TC Handler",121,500){}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		tc.setNewData(*(UDPMsg*)data);
 		tc.resume();
 		return 1;
 	}
 	void run(){}
-} tc_receiver_thread("TC Receiver",102,200);
+} tc_receiver_thread;
 
 // and now the other way round -> TM to Wifi
 struct receiver_telemetry : public Subscriber, public Thread {
-	receiver_telemetry() : Subscriber(tmPlFrame,"TelemetryPayloadFrame") {}
+	receiver_telemetry() : Subscriber(tmPlFrame,"TelemetryPayloadFrame"), Thread("TM-Handler -> Comm",122,500) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 #ifndef BLUETOOTH_FALLBACK
 		wifi.setNewData(*(UDPMsg*)data);
@@ -111,30 +114,32 @@ struct receiver_telemetry : public Subscriber, public Thread {
 
 // and now COmmand Messages to Main Control Thread
 struct receiver_tcControl : public Subscriber, public Thread {
-	receiver_tcControl(const char* _name,int _prio, int _stackSize) : Subscriber(commandFrame,"TC Control Data") {}
+	receiver_tcControl() : Subscriber(commandFrame,"TC Control Data"), Thread("TC Handler -> Main",120,500) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		mainT.setNewData(*(COMMAND_FRAME*)data);
 		mainT.resume();
 		return 1;
 	}
 	void run(){}
-} tcControl_receiver_thread("TC Control Receiver", 100, 500);
+} tcControl_receiver_thread;
 #endif
 
 
 // the following thread is for Inter-Thread Communication of Sensors only, except for IMU Data!
 // Why? because the amount of threads got too high and RODOS doesn't like that! (-> xmalloc for threads?? -> see github commit history in ahrs branch)
 struct sensorsCommThread : public Subscriber, public Thread {
-	sensorsCommThread(const char* _name,int _prio,int _stacksize) : Subscriber(interThreadComm,"Inter Thread Communication for Sensors") {}
+	sensorsCommThread() : Subscriber(interThreadComm,"Inter Thread Communication for Sensors"), Thread("sensor Comm",123,1000) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		INTERCOMM tmp = *(INTERCOMM*)data;
 		switch (tmp.changedVal) {
 		case LUX_CHANGED:
+#ifdef SUNFINDER_ENABLE
 			//update sunfinder lux AND IMU data at the same time, to have the same amount of lux and imu measurements
 			if(sunFinder.isActive()){
 				sunFinder.setNewData(tempComm.imuData); // imu Data has been set to the intercomm temp !
 				sunFinder.setNewData(tmp.luxData);
 			}
+#endif
 #ifdef LIGHT_ENABLE
 			light.setActive(tmp.luxData);
 #ifdef TTNC_ENABLE
@@ -179,7 +184,7 @@ struct sensorsCommThread : public Subscriber, public Thread {
 		return 1;
 	}
 	void run(){}
-} sensorsComm("Inter-Thread Comm",101,500);
+} sensorsComm;
 
 mainThread::mainThread(const char* name) : Thread(name){
 
@@ -282,8 +287,10 @@ void mainThread::run(){
 				PRINTF("DALEK waiting for commands!\n");
 				break;
 			case SUN_FINDING:
+#ifdef SUNFINDER_ENABLE
 				PRINTF("sun finding mode!\n");
 				sunFinder.setActive(true);
+#endif
 				break;
 			case MOTOR_CONTROL:
 #ifdef MOTOR_ENABLE

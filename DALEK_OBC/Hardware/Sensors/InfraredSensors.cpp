@@ -7,7 +7,7 @@
 
 #include "InfraredSensors.h"
 
-InfraredSensors::InfraredSensors() : Thread("Infrared Thread",111,500){
+InfraredSensors::InfraredSensors() : Thread("Infrared Thread",111,1000){
 	// TODO Auto-generated constructor stub
 
 }
