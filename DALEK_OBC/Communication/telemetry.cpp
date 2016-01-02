@@ -7,7 +7,7 @@
 
 #include "telemetry.h"
 
-Telemetry::Telemetry() : Thread("Telemetry",109,1000){
+Telemetry::Telemetry() : Thread("Telemetry",109,2000){
 	this->frameNumber = 0;
 }
 
@@ -210,10 +210,60 @@ void Telemetry::buildFrame(){
 			PRINTF("oO this should never ever happen :o\n");
 			break;
 		}
-//		msg.data[msg.length++] = VALUE_SEPERATOR;
+		//		msg.data[msg.length++] = VALUE_SEPERATOR;
 	}
 	forLoop(j,3){msg.data[msg.length++] = FRAME_END;}
 	PRINTF("added %d bytes",msg.length);
+}
+
+
+void Telemetry::sendPayload(CAM_DATA _camData){
+	uint8_t tmp[2];
+	msg.length = 0;
+	memset(msg.data,0,sizeof(msg.data));
+
+	for(int i=-1; i< 6;i++){
+		switch (i) {
+		case -1:
+			forLoop(j,3){msg.data[msg.length++] = FRAME_START;}// adding $$$
+			break;
+		case PL_FRAMETYPE:
+			msg.data[msg.length++] = PL;
+			break;
+		case PL_FRAMENUMBER:
+			longToChar(tmp,getCurrentFrameNumber());
+			forLoop(j,4) msg.data[msg.length++] = tmp[j];
+			break;
+		case PAYLOAD_NUMBER:
+			longToChar(tmp,_camData.consecutiveFrame);
+			forLoop(j,4) msg.data[msg.length++] = tmp[j];
+			break;
+		case PAYLOAD_SIZE:
+			msg.data[msg.length++] = ((_camData.width * _camData.height )/ 100);
+			break;
+		case PAYLOAD:
+			forLoop(i,100){
+//				shortToChar(tmp,*(_camData.picture[i]));
+				uint16_t *p = _camData.picture;
+				shortToChar(tmp,p[i]);
+				forLoop(j,2) msg.data[msg.length++] = tmp[j];
+			}
+			break;
+		case PL_LOCALTIME:
+			longLongToChar(tmp,(uint64_t)NOW());
+			forLoop(j,8){
+				msg.data[msg.length++] = tmp[i];
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	forLoop(j,3){msg.data[msg.length++] = FRAME_END;}
+	PRINTF("added %d bytes",msg.length);
+
+	tmPlFrame.publish(msg);
+	frameNumber++;
 }
 
 

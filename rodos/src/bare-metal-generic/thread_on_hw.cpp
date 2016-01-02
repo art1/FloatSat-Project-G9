@@ -262,6 +262,9 @@ Thread* Thread::findNextToRun(TTime timeNow) {
     }
     if ( *(uint32_t *)(nextThreadToRun->stackBegin) !=  EMPTY_MEMORY_MARKER) { // this thrads ging beyon his stack!
         xprintf("! PANIC %x beyon stack, DEACTIVATED!\n", (int)nextThreadToRun);
+    	for(int i=0;i< sizeof(nextThreadToRun->name);i++){
+    		xprintf("deactivated: %d",nextThreadToRun->name[i]);
+    	}
         nextThreadToRun->suspendedUntil = END_OF_TIME;
         nextThreadToRun = &idlethread;
     }

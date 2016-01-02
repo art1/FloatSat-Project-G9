@@ -39,7 +39,7 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define TTNC_ENABLE
 #define TELEMETRY_DISABLE
 #define FUSION_ENABLE
-#define LIGHT_ENABLE
+//#define LIGHT_ENABLE
 #define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
 #define MOTOR_ENABLE
 #define SOLAR_ADC_ENABLE
@@ -141,9 +141,14 @@ struct LUX_DATA{
 #define DCMI_CAPTUREMODE		DCMI_CaptureMode_SnapShot
 #define DCMI_CAPTURERATE		DCMI_CaptureRate_All_Frame
 
-struct CAM_CONTROL{
+struct CAM_DATA{
 	bool activateCamera;
 	bool capture;
+	bool sendImage;
+	uint16_t *picture;
+	int width;
+	int height;
+	uint32_t consecutiveFrame;
 };
 
 
@@ -195,7 +200,7 @@ struct INTERCOMM{
 	SOLAR_DATA solData;
 	IR_DATA irData;
 	KNIFE_DATA knifeData;
-	CAM_CONTROL camControl;
+	CAM_DATA camData;
 	IMU_RPY_FILTERED imuData;
 };
 enum INTERCOMM_CHANGED{

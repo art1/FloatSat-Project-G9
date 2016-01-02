@@ -295,7 +295,7 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 		//		suspendCallerUntil(END_OF_TIME);
 		long tmp = SECONDS_NOW();
 		long timeSinceStart = tmp - debugTime;
-		PRINTF("Hang after %d seconds!",timeSinceStart);
+		PRINTF("Hang after %d seconds!",SECONDS_NOW());
 		suspendCallerUntil(END_OF_TIME);
 		this->resetIMU();
 		//		init();

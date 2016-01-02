@@ -14,8 +14,8 @@
 
 
 
-//#define WIDTH						160
-//#define HEIGHT						121
+#define WIDTH						320
+#define HEIGHT						240
 
 //#define CAPTUREMODE					DCMI_CaptureMode_SnapShot
 //#define FRAMERATE					DCMI_CaptureRate_All_Frame
@@ -24,8 +24,8 @@
 
 
 #define DCMI_DR_ADDRESS      		0x50050028
-#define IMAGESIZE					(HEIGHT*WIDTH*2)
-
+//#define IMAGESIZE					(HEIGHT*WIDTH*2)
+#define IMAGESIZE					(HEIGHT*WIDTH)
 
 class Camera : public Thread {
 public:
@@ -35,13 +35,13 @@ public:
 	void Capture();
 
 	void ProcessData();
-	void setNewData(CAM_CONTROL data);
+	void setNewData(CAM_DATA data);
 private:
-	CAM_CONTROL daten;
+	CAM_DATA daten;
 	void initTimer();
 	void OV7670_SCCB();
 	ov7670 cam;
-
+	uint16_t picture[100];
 	HAL_GPIO ledo;
 	HAL_GPIO reset;
 	HAL_GPIO power;

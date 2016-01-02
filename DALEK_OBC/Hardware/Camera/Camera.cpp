@@ -77,7 +77,7 @@ void Camera::init() {
 }
 
 
-void Camera::setNewData(CAM_CONTROL _data){
+void Camera::setNewData(CAM_DATA _data){
 	this->daten = _data;
 	/** TODO activate Camera! */
 	this->isActive = this->daten.activateCamera;
@@ -90,9 +90,9 @@ void Camera::run(){
 	while(!isActive){
 		suspendCallerUntil(END_OF_TIME);
 	}
+	memset(picture,0,sizeof(picture));
 	reset.setPins(1);
 	power.setPins(0);
-	BLUE_ON;
 	PRINTF("starting cam init\n");
 //	cam.GPIO_Configuration();
 	FIFO_CS_L();
@@ -106,12 +106,13 @@ void Camera::run(){
 	cam.OV7670_PB7_Configuration();
 	PRINTF("Done\n");
 	VSync = 0;
-
+	INTERCOMM comm;
 	while(1){
 //		suspendCallerUntil(END_OF_TIME);
 //		suspendCallerUntil(NOW() + 1500*MILLISECONDS);
-		BLUE_TOGGLE;
+		ORANGE_ON;
 		if(captureImage){
+
 			PRINTF("capturing imageo!\n");
 			uint32_t count;
 			uint16_t CMOS_Data;
@@ -129,7 +130,9 @@ void Camera::run(){
 
 				FIFO_RCLK_H();
 				PRINTF("start CMOS Data:\n");
-				for( count = 0; count < 76800; count++ )
+				int toSend = 0;
+				int consFrame = 0;
+				for( count = 0; count < IMAGESIZE; count++ )
 				{
 					FIFO_RCLK_L();
 
@@ -139,9 +142,24 @@ void Camera::run(){
 					FIFO_RCLK_L();
 					CMOS_Data |= (GPIOC->IDR) & 0x00ff;	  /* ( GPIO_ReadInputData(GPIOC) ) & 0x00ff; */
 					FIFO_RCLK_H();
-					PRINTF("%d;",CMOS_Data);
+					picture[toSend++] = CMOS_Data;
+					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
+						comm.camData.activateCamera = false;
+						comm.camData.capture = false;
+						comm.camData.sendImage = true;
+						comm.camData.picture = picture;
+						comm.camData.width = WIDTH;
+						comm.camData.height = HEIGHT;
+						comm.camData.consecutiveFrame = consFrame;
+						comm.changedVal = CAM_CHANGED;
+						interThreadComm.publish(comm);
+						suspendCallerUntil(NOW()+10*MILLISECONDS);
+						consFrame++;
+						toSend = 0;
+					}
 
 				}
+				ORANGE_OFF;
 				suspendCallerUntil(END_OF_TIME);
 				VSync = 0;
 			}

@@ -174,12 +174,17 @@ struct sensorsCommThread : public Subscriber, public Thread {
 			break;
 		case CAM_CHANGED:
 #ifdef CAMERA_ENABLE
-			camera.setNewData(tmp.camControl);
-			camera.resume();
+			if(tmp.camData.activateCamera || tmp.camData.capture){
+				camera.setNewData(tmp.camData);
+				camera.resume();
+			} else if (tmp.camData.sendImage){
+				tm.sendPayload(tmp.camData);
+			}
 #endif
 			break;
 		default:
 			break;
+
 		}
 		return 1;
 	}
@@ -261,10 +266,10 @@ void mainThread::run(){
 		PRINTF("enabling cam in 1 secs...\n");
 		Delay_millis(100);
 		PRINTF("should be enabled in a few msecs\n");
-		CAM_CONTROL tmp3;
+		CAM_DATA tmp3;
 		tmp3.activateCamera = true;
 		tmp3.capture = true;
-		tempComm.camControl = tmp3;
+		tempComm.camData = tmp3;
 		tempComm.changedVal = CAM_CHANGED;
 		interThreadComm.publish(tempComm);
 #endif

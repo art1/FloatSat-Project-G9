@@ -24,6 +24,7 @@ public:
 	void setNewData(IR_DATA _ir);
 	void setNewData(ACTIVE_SYSTEM_MODE _mode);
 	void setNewData(INTERCOMM _interComm);
+	void sendPayload(CAM_DATA _camData);
 
 	uint32_t getCurrentFrameNumber();
 
