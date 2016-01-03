@@ -55,8 +55,8 @@ void Bluetooth::getNewMessages(){
 		int k = bt_uart.read(recBuf,BLUETOOTH_BUFFER);
 		PRINTF("read %d chars\n",k);
 
-		if(k >= COMMAND_SIZE){
-			for(int i=0;i<COMMAND_SIZE;i++)
+		if(k >= COMMAND_FRAME_SIZE){
+			for(int i=0;i<COMMAND_FRAME_SIZE;i++)
 			{
 				temp.data[i] = recBuf[i];
 				PRINTF("%d ",recBuf[i]);

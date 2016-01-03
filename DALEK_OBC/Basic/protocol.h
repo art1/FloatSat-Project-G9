@@ -37,8 +37,12 @@
 #define MSG_SEPERATOR ';'
 #define VALUE_SEPERATOR ','
 
-#define FRAME_SIZE		58
-#define COMMAND_SIZE	24
+
+#define COMMAND_FRAME_SIZE		24	// size in bytes including start and end characters
+#define TELEMETRY_FRAME_SIZE    58  // size in bytes including start and end characters
+#define PAYLOAD_FRAME_SIZE      224 // size in bytes including start and end characters
+#define PAYLOAD_DATA_SIZE       200 // this is the size of only the payload data in the payload frame
+
 
 
 
@@ -152,7 +156,7 @@ struct PAYLOAD_FRAME{
 	uint32_t framenumber;
 	uint32_t payloadnumber;
 	uint8_t	payloadsize;
-	uint8_t payload[];
+	uint8_t payload[PAYLOAD_FRAME_SIZE];
 	int64_t localTime;
 };
 
