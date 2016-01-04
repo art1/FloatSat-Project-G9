@@ -107,6 +107,8 @@ void Camera::run(){
 	PRINTF("Done\n");
 	VSync = 0;
 	INTERCOMM comm;
+	uint8_t data[8];
+	uint8_t tmp;
 	while(1){
 //		suspendCallerUntil(END_OF_TIME);
 //		suspendCallerUntil(NOW() + 1500*MILLISECONDS);
@@ -136,27 +138,58 @@ void Camera::run(){
 				{
 					FIFO_RCLK_L();
 
-					CMOS_Data = (GPIOC->IDR<<8) & 0xff00;	  /* ( GPIO_ReadInputData(GPIOC) << 8 ) & 0xff00; */
+//					CMOS_Data = (GPIOC->IDR<<8) & 0xff00;	  /* ( GPIO_ReadInputData(GPIOC) << 8 ) & 0xff00; */
+					// read Data Pins
+					data[0] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6); 	// D0
+					data[1] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_7); 	// D1
+					data[2] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_0);	// D2
+					data[3] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_1);	// D3
+					data[4] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_4);  // D4
+					data[5] = GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_6);	// D5
+					data[6] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_5);	// D6
+					data[7] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_6);  // D7
+					tmp = 0;
+					for(int i=0;i<8;i++){
+						if(data[i]) tmp |= 1 << i;
+					}
+					PRINTF("%d;",tmp);
+//					CMOS_Data = ((uint16_t)tmp << 8) & 0xff00;
 					FIFO_RCLK_H();
 
 					FIFO_RCLK_L();
-					CMOS_Data |= (GPIOC->IDR) & 0x00ff;	  /* ( GPIO_ReadInputData(GPIOC) ) & 0x00ff; */
-					FIFO_RCLK_H();
-					picture[toSend++] = CMOS_Data;
-					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
-						comm.camData.activateCamera = false;
-						comm.camData.capture = false;
-						comm.camData.sendImage = true;
-						comm.camData.picture = picture;
-						comm.camData.width = WIDTH;
-						comm.camData.height = HEIGHT;
-						comm.camData.consecutiveFrame = consFrame;
-						comm.changedVal = CAM_CHANGED;
-						interThreadComm.publish(comm);
-						suspendCallerUntil(NOW()+10*MILLISECONDS);
-						consFrame++;
-						toSend = 0;
+//					CMOS_Data |= (GPIOC->IDR) & 0x00ff;	  /* ( GPIO_ReadInputData(GPIOC) ) & 0x00ff; */
+					data[0] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6); 	// D0
+					data[1] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_7); 	// D1
+					data[2] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_0);	// D2
+					data[3] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_1);	// D3
+					data[4] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_4);  // D4
+					data[5] = GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_6);	// D5
+					data[6] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_5);	// D6
+					data[7] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_6);  // D7
+					tmp = 0;
+					for(int i=0;i<8;i++){
+						if(data[i]) tmp |= 1 << i;
 					}
+					CMOS_Data = (tmp) & 0x00ff;
+					FIFO_RCLK_H();
+					PRINTF("%d;",tmp);
+//					PRINTF("%d;",CMOS_Data);
+//					picture[toSend++] = CMOS_Data;
+//					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
+//						comm.camData.activateCamera = false;
+//						comm.camData.capture = false;
+//						comm.camData.sendImage = true;
+//						comm.camData.picture = picture;
+//						comm.camData.width = WIDTH;
+//						comm.camData.height = HEIGHT;
+//						comm.camData.consecutiveFrame = consFrame;
+//						comm.changedVal = CAM_CHANGED;
+//						interThreadComm.publish(comm);
+//						suspendCallerUntil(NOW()+50*MILLISECONDS);
+////						suspendCallerUntil(END_OF_TIME);
+//						consFrame++;
+//						toSend = 0;
+//					}
 
 				}
 				ORANGE_OFF;

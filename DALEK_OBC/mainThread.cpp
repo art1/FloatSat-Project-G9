@@ -219,7 +219,7 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-	currentSystemMode.activeMode = STANDBY;
+	currentSystemMode.activeMode = MISSION;
 	cmd.command = -1;
 
 }
@@ -260,22 +260,12 @@ void mainThread::run(){
 	interThreadComm.publish(tempComm);
 #endif
 
-//	while(1){
+	//	while(1){
 
-#ifdef CAMERA_ENABLE
-		PRINTF("enabling cam in 1 secs...\n");
-		Delay_millis(100);
-		PRINTF("should be enabled in a few msecs\n");
-		CAM_DATA tmp3;
-		tmp3.activateCamera = true;
-		tmp3.capture = true;
-		tempComm.camData = tmp3;
-		tempComm.changedVal = CAM_CHANGED;
-		interThreadComm.publish(tempComm);
-#endif
-		//		PRINTF("and now im here\n");
-		//		suspendCallerUntil(END_OF_TIME);
-//	}
+
+	//		PRINTF("and now im here\n");
+	//		suspendCallerUntil(END_OF_TIME);
+	//	}
 
 	PRINTF("SYSTEM HELLO!\n");
 
@@ -285,7 +275,7 @@ void mainThread::run(){
 			currentSystemMode.activeMode = (int) cmd.commandValue;
 			PRINTF("here cmd\n");
 		} else {
-			//			PRINTF("hello, active Mode: %d\n",currentSystemMode.activeMode);
+			PRINTF("hello, active Mode: %d\n",currentSystemMode.activeMode);
 			switch (currentSystemMode.activeMode) {
 			case STANDBY:
 				// do nothing, only blink a led or some shit
@@ -325,16 +315,34 @@ void mainThread::run(){
 				case MISSION:
 					// execute mission
 					PRINTF("mission mode!\n");
+					switch (cmd.command) {
+					case TAKE_PICTURE_AT:
+						// taking picture at angle!
+#ifdef CAMERA_ENABLE
+						PRINTF("enabling cam in 1 secs...\n");
+						Delay_millis(100);
+						PRINTF("should be enabled in a few msecs\n");
+						CAM_DATA tmp3;
+						tmp3.activateCamera = true;
+						tmp3.capture = true;
+						tempComm.camData = tmp3;
+						tempComm.changedVal = CAM_CHANGED;
+						interThreadComm.publish(tempComm);
+#endif
+						break;
+					default:
+						break;
+					}
+
 					break;
-				default:
-					break;
+					default:
+						break;
 			}
 		}
 		suspendCallerUntil(END_OF_TIME);
 	}
 
 
-	RED_TOGGLE;
 
 }
 

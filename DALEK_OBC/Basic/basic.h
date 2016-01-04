@@ -56,20 +56,20 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 	#endif
 #endif
 /****************************** LED STUFF ************************************************/
-#define LED_GREEN 				GPIO_Pin_12
+#define LED_GREEN 				GPIO_Pin_12					// WARNING: The Extension Board maps these Pins to the H-Bridge-PWM ! Don't use when H-Brdige is needed!!!
 #define LED_ORANGE 				GPIO_Pin_13
 #define LED_RED 				GPIO_Pin_14
 #define LED_BLUE 				GPIO_Pin_15
 // took the function from GPIO_SetBits etc; see stm32f4xx_gpio.h
-#define GREEN_ON				GPIOD->BSRRL = LED_GREEN
-#define GREEN_OFF				GPIOD->BSRRH = LED_GREEN
-#define GREEN_TOGGLE      		GPIOD->ODR ^= LED_GREEN
+#define GREEN_ON				//GPIOD->BSRRL = LED_GREEN
+#define GREEN_OFF				//GPIOD->BSRRH = LED_GREEN
+#define GREEN_TOGGLE      		//GPIOD->ODR ^= LED_GREEN
 #define ORANGE_ON				GPIOD->BSRRL = LED_ORANGE
 #define ORANGE_OFF				GPIOD->BSRRH = LED_ORANGE
 #define ORANGE_TOGGLE			GPIOD->ODR ^= LED_ORANGE
-#define RED_ON					GPIOD->BSRRL = LED_RED
-#define RED_OFF					GPIOD->BSRRH = LED_RED
-#define RED_TOGGLE				GPIOD->ODR ^= LED_RED
+#define RED_ON					//GPIOD->BSRRL = LED_RED
+#define RED_OFF					//GPIOD->BSRRH = LED_RED
+#define RED_TOGGLE				//GPIOD->ODR ^= LED_RED
 #define BLUE_ON					GPIOD->BSRRL = LED_BLUE
 #define BLUE_OFF				GPIOD->BSRRH = LED_BLUE
 #define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
