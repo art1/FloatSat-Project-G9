@@ -33,14 +33,22 @@ void InfraredSensors::run(){
 	while(1){
 		suspendCallerUntil(NOW()+IR_SAMPLERATE*MILLISECONDS);
 		if(isActive()){
-			irData.sensorOne = adc1.read(IR_ONE);
-			irData.sensorTwo = adc1.read(IR_TWO);
-			irData.sensorThree = adc1.read(IR_THREE);
+			irData.sensorOne = (float)adc1.read(IR_ONE);
+			irData.sensorTwo = (float)adc1.read(IR_TWO);
+			irData.sensorThree = (float)adc1.read(IR_THREE);
 //			PRINTF("read IR Data: %d, %d, %d\n",irData.sensorOne,irData.sensorTwo,irData.sensorThree);
 			tmp.irData = irData;
+			linearizeData();
 			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
 	}
+}
+
+void InfraredSensors::linearizeData(){
+	/** TODO measure the linearization for correct value */
+	irData.sensorOne = powf((3027.4/irData.sensorOne),1.2134);
+	irData.sensorTwo = powf((3027.4/irData.sensorTwo),1.2134);
+	irData.sensorThree= powf((3027.4/irData.sensorThree),1.2134);
 }
 
 void InfraredSensors::setNewData(IR_DATA at){

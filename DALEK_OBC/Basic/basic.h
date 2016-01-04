@@ -167,9 +167,9 @@ struct SOLAR_DATA{
 #define IR_SAMPLERATE			200				// Samplerate in missileconds
 struct IR_DATA{
 	bool activated;
-	int32_t sensorOne;
-	int32_t sensorTwo;
-	int32_t sensorThree;
+	float sensorOne;
+	float sensorTwo;
+	float sensorThree;
 };
 
 /* ***************************************** TM TC STUFF **********************************************/

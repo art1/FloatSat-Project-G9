@@ -144,9 +144,9 @@ struct TELEMETRY_FRAME{
 	int32_t batteryVoltage;		// in Volts
 	float current;				// in Ampere
 	float motorSpeed;			// in ???? dps?
-	int32_t irDataOne;			// in meter
-	int32_t irDataTwo;			// in meter
-	int32_t irDataThree;		// in meter
+	float irDataOne;			// in centimeter
+	float irDataTwo;			// in centimeter
+	float irDataThree;			// in centimeter
 	int64_t localTime;			// in nanoseconds since system start!
 };
 

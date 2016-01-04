@@ -183,19 +183,19 @@ void Telemetry::buildFrame(){
 			}
 			break;
 		case IR_DATA_ONE:
-			longToChar(tmp,(uint32_t)irData.sensorOne);
+			floatToChar(tmp,irData.sensorOne);
 			forLoop(j,4){
 				msg.data[msg.length++] = tmp[j];
 			}
 			break;
 		case IR_DATA_TWO:
-			longToChar(tmp,(uint32_t)irData.sensorTwo);
+			floatToChar(tmp,irData.sensorTwo);
 			forLoop(j,4){
 				msg.data[msg.length++] = tmp[j];
 			}
 			break;
 		case IR_DATA_THREE:
-			longToChar(tmp,(uint32_t)irData.sensorThree);
+			floatToChar(tmp,irData.sensorThree);
 			forLoop(j,4){
 				msg.data[msg.length++] = tmp[j];
 			}

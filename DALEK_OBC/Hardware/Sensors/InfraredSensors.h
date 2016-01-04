@@ -21,6 +21,7 @@ public:
 
 private:
 	IR_DATA irData;
+	void linearizeData();
 };
 
 #endif /* HARDWARE_SENSORS_INFRAREDSENSORS_H_ */
