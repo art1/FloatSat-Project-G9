@@ -15,6 +15,7 @@ static Application senderName("Lux_Data_Publisher",500);
 
 lightSensor::lightSensor() : Thread("Light Sensor",108, 1000){
 	// TODO Auto-generated constructor stub
+	activated = false;
 }
 
 lightSensor::~lightSensor() {

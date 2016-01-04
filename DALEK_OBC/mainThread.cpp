@@ -182,6 +182,11 @@ struct sensorsCommThread : public Subscriber, public Thread {
 			}
 #endif
 			break;
+		case CURRENT_CHANGED:
+#ifdef CURRENT_ENABLE
+			tm.setNewData(tmp.currentData);
+#endif
+			break;
 		default:
 			break;
 
@@ -241,6 +246,7 @@ void mainThread::run(){
 	imu.setTime(500*MILLISECONDS);
 #endif
 
+	while(!camera.initFinished());
 #ifdef LIGHT_ENABLE
 	i2c1.init(400000);
 	LUX_DATA temp;
@@ -248,6 +254,11 @@ void mainThread::run(){
 	tempComm.luxData = temp;
 	tempComm.changedVal = LUX_CHANGED;
 	interThreadComm.publish(tempComm);
+#endif
+#ifdef CURRENT_ENABLE
+#ifndef LIGHT_ENABLE
+	i2c1.init(400000);
+#endif
 #endif
 
 #ifdef IR_ENABLE

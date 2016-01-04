@@ -10,6 +10,8 @@
 
 #include "../Basic/basic.h"
 #include "../Hardware/Motor.h"
+#include "Controller/AngleControl.h"
+#include "Controller/RotationControl.h"
 
 
 class MotorControlThread :public Thread{

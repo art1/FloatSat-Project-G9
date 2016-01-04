@@ -22,6 +22,7 @@ public:
 	void setNewData(LUX_DATA _lux);
 	void setNewData(SOLAR_DATA _sol);
 	void setNewData(IR_DATA _ir);
+	void setNewData(CURRENT_DATA _current);
 	void setNewData(ACTIVE_SYSTEM_MODE _mode);
 	void setNewData(INTERCOMM _interComm);
 	void sendPayload(CAM_DATA _camData);
@@ -37,11 +38,12 @@ private:
 
 
 //	Fifo<IMU_RPY_FILTERED,10> imu;
-	RingBuffer<IMU_DATA_RAW,10> imuRaw;
-	RingBuffer<IMU_RPY_FILTERED,10> imu;
-	RingBuffer<LUX_DATA,10> lux;
-	RingBuffer<SOLAR_DATA,10> sol;
-	RingBuffer<IR_DATA,10> ir;
+	RingBuffer<IMU_DATA_RAW,5> imuRaw;
+	RingBuffer<IMU_RPY_FILTERED,5> imu;
+	RingBuffer<LUX_DATA,5> lux;
+	RingBuffer<SOLAR_DATA,5> sol;
+	RingBuffer<IR_DATA,5> ir;
+	RingBuffer<CURRENT_DATA, 5> current;
 
 
 

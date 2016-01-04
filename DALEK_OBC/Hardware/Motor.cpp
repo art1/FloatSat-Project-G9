@@ -36,16 +36,10 @@ Motor::~Motor() {
 }
 
 void Motor::init(){
-	//	hbridgeA_inA.init(true,1,1);
-	//	hbridgeA_inB.init(true,1,0);
 	hbridge_enable.init(true,1,0);
-	//	dcdc_read.init(false,1,0);
-	//	pwm.init(5000,1000); // 84Hz
-	//	pwm.write(250);
 	MotorPWM.init(5000, 1000);
 	HBRIDGE_A_INA.init(true, 1, 0);
 	HBRIDGE_A_INB.init(true, 1, 1);
-
 }
 
 void Motor::run(){

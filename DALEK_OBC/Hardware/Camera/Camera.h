@@ -36,6 +36,7 @@ public:
 
 	void ProcessData();
 	void setNewData(CAM_DATA data);
+	bool initFinished();
 private:
 	CAM_DATA daten;
 	void initTimer();
@@ -46,6 +47,7 @@ private:
 	HAL_GPIO reset;
 	HAL_GPIO power;
 
+	bool initDone;
 	bool isActive;
 	bool captureImage;
 	bool processData;

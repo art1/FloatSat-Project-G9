@@ -23,6 +23,7 @@ Camera::Camera() : Thread("Camera",99){
 	captureImage = false;
 	//	processData = false;
 	//	sendPic = true;
+	initDone = false;
 }
 
 void Camera::initTimer(){
@@ -84,17 +85,20 @@ void Camera::setNewData(CAM_DATA _data){
 	this->captureImage = this->daten.capture;
 }
 
+
+bool Camera::initFinished(){
+	return initDone;
+}
+
+
 void Camera::run(){
 
 
-	while(!isActive){
-		suspendCallerUntil(END_OF_TIME);
-	}
+
 	memset(picture,0,sizeof(picture));
 	reset.setPins(1);
 	power.setPins(0);
 	PRINTF("starting cam init\n");
-//	cam.GPIO_Configuration();
 	FIFO_CS_L();
 
 	FIFO_CS_H();
@@ -109,6 +113,12 @@ void Camera::run(){
 	INTERCOMM comm;
 	uint8_t data[8];
 	uint8_t tmp;
+	initDone = true;
+	while(!isActive){
+		suspendCallerUntil(END_OF_TIME);
+	}
+
+
 	while(1){
 //		suspendCallerUntil(END_OF_TIME);
 //		suspendCallerUntil(NOW() + 1500*MILLISECONDS);

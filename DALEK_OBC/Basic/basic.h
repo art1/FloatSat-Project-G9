@@ -24,7 +24,7 @@ extern "C" HAL_I2C i2c1;
 extern "C" HAL_I2C i2c2;
 extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 extern "C" HAL_UART bt_uart;
-extern "C" uint8_t VSync;					// camera, for IRQ handler
+extern "C" uint8_t VSync;						// camera, for IRQ handler
 
 #define ADC1_RESOLUTION			12				// Resolution for ADC Channel 1
 
@@ -32,7 +32,7 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define TO_RAD					(M_PI/180.0)
 #define TO_DEG					(180.0/M_PI)
 #define COMPL_GAIN				0.98f			// Complementary Filter Gain
-#define forLoop(x,n)				for(int x=0;x<n;x++)
+#define forLoop(x,n)			for(int x=0;x<n;x++)
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
 #define IMU_ENABLE
@@ -40,6 +40,7 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define TELEMETRY_DISABLE
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
+#define CURRENT_ENABLE
 #define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
 #define MOTOR_ENABLE
 #define SOLAR_ADC_ENABLE
@@ -55,6 +56,8 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 //		#define COMPLEMENTARY					// enables the complementary filter -> used when madgwick is disabled!
 	#endif
 #endif
+
+
 /****************************** LED STUFF ************************************************/
 #define LED_GREEN 				GPIO_Pin_12					// WARNING: The Extension Board maps these Pins to the H-Bridge-PWM ! Don't use when H-Brdige is needed!!!
 #define LED_ORANGE 				GPIO_Pin_13
@@ -74,6 +77,8 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define BLUE_OFF				GPIOD->BSRRH = LED_BLUE
 #define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
 
+
+
 /****************************** WIFI & BT STUFF ******************************************/
 #define WIFI_SSID				"BlackBox"
 #define WIFI_SSID_PW			"goJ6vA4freIv6jiG7wug8Ju1Ak7jAt"
@@ -83,6 +88,8 @@ extern "C" uint8_t VSync;					// camera, for IRQ handler
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
 #define BLUETOOTH_BUFFER		512				// in bytes, should be enough for Command Frames! (currently 24 needed)
+
+
 
 /****************************** IMU STUFF ************************************************/
 #define IMU_RESET_PIN			GPIO_055
@@ -125,12 +132,17 @@ struct IMU_RPY_FILTERED{
 	float PITCH;
 	float ROLL;
 };
+
+
+
+
 /* ***************************************** LIGHT SENSOR STUFF **********************************************/
 #define LIGHT_SAMPLERATE		100				// Samplerate in milliseconds
 struct LUX_DATA{
 	bool activated;
 	uint16_t LUX;
 };
+
 
 
 /* ***************************************** Camera STUFF **********************************************/
@@ -152,6 +164,8 @@ struct CAM_DATA{
 };
 
 
+
+
 /* ***************************************** SolarPanel STUFF **********************************************/
 #define SolarVoltageADC			ADC_CH_001		//PA1 Pin
 #define SOLAR_SAMPLERATE		100				//Samplerate in milliseconds
@@ -159,6 +173,8 @@ struct SOLAR_DATA{
 	bool activated;
 	int32_t Voltage;
 };
+
+
 
 /* ***************************************** Infrared Sensor STUFF **********************************************/
 #define IR_ONE					ADC_CH_002		// PA2
@@ -171,6 +187,9 @@ struct IR_DATA{
 	float sensorTwo;
 	float sensorThree;
 };
+
+
+
 
 /* ***************************************** TM TC STUFF **********************************************/
 #ifdef TTNC_ENABLE
@@ -187,11 +206,26 @@ struct TELEMETRY{
 	TELEMETRY_FRAME tmFrame;
 	int updated; // 0 or 1 for pl or tm frame
 };
+
+
+
+
 /* ***************************************** Thermal Knife STUFF ******************************************/
 
 struct KNIFE_DATA{
 	bool activated;
 };
+
+
+
+/* ***************************************** Current Sensor STUFF ******************************************/
+#define CURRENT_SAMPLERATE			200 // in milliseconds
+struct CURRENT_DATA{
+	float currentBattery;
+	float power;
+};
+
+
 
 /* ***************************************** Inter-Thread Communication for Sensors ***********************/
 struct INTERCOMM{
@@ -202,6 +236,7 @@ struct INTERCOMM{
 	KNIFE_DATA knifeData;
 	CAM_DATA camData;
 	IMU_RPY_FILTERED imuData;
+	CURRENT_DATA currentData;
 };
 enum INTERCOMM_CHANGED{
 	LUX_CHANGED,
@@ -209,8 +244,13 @@ enum INTERCOMM_CHANGED{
 	IR_CHANGED,
 	KNIFE_CHANGED,
 	CAM_CHANGED,
-	IMU_CHANGED
+	IMU_CHANGED,
+	CURRENT_CHANGED
 };
+
+
+
+
 
 /***************************************** TOPICS ***************************************************/
 // now define the topics stuff for the RODOS middleware

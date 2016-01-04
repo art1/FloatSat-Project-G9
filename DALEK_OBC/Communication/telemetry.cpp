@@ -51,6 +51,9 @@ void Telemetry::setNewData(SOLAR_DATA _sol){
 void Telemetry::setNewData(IR_DATA _ir){
 	this->ir.put(_ir);
 }
+void Telemetry::setNewData(CURRENT_DATA _current){
+	this->current.put(_current);
+}
 void Telemetry::setNewData(INTERCOMM _interComm){
 
 }
