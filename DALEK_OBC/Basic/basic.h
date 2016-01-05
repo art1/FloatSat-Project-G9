@@ -26,6 +26,7 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 extern "C" HAL_UART bt_uart;
 extern "C" uint8_t VSync;						// camera, for IRQ handler
 
+
 #define ADC1_RESOLUTION			12				// Resolution for ADC Channel 1
 
 #define EPSILON_COMPARISON		0.0001			// used to compare two floats or doubles
@@ -41,7 +42,7 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
 #define CURRENT_ENABLE
-#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
+//#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
 #define MOTOR_ENABLE
 #define SOLAR_ADC_ENABLE
 #define IR_ENABLE

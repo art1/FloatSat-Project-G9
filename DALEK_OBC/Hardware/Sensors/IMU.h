@@ -181,8 +181,10 @@ public:
 	void setTime(int time);
 	void setGyroScale(int scale);
 	void calibrateSensors();
+	bool initFinished();
 
 private:
+	bool initDone;
 	uint8_t time;
 	int read_multiple_Register(int cs, uint8_t reg,int valuesToRead,int16_t *dest);
 	IMU_DATA_RAW scaleData();
@@ -224,6 +226,10 @@ private:
 	int k =0;
 
 	int debugTime =0;
+
+	bool calGyro;
+	bool calAccl;
+	bool calMagn;
 
 
 

@@ -7,13 +7,12 @@
 
 #include "RotationControl.h"
 
-RotationControl::RotationControl() {
-	// TODO Auto-generated constructor stub
+RotationControl::RotationControl() : Thread("Rotation Control",98,1000){
+	active = false;
 
 }
 
 RotationControl::~RotationControl() {
-	// TODO Auto-generated destructor stub
 }
 
 
@@ -22,5 +21,18 @@ void RotationControl::init(){
 }
 
 void RotationControl::run(){
+	while(1){
+		if(!isActive()) suspendCallerUntil(END_OF_TIME);
 
+	}
+}
+
+void RotationControl::setRotSpeed(float _speed){
+	this->desSpeed = _speed;
+}
+bool RotationControl::isActive(){
+	return active;
+}
+void RotationControl::setActive(bool _val){
+	this->active = _val;
 }

@@ -43,6 +43,7 @@ InfraredSensors irSensors;
 #endif
 #ifdef MOTOR_ENABLE
 MotorControlThread motorControl;
+Motor motor;
 #endif
 #ifdef KNIFE_ENABLE
 ThermalKnife knife;
@@ -77,6 +78,9 @@ struct receiver_filtered : public Subscriber, public Thread {
 #ifdef SUNFINDER_ENABLE
 		// if sunfinder is active, set the data to the INTERCOMM too, to avoid corrupted data!
 		if(sunFinder.isActive())tempComm.imuData = *(IMU_RPY_FILTERED*)data;
+#endif
+#ifdef MOTOR_ENABLE
+		motorControl.setNewData(*(IMU_RPY_FILTERED*)data);
 #endif
 		return 1;
 	}
@@ -224,7 +228,7 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-	currentSystemMode.activeMode = MISSION;
+	currentSystemMode.activeMode = MOTOR_CONTROL;
 	cmd.command = -1;
 
 }
@@ -243,10 +247,11 @@ void mainThread::run(){
 #ifdef IMU_ENABLE
 	i2c2.init(400000);
 	imu.regInit();
-	imu.setTime(500*MILLISECONDS);
+	while(!imu.initFinished());
 #endif
-
+#ifdef CAMERA_ENABLE
 	while(!camera.initFinished());
+#endif
 #ifdef LIGHT_ENABLE
 	i2c1.init(400000);
 	LUX_DATA temp;
@@ -302,11 +307,12 @@ void mainThread::run(){
 #ifdef MOTOR_ENABLE
 				// seting motor speed,
 				PRINTF("motor control mode with command %d\n",cmd.command);
-
+				cmd.command = GOTO_ANGLE;
+				cmd.commandValue = 90.0;
 				switch (cmd.command) {
 				case SET_ROTATION_SPEED:
 
-					motorControl.setMotorSpeed(cmd.commandValue);
+					motorControl.setRotationSpeed(cmd.commandValue);
 					break;
 				case CONTROL_MOTOR:
 					if((int)cmd.commandValue == 1){
@@ -316,6 +322,7 @@ void mainThread::run(){
 					}
 					break;
 				case GOTO_ANGLE:
+					motorControl.gotoAngle(cmd.commandValue);
 					break;
 				default:
 

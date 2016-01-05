@@ -24,6 +24,7 @@
 #include "Hardware/Sensors/LightSensor.h"
 
 #include "ACS/MotorControlThread.h"
+#include "Hardware/Motor.h"
 #include "ACS/Controller/AngleControl.h"
 #include "ACS/Controller/RotationControl.h"
 

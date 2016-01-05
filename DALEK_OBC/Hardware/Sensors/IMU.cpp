@@ -28,7 +28,7 @@ uint16_t samples = 0;
 
 
 
-IMU::IMU() : Thread ("IMU Thread",101){
+IMU::IMU() : Thread ("IMU Thread",90){
 	//TODO: insert correct baudrate
 	cnt_failedReads = 0;
 	samples = 0;
@@ -40,6 +40,10 @@ IMU::IMU() : Thread ("IMU Thread",101){
 	deltaPitch = 0.0;
 	deltaRoll = 0.0;
 	calibrationFinished = false;
+	calGyro = false;
+	calAccl = false;
+	calMagn = false;
+	initDone = false;
 }
 
 IMU::~IMU() {
@@ -52,11 +56,7 @@ void IMU::init(){
 }
 
 void IMU::regInit(){
-	PRINTF("IMU Constructor called!\n");
 
-
-	//init i2c
-	//	if(i2c2.context)
 
 	//init array
 	memset(recBuf,0,sizeof(recBuf));
@@ -86,12 +86,12 @@ void IMU::regInit(){
 	PRINTF("IMU G CS PIN:%d\n",k);
 	transBuf[0] = (0x80 | (WHO_AM_I_GYRO));
 	k = i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,1);
-	PRINTF("whois gyro: k=%d -  %d\n",k,recBuf[0]); // should be 212 ,0xD4
+//	PRINTF("whois gyro: k=%d -  %d\n",k,recBuf[0]); // should be 212 ,0xD4
 	imu_g_cs.setPins(0);
 	imu_x_cs.setPins(1);
 	transBuf[0] = ( 0x80 | WHO_AM_I_MAGNACC);
 	k = i2c2.writeRead(ACC_MAG_ADDRESS,transBuf,1,recBuf,1);
-	PRINTF("whois accMag: k=%d  -  %d\n",k,recBuf[0]); // should be 73 ,0x49
+//	PRINTF("whois accMag: k=%d  -  %d\n",k,recBuf[0]); // should be 73 ,0x49
 	imu_x_cs.setPins(0);
 
 
@@ -105,7 +105,7 @@ void IMU::regInit(){
 	transBuf[0] = (CTRL_REG1_XM);
 	transBuf[1] = 0x7F;//0b01111111 -> 200Hz, block update reading, all axes enabled
 	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
-	PRINTF("accl enable: %d\n",k);
+//	PRINTF("accl enable: %d\n",k);
 
 	// setting Magnetic sensor mode to continuous conversion mode
 	transBuf[0] = CTRL_REG7_XM;
@@ -179,7 +179,7 @@ void IMU::regInit(){
 	transBuf[1] = 0x6F; //0b01101111 Normal power mode, all axes enabled,  190Hz, 50 cutoff
 	i2c2.write(GYRO_ADDRESS,transBuf,2);
 	transBuf[0] = CTRL_REG4_G;
-	PRINTF("Setting Gyro Scale to %d DPS \n",IMU_GYRO_RANGE);
+//	PRINTF("Setting Gyro Scale to %d DPS \n",IMU_GYRO_RANGE);
 	switch(IMU_GYRO_RANGE){
 	case 245:
 		transBuf[1] = GYRO_245DPS;
@@ -208,14 +208,25 @@ void IMU::regInit(){
 	k = i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,1);
 	PRINTF("got k=%d  -  GYRO REG1:%d\n",k,recBuf[0]); // should be 0xCf -> 207
 	imu_g_cs.setPins(0);
-}
+	// do only once
 
+	calibrateSensors();
+	while(!calibrationFinished);
+	if(calMagn == true){
+		calMagn = false;
+	}
+
+	initDone = true;
+}
+bool IMU::initFinished(){
+	return initDone;
+}
 
 //TODO retcodes
 int IMU::resetIMU(){
 	//cycle PD7 off->on for reset //TODO: but how fast???
 	//	leds.blinkAll(100,0);
-//		suspendCallerUntil(NOW()+200*MILLISECONDS);
+	//		suspendCallerUntil(NOW()+200*MILLISECONDS);
 
 	// reset I2C lines
 	i2c2.reset();
@@ -243,9 +254,9 @@ IMU_DATA_RAW IMU::scaleData(){
 	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity; // TODO scale Data after calibration!!!
 	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;
-//	tmp.MAGNETIC_RAW_X = (tmp.MAGNETIC_RAW_X - MAG_MIN_X) / (MAG_MAX_X - MAG_MIN_X) * 2 - 1.0;
-//	tmp.MAGNETIC_RAW_Y = (tmp.MAGNETIC_RAW_Y - MAG_MIN_Y) / (MAG_MAX_Y - MAG_MIN_Y) * 2 - 1.0;
-//	tmp.MAGNETIC_RAW_Z = (tmp.MAGNETIC_RAW_Z - MAG_MIN_Z) / (MAG_MAX_Z - MAG_MIN_Z) * 2 - 1.0;
+	//	tmp.MAGNETIC_RAW_X = (tmp.MAGNETIC_RAW_X - MAG_MIN_X) / (MAG_MAX_X - MAG_MIN_X) * 2 - 1.0;
+	//	tmp.MAGNETIC_RAW_Y = (tmp.MAGNETIC_RAW_Y - MAG_MIN_Y) / (MAG_MAX_Y - MAG_MIN_Y) * 2 - 1.0;
+	//	tmp.MAGNETIC_RAW_Z = (tmp.MAGNETIC_RAW_Z - MAG_MIN_Z) / (MAG_MAX_Z - MAG_MIN_Z) * 2 - 1.0;
 	tmp.ANGULAR_RAW_X *= TO_RAD;
 	tmp.ANGULAR_RAW_Y *= TO_RAD;
 	tmp.ANGULAR_RAW_Z *= TO_RAD;
@@ -266,15 +277,15 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 	// print raw values
 	//	PRINTF("\nraw Gyro:  %d  %d  %d\n",gyro_raw[0],gyro_raw[1],gyro_raw[2]);
 	//	PRINTF("raw Accl:  %d  %d  %d\n",accl_raw[0],accl_raw[1],accl_raw[2]);
-	//	PRINTF("raw Magn:  %d  %d  %d\n",magn_raw[0],magn_raw[1],magn_raw[2]);
-//	samples++;
+//		PRINTF("raw Magn:  %d  %d  %d\n",magn_raw[0],magn_raw[1],magn_raw[2]);
+	//	samples++;
 	double tmp = SECONDS_NOW();
 
-//	samplerateTime = SECONDS_NOW();
+	//	samplerateTime = SECONDS_NOW();
 
 	newData = scaleData();
 	newData.currentSampleTime = tmp;
-//	PRINTF("seconds now %f\n",tmp);
+	//	PRINTF("seconds now %f\n",tmp);
 
 	//			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  rad/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 
@@ -326,7 +337,7 @@ void IMU::convertToRPY(){
 	//	PRINTF("\ndeltaYaw:   %f   deltaPitch:   %f   deltaRoll:   %f   \n",deltaYaw,deltaPitch,deltaRoll);
 
 	// acclererometer convert to RPY -> yaw angle can not be get by accl, so use magnetometer
-//	angleRPY.MAG_YAW = atan(newData.ACCEL_RAW_Z/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
+	//	angleRPY.MAG_YAW = atan(newData.ACCEL_RAW_Z/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_PITCH = atan(newData.ACCEL_RAW_X/(sqrt((newData.ACCEL_RAW_Y*newData.ACCEL_RAW_Y) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_ROLL = atan(newData.ACCEL_RAW_Y/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	// use accl pitch and roll for tilt compensation
@@ -358,9 +369,7 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 		imu_g_cs.setPins(1);
 		i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,valuesToRead);
 		for(int i=0;i<valuesToRead;i+=2){
-			//									PRINTF("recBufGyro %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
 			dest[j] =(int16_t)(recBuf[i] | (recBuf[i+1] << 8));
-			//			PRINTF("converted:%d",dest[j]);
 			j++;
 		}
 
@@ -408,169 +417,199 @@ void IMU::calibrateSensors(){
 	memset(gyro_temp,0,sizeof(gyro_temp));
 	memset(temp,0,sizeof(temp));
 	memset(accl_temp,0,sizeof(accl_temp));
+	if(calAccl){
+		// calibrate accelerometer
+		/** WRONG! NEED TO CALIBRATE EACH AXIS SEPARATE ************TODO****************/
+		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			read_multiple_Register(IMU_ACCMAG,(X_ACCEL_L),6, temp);
+			accl_temp[0] += temp[0];
+			accl_temp[1] += temp[1];
+			accl_temp[2] += temp[2];
+			//		if(i%100 == 0)PRINTF("\novf;  %d,%d,%d",gyro_temp[0],gyro_temp[1],gyro_temp[2]);
+		}
+		acclOffset[0] = (accl_temp[0] / CALIBRAION_SAMPLES);
+		acclOffset[1] = (accl_temp[1] / CALIBRAION_SAMPLES);
+		acclOffset[2] = (accl_temp[2] / CALIBRAION_SAMPLES);
+		PRINTF("CAL: %f, %f, %f",acclOffset[0],acclOffset[1],acclOffset[2]);
 
-	// calibrate accelerometer
-	/** WRONG! NEED TO CALIBRATE EACH AXIS SEPARATE ************TODO****************/
-	for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		read_multiple_Register(IMU_ACCMAG,(X_ACCEL_L),6, temp);
-		accl_temp[0] += temp[0];
-		accl_temp[1] += temp[1];
-		accl_temp[2] += temp[2];
-		//		if(i%100 == 0)PRINTF("\novf;  %d,%d,%d",gyro_temp[0],gyro_temp[1],gyro_temp[2]);
-	}
-	acclOffset[0] = (accl_temp[0] / CALIBRAION_SAMPLES);
-	acclOffset[1] = (accl_temp[1] / CALIBRAION_SAMPLES);
-	acclOffset[2] = (accl_temp[2] / CALIBRAION_SAMPLES);
-	PRINTF("CAL: %f, %f, %f",acclOffset[0],acclOffset[1],acclOffset[2]);
 
+		PRINTF("calibrating - move board to standard position!\n");
+		int cnt = 0;
+		GREEN_OFF;
+		while(cnt < 25){
+			GREEN_TOGGLE; RED_TOGGLE; BLUE_TOGGLE; ORANGE_TOGGLE;
+			suspendCallerUntil(NOW()+100*MILLISECONDS);
+			cnt++;
+		}
+		GREEN_ON; RED_ON;
+		PRINTF("calibrate for Z-axis, don't move the board!\n");
+		//calibrate Z-axis (top view STM-board -> blue/black on top)
+		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
+			accl_temp[0] += temp[0];
+			PRINTF("accltemp 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
+			read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
+			accl_temp[1] += temp[0];
+			PRINTF("accltemp2 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
+			suspendCallerUntil(NOW()+9*MILLISECONDS);
+		}
+		GREEN_OFF; RED_OFF;
+		PRINTF("please turn board around (invert z-axis)\n");
+		cnt = 0;
+		while(cnt<50){
+			BLUE_TOGGLE; ORANGE_TOGGLE;
+			suspendCallerUntil(NOW()+100*MILLISECONDS);
+			cnt++ ;
+		}
+		BLUE_ON; ORANGE_ON;
+		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
+			accl_temp[2] += temp[0];
+			read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
+			accl_temp[3] += temp[0];
+			suspendCallerUntil(NOW()+9*MILLISECONDS);
+		}
 
-	PRINTF("calibrating - move board to standard position!\n");
-	int cnt = 0;
-	GREEN_OFF;
-	while(cnt < 25){
-		GREEN_TOGGLE; RED_TOGGLE; BLUE_TOGGLE; ORANGE_TOGGLE;
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
-		cnt++;
-	}
-	GREEN_ON; RED_ON;
-	PRINTF("calibrate for Z-axis, don't move the board!\n");
-	//calibrate Z-axis (top view STM-board -> blue/black on top)
-	for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
-		accl_temp[0] += temp[0];
-		PRINTF("accltemp 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
-		read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
-		accl_temp[1] += temp[0];
-		PRINTF("accltemp2 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
-		suspendCallerUntil(NOW()+9*MILLISECONDS);
-	}
-	GREEN_OFF; RED_OFF;
-	PRINTF("please turn board around (invert z-axis)\n");
-	cnt = 0;
-	while(cnt<50){
-		BLUE_TOGGLE; ORANGE_TOGGLE;
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
-		cnt++ ;
-	}
-	BLUE_ON; ORANGE_ON;
-	for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
-		accl_temp[2] += temp[0];
-		read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
-		accl_temp[3] += temp[0];
-		suspendCallerUntil(NOW()+9*MILLISECONDS);
-	}
+		ORANGE_OFF;
+		BLUE_ON;
+		PRINTF("please turn board to -y-axis in direction of blue LED\n");
+		cnt = 0;
+		while(cnt<50){
+			BLUE_TOGGLE;
+			suspendCallerUntil(NOW()+100*MILLISECONDS);
+			cnt++ ;
+		}
+		BLUE_ON;
+		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
+			accl_temp[4] += temp[0];
+			read_multiple_Register(IMU_ACCMAG,Z_ACCEL_L,2,temp);
+			accl_temp[5] += temp[0];
+			suspendCallerUntil(NOW()+9*MILLISECONDS);
+		}
 
-	ORANGE_OFF;
-	BLUE_ON;
-	PRINTF("please turn board to -y-axis in direction of blue LED\n");
-	cnt = 0;
-	while(cnt<50){
-		BLUE_TOGGLE;
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
-		cnt++ ;
-	}
-	BLUE_ON;
-	for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
-		accl_temp[4] += temp[0];
-		read_multiple_Register(IMU_ACCMAG,Z_ACCEL_L,2,temp);
-		accl_temp[5] += temp[0];
-		suspendCallerUntil(NOW()+9*MILLISECONDS);
-	}
+		BLUE_OFF;
+		PRINTF("please turn board to in direction of orange LED\n");
+		cnt = 0;
+		while(cnt<50){
+			ORANGE_TOGGLE;
+			suspendCallerUntil(NOW()+100*MILLISECONDS);
+			cnt++ ;
+		}
+		ORANGE_ON;
+		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
+			accl_temp[6] += temp[0];
+			read_multiple_Register(IMU_ACCMAG,Z_ACCEL_L,2,temp);
+			accl_temp[7] += temp[0];
+			suspendCallerUntil(NOW()+9*MILLISECONDS);
+		}
+		ORANGE_OFF;
+		PRINTF("please turn board to -x-axis in direction of red LED\n");
+		cnt = 0;
+		while(cnt<50){
+			RED_TOGGLE;
+			suspendCallerUntil(NOW()+100*MILLISECONDS);
+			cnt++ ;
+		}
+		RED_ON;
+		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
+			accl_temp[8] += temp[0];
+			read_multiple_Register(IMU_ACCMAG,Z_ACCEL_L,2,temp);
+			accl_temp[9] += temp[0];
+			suspendCallerUntil(NOW()+9*MILLISECONDS);
+		}
+		RED_OFF;
+		PRINTF("please turn board to in direction of green LED\n");
+		cnt = 0;
+		while(cnt<50){
+			GREEN_TOGGLE;
+			suspendCallerUntil(NOW()+100*MILLISECONDS);
+			cnt++ ;
+		}
+		GREEN_ON;
+		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
+			accl_temp[10] += temp[0];
+			read_multiple_Register(IMU_ACCMAG,Z_ACCEL_L,2,temp);
+			accl_temp[11] += temp[0];
+			suspendCallerUntil(NOW()+9*MILLISECONDS);
+		}
+		GREEN_OFF;
 
-	BLUE_OFF;
-	PRINTF("please turn board to in direction of orange LED\n");
-	cnt = 0;
-	while(cnt<50){
-		ORANGE_TOGGLE;
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
-		cnt++ ;
-	}
-	ORANGE_ON;
-	for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
-		accl_temp[6] += temp[0];
-		read_multiple_Register(IMU_ACCMAG,Z_ACCEL_L,2,temp);
-		accl_temp[7] += temp[0];
-		suspendCallerUntil(NOW()+9*MILLISECONDS);
-	}
-	ORANGE_OFF;
-	PRINTF("please turn board to -x-axis in direction of red LED\n");
-	cnt = 0;
-	while(cnt<50){
-		RED_TOGGLE;
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
-		cnt++ ;
-	}
-	RED_ON;
-	for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
-		accl_temp[8] += temp[0];
-		read_multiple_Register(IMU_ACCMAG,Z_ACCEL_L,2,temp);
-		accl_temp[9] += temp[0];
-		suspendCallerUntil(NOW()+9*MILLISECONDS);
-	}
-	RED_OFF;
-	PRINTF("please turn board to in direction of green LED\n");
-	cnt = 0;
-	while(cnt<50){
-		GREEN_TOGGLE;
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
-		cnt++ ;
-	}
-	GREEN_ON;
-	for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
-		accl_temp[10] += temp[0];
-		read_multiple_Register(IMU_ACCMAG,Z_ACCEL_L,2,temp);
-		accl_temp[11] += temp[0];
-		suspendCallerUntil(NOW()+9*MILLISECONDS);
-	}
-	GREEN_OFF;
+		//debugoutput
+		for(int i=0;i< 10;i++){
+			PRINTF("1: %"PRId64", 2: %"PRId64" \n",accl_temp[i],accl_temp[i+2]);
+		}
 
-	//debugoutput
-	for(int i=0;i< 10;i++){
-		PRINTF("1: %"PRId64", 2: %"PRId64" \n",accl_temp[i],accl_temp[i+2]);
+		// now calculate values
+		// x1, x2, y1, y2, z1, z2 offset values, then in the end average them
+		accl_calc_temp[0] = ((accl_temp[0]/CALIBRAION_SAMPLES) + (accl_temp[2] / CALIBRAION_SAMPLES))/2.0;
+		accl_calc_temp[1] = ((accl_temp[4]/CALIBRAION_SAMPLES) + (accl_temp[6] / CALIBRAION_SAMPLES))/2.0;
+		accl_calc_temp[2] = ((accl_temp[1]/CALIBRAION_SAMPLES) + (accl_temp[3] / CALIBRAION_SAMPLES))/2.0;
+		accl_calc_temp[3] = ((accl_temp[8]/CALIBRAION_SAMPLES) + (accl_temp[10] / CALIBRAION_SAMPLES))/2.0;
+		accl_calc_temp[4] = ((accl_temp[5]/CALIBRAION_SAMPLES) + (accl_temp[7] / CALIBRAION_SAMPLES))/2.0;
+		accl_calc_temp[5] = ((accl_temp[9]/CALIBRAION_SAMPLES) + (accl_temp[11] / CALIBRAION_SAMPLES))/2.0;
+		// now average that stuff -> that's the final offset corresponding to 0g-measurement
+		acclOffset[0] = (accl_calc_temp[0] + accl_calc_temp[1])/2.0;
+		acclOffset[1] = (accl_calc_temp[2] + accl_calc_temp[3])/2.0;
+		acclOffset[2] = (accl_calc_temp[4] + accl_calc_temp[5])/2.0;
+		PRINTF("ACCL CAL: %f, %f, %f\n",acclOffset[0],acclOffset[1],acclOffset[2]);
 	}
+	if(calGyro){
+		PRINTF("now calibrate Gyro; don't touch the board\n");
+		int cnt = 0;
+		while(cnt < 50){
+			GREEN_TOGGLE; RED_TOGGLE; BLUE_TOGGLE; ORANGE_TOGGLE;
+			suspendCallerUntil(NOW()+100*MILLISECONDS);
+			cnt++;
+		}
+		GREEN_ON; BLUE_ON; ORANGE_ON; RED_ON;
+		suspendCallerUntil(NOW()+1000*MILLISECONDS);
+		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			read_multiple_Register(IMU_GYRO,(X_ANGULAR_L),6,temp);
+			gyro_temp[0] += temp[0];
+			gyro_temp[1] += temp[1];
+			gyro_temp[2] += temp[2];
+			//		if(i%100 == 0)PRINTF("\novf;  %d,%d,%d",gyro_temp[0],gyro_temp[1],gyro_temp[2]);
+			suspendCallerUntil(NOW()+9*MILLISECONDS);
+		}
+		gyroOffset[0] = (gyro_temp[0] / CALIBRAION_SAMPLES);
+		gyroOffset[1] = (gyro_temp[1] / CALIBRAION_SAMPLES);
+		gyroOffset[2] = (gyro_temp[2] / CALIBRAION_SAMPLES);
+		PRINTF("GYRO CAL: %f, %f, %f\n",gyroOffset[0],gyroOffset[1],gyroOffset[2]);
+	}
+	int16_t minX,minY,minZ = 0;
+	int16_t maxX,maxY,maxZ = 0;
+	if(calMagn){
+		BLUE_ON; ORANGE_ON;
+		PRINTF("calibrating Magnetometer, prepare...\n");
+		suspendCallerUntil(NOW()+500*MILLISECONDS);
+		PRINTF("you have now 30 seconds to move 360 degree in all directions  and do a figure 8! go..\n");
+		int cnt = 0;
+		while(cnt <= CALIBRAION_SAMPLES){
+			read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,temp);
+			if(temp[0] < minX) minX = temp[0];
+			else if(temp[0] > maxX) maxX = temp[0];
 
-	// now calculate values
-	// x1, x2, y1, y2, z1, z2 offset values, then in the end average them
-	accl_calc_temp[0] = ((accl_temp[0]/CALIBRAION_SAMPLES) + (accl_temp[2] / CALIBRAION_SAMPLES))/2.0;
-	accl_calc_temp[1] = ((accl_temp[4]/CALIBRAION_SAMPLES) + (accl_temp[6] / CALIBRAION_SAMPLES))/2.0;
-	accl_calc_temp[2] = ((accl_temp[1]/CALIBRAION_SAMPLES) + (accl_temp[3] / CALIBRAION_SAMPLES))/2.0;
-	accl_calc_temp[3] = ((accl_temp[8]/CALIBRAION_SAMPLES) + (accl_temp[10] / CALIBRAION_SAMPLES))/2.0;
-	accl_calc_temp[4] = ((accl_temp[5]/CALIBRAION_SAMPLES) + (accl_temp[7] / CALIBRAION_SAMPLES))/2.0;
-	accl_calc_temp[5] = ((accl_temp[9]/CALIBRAION_SAMPLES) + (accl_temp[11] / CALIBRAION_SAMPLES))/2.0;
-	// now average that stuff -> that's the final offset corresponding to 0g-measurement
-	acclOffset[0] = (accl_calc_temp[0] + accl_calc_temp[1])/2.0;
-	acclOffset[1] = (accl_calc_temp[2] + accl_calc_temp[3])/2.0;
-	acclOffset[2] = (accl_calc_temp[4] + accl_calc_temp[5])/2.0;
-	PRINTF("ACCL CAL: %f, %f, %f\n",acclOffset[0],acclOffset[1],acclOffset[2]);
+			if(temp[1] < minY) minY = temp[1];
+			else if(temp[1] > maxY) maxY = temp[1];
 
-	PRINTF("now calibrate Gyro; don't touch the board\n");
-	cnt = 0;
-	while(cnt < 50){
-		GREEN_TOGGLE; RED_TOGGLE; BLUE_TOGGLE; ORANGE_TOGGLE;
-		suspendCallerUntil(NOW()+100*MILLISECONDS);
-		cnt++;
+			if(temp[2] < minZ) minZ = temp[2];
+			else if(temp[2] > maxZ) maxZ = temp[2];
+			Delay_millis(10);
+			BLUE_TOGGLE;
+			cnt++;
+		}
+		BLUE_OFF; ORANGE_OFF;
+		PRINTF("calibration finished, calculating values.., min x %d, max x %d\n",minX,maxX);
+		magnOffset[0] = ((float)minX + (float)maxX) / 2.0;
+		magnOffset[1] = ((float)minY + (float)maxY) / 2.0;
+		magnOffset[2] = ((float)minZ + (float)maxZ) / 2.0;
+		PRINTF("MAGN CAL: %f, %f, %f\n",magnOffset[0],magnOffset[1],magnOffset[2]);
 	}
-	GREEN_ON; BLUE_ON; ORANGE_ON; RED_ON;
-	suspendCallerUntil(NOW()+1000*MILLISECONDS);
-	for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		read_multiple_Register(IMU_GYRO,(X_ANGULAR_L),6,temp);
-		gyro_temp[0] += temp[0];
-		gyro_temp[1] += temp[1];
-		gyro_temp[2] += temp[2];
-		//		if(i%100 == 0)PRINTF("\novf;  %d,%d,%d",gyro_temp[0],gyro_temp[1],gyro_temp[2]);
-		suspendCallerUntil(NOW()+9*MILLISECONDS);
-	}
-	gyroOffset[0] = (gyro_temp[0] / CALIBRAION_SAMPLES);
-	gyroOffset[1] = (gyro_temp[1] / CALIBRAION_SAMPLES);
-	gyroOffset[2] = (gyro_temp[2] / CALIBRAION_SAMPLES);
-	PRINTF("GYRO CAL: %f, %f, %f\n",gyroOffset[0],gyroOffset[1],gyroOffset[2]);
 	calibrationFinished = true;
-	GREEN_OFF;BLUE_OFF;RED_OFF;ORANGE_OFF;
 }
 
 
@@ -579,10 +618,7 @@ void IMU::run(){
 	PRINTF("run called\n");
 	int tmp = 0;
 	debugTime = NOW()*SECONDS;
-//	calibrateSensors();
-//	while(!calibrationFinished){
-//		suspendCallerUntil(NOW()+500*MILLISECONDS);
-//	}
+
 	int printValues = IMU_PRINT_VALUES/IMU_SAMPLERATE;
 	int cnt =0;
 

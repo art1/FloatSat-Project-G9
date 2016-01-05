@@ -44,11 +44,26 @@ void MotorControlThread::run(){
 	}
 }
 
-void MotorControlThread::setMotorSpeed(float speedCylce){
-	PRINTF("setting motor speed to %f\n",speedCylce);
-
-	motor.setspeed(speedCylce);
+void MotorControlThread::setRotationSpeed(float speedCylce){
+	if(angCon.isActive()) angCon.setActive(false); // deactivate Angle Control
+	rotCon.setRotSpeed(speedCylce);
+	rotCon.setActive(true);
+	rotCon.resume();
 }
+
+void MotorControlThread::gotoAngle(float _angle){
+	if(rotCon.isActive()) rotCon.setActive(false);
+	angCon.setDesAngle(_angle);
+	angCon.setActive(true);
+	angCon.resume();
+
+}
+
+void MotorControlThread::setNewData(IMU_RPY_FILTERED _imu){
+	angCon.setNewData(_imu);
+	PRINTF("heading: %f ",_imu.YAW);
+}
+
 
 void MotorControlThread::setMotor(bool _val){
 	if(_val){

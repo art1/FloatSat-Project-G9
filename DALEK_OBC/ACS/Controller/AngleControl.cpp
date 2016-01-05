@@ -7,8 +7,17 @@
 
 #include "AngleControl.h"
 
-AngleControl::AngleControl() {
-	// TODO Auto-generated constructor stub
+AngleControl::AngleControl() : Thread("Angle Control",97,1000){
+	active = false;
+	error = 0.0f;
+	desAng = 0.0f;
+	heading = 0.0f;
+
+	pPart = 0.0f;
+	iPart = 0.0f;
+
+	pGain = 10.0f;
+	iGain = 0.0f;
 
 }
 
@@ -21,5 +30,38 @@ void AngleControl::init(){
 }
 
 void AngleControl::run(){
+	IMU_RPY_FILTERED rpy;
+	int cnt = 0;
+	while(1){
+		if(!isActive()) suspendCallerUntil(END_OF_TIME);
+		imuData.get(rpy);
+		error = rpy.YAW - desAng;
+		if(!(cnt % 100))PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng,rpy.YAW);
+		pPart = error * pGain;
+		controlOut = pPart;
+		if(!(cnt % 100))PRINTF("control output: %f\n",controlOut);
+		cnt++;
 
+		motor.setspeed((int16_t)controlOut);
+		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
+	}
+}
+
+
+void AngleControl::setNewData(IMU_RPY_FILTERED _imu){
+	this->imuData.put(_imu);
+}
+
+void AngleControl::setDesAngle(float _val){
+	this->desAng = _val;
+	while(desAng < 0) desAng += 360.0;
+	while(desAng > 360.0) desAng -= 360.0;
+}
+
+bool AngleControl::isActive(){
+	return active;
+}
+
+void AngleControl::setActive(bool _val){
+	this->active = _val;
 }
