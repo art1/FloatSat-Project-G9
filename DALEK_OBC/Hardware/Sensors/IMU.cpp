@@ -42,7 +42,7 @@ IMU::IMU() : Thread ("IMU Thread",90){
 	calibrationFinished = false;
 	calGyro = false;
 	calAccl = false;
-	calMagn = false;
+	calMagn = true;
 	initDone = false;
 }
 
@@ -79,6 +79,9 @@ void IMU::regInit(){
 	acclOffset[0] = -4800.500f;
 	acclOffset[1] = 339.500f;
 	acclOffset[2] = -393.0f;
+	magnOffset[0] = 0.0f;
+	magnOffset[1] = 0.0f;
+	magnOffset[2] = 0.0f;
 
 	/** WHOIS CHECKS *************************************************************** */
 	imu_g_cs.setPins(1);
@@ -598,7 +601,7 @@ void IMU::calibrateSensors(){
 
 			if(temp[2] < minZ) minZ = temp[2];
 			else if(temp[2] > maxZ) maxZ = temp[2];
-			Delay_millis(10);
+			Delay_millis(5);
 			BLUE_TOGGLE;
 			cnt++;
 		}

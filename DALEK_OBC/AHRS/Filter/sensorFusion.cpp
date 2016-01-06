@@ -87,7 +87,7 @@ void sensorFusion::run(){
 			float head;
 			if((filtered.YAW) < 0) head = 360.0 + filtered.YAW;
 			else head = filtered.YAW;
-//			PRINTF("heading: %f\n",head);
+			PRINTF("heading: %f\n",head);
 			filtered.YAW = head;
 			imu_filtered.publish(filtered);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
@@ -249,7 +249,7 @@ void sensorFusion::MadgwickAHRSupdate(float gx, float gy, float gz, float ax, fl
 	float _2q0mx, _2q0my, _2q0mz, _2q1mx, _2bx, _2bz, _4bx, _4bz, _2q0, _2q1, _2q2, _2q3, _2q0q2, _2q2q3, q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
 
 	// Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation)
-	if((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
+	if((mx <= EPSILON_COMPARISON) && (my <= EPSILON_COMPARISON) && (mz <=EPSILON_COMPARISON)) {
 		MadgwickAHRSupdateIMU(gx, gy, gz, ax, ay, az);
 		return;
 	}
@@ -351,7 +351,6 @@ void sensorFusion::MadgwickAHRSupdate(float gx, float gy, float gz, float ax, fl
 // IMU algorithm update
 
 void sensorFusion::MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az) {
-	PRINTF("IMU algo\n");
 	float recipNorm;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;

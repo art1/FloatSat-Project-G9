@@ -43,7 +43,7 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 //#define LIGHT_ENABLE
 #define CURRENT_ENABLE
 //#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
-#define MOTOR_ENABLE
+//#define MOTOR_ENABLE
 #define SOLAR_ADC_ENABLE
 #define IR_ENABLE
 #define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
@@ -97,9 +97,9 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define IMU_G_CS_PIN			GPIO_018
 #define IMU_XM_CS_PIN			GPIO_032
 
-#define IMU_GYRO_RANGE			245				// in DPS, select 245, 500 or 2000 sensitivity is set according to chosen value here
-#define IMU_ACCL_RANGE			2				// value in g, select 2,4,6,8 or 16; sensitivity is set according to chosen value
-#define IMU_MAGN_RANGE			2				// value in gauss, select 2,4,8 or 13; sensitivity is set according to chosen value
+#define IMU_GYRO_RANGE			500			// in DPS, select 245, 500 or 2000 sensitivity is set according to chosen value here
+#define IMU_ACCL_RANGE			6				// value in g, select 2,4,6,8 or 16; sensitivity is set according to chosen value
+#define IMU_MAGN_RANGE			8				// value in gauss, select 2,4,8 or 13; sensitivity is set according to chosen value
 
 #define IMU_GYRO_DEFAULT_OFFSET	1
 #define IMU_ACCL_DEFAULT_OFFSET	1
