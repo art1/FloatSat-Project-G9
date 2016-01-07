@@ -19,11 +19,40 @@
 #include "sysDelay/systick.h"
 
 
+
+
+/***************************** ENABLE AND DISABLE SHIT ***********************************/
+//#define IMU_ENABLE
+#define TTNC_ENABLE
+//#define TELEMETRY_DISABLE
+#define FUSION_ENABLE
+//#define LIGHT_ENABLE
+#define CURRENT_ENABLE
+//#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
+//#define MOTOR_ENABLE
+#define SOLAR_ADC_ENABLE
+#define IR_ENABLE
+#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
+#define KNIFE_ENABLE
+#define SUNFINDER_ENABLE
+
+#ifdef FUSION_ENABLE
+//#define MADGWICK								// enables the madgwick filter
+#define MADGWICK_TWO							// enbales the other madgwick filter
+#ifndef MADGWICK
+//		#define COMPLEMENTARY					// enables the complementary filter -> used when madgwick is disabled!
+#endif
+#endif
+
+
+
 /************* BASIC STUFF AND I2C/SPI/UART Things **************************************/
 extern "C" HAL_I2C i2c1;
 extern "C" HAL_I2C i2c2;
 extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
+#ifndef WIFI_ENABLE
 extern "C" HAL_UART bt_uart;
+#endif
 extern "C" uint8_t VSync;						// camera, for IRQ handler
 
 
@@ -35,28 +64,7 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define COMPL_GAIN				0.98f			// Complementary Filter Gain
 #define forLoop(x,n)			for(int x=0;x<n;x++)
 
-/***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
-//#define TTNC_ENABLE
-#define TELEMETRY_DISABLE
-#define FUSION_ENABLE
-//#define LIGHT_ENABLE
-#define CURRENT_ENABLE
-//#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
-//#define MOTOR_ENABLE
-#define SOLAR_ADC_ENABLE
-#define IR_ENABLE
-#define BLUETOOTH_FALLBACK						// enables Communication via Bluetooth instead of Wifi
-#define KNIFE_ENABLE
-#define SUNFINDER_ENABLE
 
-#ifdef FUSION_ENABLE
-//#define MADGWICK								// enables the madgwick filter
-#define MADGWICK_TWO							// enbales the other madgwick filter
-	#ifndef MADGWICK
-//		#define COMPLEMENTARY					// enables the complementary filter -> used when madgwick is disabled!
-	#endif
-#endif
 
 
 /****************************** LED STUFF ************************************************/
@@ -81,10 +89,10 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 
 
 /****************************** WIFI & BT STUFF ******************************************/
-#define WIFI_SSID				"BlackBox"
-#define WIFI_SSID_PW			"goJ6vA4freIv6jiG7wug8Ju1Ak7jAt"
+#define WIFI_SSID				"THE_DALEK"
+#define WIFI_SSID_PW			"EXTERMINATE"
 #define WIFI_IP					0xFF01A8C0 // in hex and reverse
-#define WIFI_PORT				1111
+#define WIFI_PORT				7777
 #define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2

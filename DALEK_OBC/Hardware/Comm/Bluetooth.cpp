@@ -24,7 +24,7 @@ void Bluetooth::init(){
 }
 
 void Bluetooth::run(){
-
+#ifndef WIFI_ENABLE
 	while(1){
 		while(!btBuf.isEmpty()){
 			btBuf.get(tmp);
@@ -34,6 +34,7 @@ void Bluetooth::run(){
 		if(bt_uart.isDataReady()) getNewMessages();
 		suspendCallerUntil(NOW() + TTNC_SAMPLERATE*MILLISECONDS);
 	}
+#endif
 }
 
 void Bluetooth::setNewData(UDPMsg msg){
@@ -42,6 +43,7 @@ void Bluetooth::setNewData(UDPMsg msg){
 }
 
 void Bluetooth::getNewMessages(){
+#ifndef WIFI_ENABLE
 	UDPMsg temp;
 	temp.length = 0;
 //	memset(temp.data,0,sizeof(temp.data));
@@ -78,6 +80,7 @@ void Bluetooth::getNewMessages(){
 			}
 		}
 	}
+#endif
 }
 
 void Bluetooth::sendErrorMessageHere(UDPMsg invalidMsg){
@@ -117,6 +120,8 @@ void Bluetooth::sendEchoMessage(UDPMsg echoMsg){
 }
 
 void Bluetooth::sendNewMessage(UDPMsg *msg){
+#ifndef WIFI_ENABLE
 	bt_uart.write(reinterpret_cast<const char*>(msg->data),msg->length);
+#endif
 }
 
