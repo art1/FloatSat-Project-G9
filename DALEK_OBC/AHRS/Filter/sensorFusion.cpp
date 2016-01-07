@@ -51,6 +51,10 @@ sensorFusion::sensorFusion() : Thread("sensorFusion Thread",101){
 	angleRPY.GYRO_PITCH = 0.0f;
 	angleRPY.GYRO_ROLL = 0.0f;
 	angleRPY.GYRO_YAW = 0.0f;
+
+	useMagn = false;
+
+	averageDrift = 0.0f;  // use for drift correction when not using magnetometer...
 }
 
 sensorFusion::~sensorFusion() {
@@ -75,21 +79,27 @@ void sensorFusion::run(){
 
 		oldSamplerateTime = samplerateTime;
 #ifdef MADGWICK_TWO
+		if(!useMagn){
+			magn.x = 0.0f;
+			magn.y = 0.0f;
+			magn.z = 0.0f;
+		}
 		MadgwickAHRSupdate(gyro.x,gyro.y,gyro.z,accl.x,accl.y,accl.z,magn.x,magn.y,magn.z);
 #else
 		dataFusion(&gyro,&accl,&magn);
 #endif
+		float head;
+		if((filtered.YAW) < 0) head = 360.0 + filtered.YAW;
+		else head = filtered.YAW - averageDrift;
+		filtered.YAW = head;
+		imu_filtered.publish(filtered);
+//		PRINTF("%f\n",head);
 		if(cnt>printValues){
 			//			PRINTF("QUAT: %f  %f  %f  %f\n",quat.q0,quat.q.x,quat.q.y,quat.q.z);
 			//			PRINTF("roll:   %f   pitch:   %f   yaw:   %f\n",bank*TO_DEG,pitch*TO_DEG,heading*TO_DEG);
 //			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL*TO_DEG,filtered.PITCH*TO_DEG,filtered.YAW*TO_DEG);
 //			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL,filtered.PITCH,filtered.YAW);
-			float head;
-			if((filtered.YAW) < 0) head = 360.0 + filtered.YAW;
-			else head = filtered.YAW;
 			PRINTF("heading: %f\n",head);
-			filtered.YAW = head;
-			imu_filtered.publish(filtered);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW,angleRPY.ACCL_PITCH,angleRPY.ACCL_ROLL);
 			cnt = 0;

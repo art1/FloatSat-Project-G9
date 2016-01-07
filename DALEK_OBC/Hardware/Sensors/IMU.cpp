@@ -40,9 +40,9 @@ IMU::IMU() : Thread ("IMU Thread",90){
 	deltaPitch = 0.0;
 	deltaRoll = 0.0;
 	calibrationFinished = false;
-	calGyro = false;
+	calGyro = true;
 	calAccl = false;
-	calMagn = true;
+	calMagn = false;
 	initDone = false;
 }
 
@@ -89,12 +89,12 @@ void IMU::regInit(){
 	PRINTF("IMU G CS PIN:%d\n",k);
 	transBuf[0] = (0x80 | (WHO_AM_I_GYRO));
 	k = i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,1);
-//	PRINTF("whois gyro: k=%d -  %d\n",k,recBuf[0]); // should be 212 ,0xD4
+	//	PRINTF("whois gyro: k=%d -  %d\n",k,recBuf[0]); // should be 212 ,0xD4
 	imu_g_cs.setPins(0);
 	imu_x_cs.setPins(1);
 	transBuf[0] = ( 0x80 | WHO_AM_I_MAGNACC);
 	k = i2c2.writeRead(ACC_MAG_ADDRESS,transBuf,1,recBuf,1);
-//	PRINTF("whois accMag: k=%d  -  %d\n",k,recBuf[0]); // should be 73 ,0x49
+	//	PRINTF("whois accMag: k=%d  -  %d\n",k,recBuf[0]); // should be 73 ,0x49
 	imu_x_cs.setPins(0);
 
 
@@ -108,7 +108,7 @@ void IMU::regInit(){
 	transBuf[0] = (CTRL_REG1_XM);
 	transBuf[1] = 0x7F;//0b01111111 -> 200Hz, block update reading, all axes enabled
 	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
-//	PRINTF("accl enable: %d\n",k);
+	//	PRINTF("accl enable: %d\n",k);
 
 	// setting Magnetic sensor mode to continuous conversion mode
 	transBuf[0] = CTRL_REG7_XM;
@@ -182,7 +182,7 @@ void IMU::regInit(){
 	transBuf[1] = 0x6F; //0b01101111 Normal power mode, all axes enabled,  190Hz, 50 cutoff
 	i2c2.write(GYRO_ADDRESS,transBuf,2);
 	transBuf[0] = CTRL_REG4_G;
-//	PRINTF("Setting Gyro Scale to %d DPS \n",IMU_GYRO_RANGE);
+	//	PRINTF("Setting Gyro Scale to %d DPS \n",IMU_GYRO_RANGE);
 	switch(IMU_GYRO_RANGE){
 	case 245:
 		transBuf[1] = GYRO_245DPS;
@@ -280,7 +280,7 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 	// print raw values
 	//	PRINTF("\nraw Gyro:  %d  %d  %d\n",gyro_raw[0],gyro_raw[1],gyro_raw[2]);
 	//	PRINTF("raw Accl:  %d  %d  %d\n",accl_raw[0],accl_raw[1],accl_raw[2]);
-//		PRINTF("raw Magn:  %d  %d  %d\n",magn_raw[0],magn_raw[1],magn_raw[2]);
+	//		PRINTF("raw Magn:  %d  %d  %d\n",magn_raw[0],magn_raw[1],magn_raw[2]);
 	//	samples++;
 	double tmp = SECONDS_NOW();
 
@@ -570,17 +570,17 @@ void IMU::calibrateSensors(){
 		}
 		GREEN_ON; BLUE_ON; ORANGE_ON; RED_ON;
 		suspendCallerUntil(NOW()+1000*MILLISECONDS);
-		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+		for(int i=0;i<(CALIBRAION_SAMPLES*5);i++){
 			read_multiple_Register(IMU_GYRO,(X_ANGULAR_L),6,temp);
 			gyro_temp[0] += temp[0];
 			gyro_temp[1] += temp[1];
 			gyro_temp[2] += temp[2];
 			//		if(i%100 == 0)PRINTF("\novf;  %d,%d,%d",gyro_temp[0],gyro_temp[1],gyro_temp[2]);
-			suspendCallerUntil(NOW()+9*MILLISECONDS);
+			suspendCallerUntil(NOW()+10*MILLISECONDS);
 		}
-		gyroOffset[0] = (gyro_temp[0] / CALIBRAION_SAMPLES);
-		gyroOffset[1] = (gyro_temp[1] / CALIBRAION_SAMPLES);
-		gyroOffset[2] = (gyro_temp[2] / CALIBRAION_SAMPLES);
+		gyroOffset[0] = (gyro_temp[0] / (CALIBRAION_SAMPLES*5));
+		gyroOffset[1] = (gyro_temp[1] / (CALIBRAION_SAMPLES*5));
+		gyroOffset[2] = (gyro_temp[2] / (CALIBRAION_SAMPLES*5));
 		PRINTF("GYRO CAL: %f, %f, %f\n",gyroOffset[0],gyroOffset[1],gyroOffset[2]);
 	}
 	int16_t minX,minY,minZ = 0;

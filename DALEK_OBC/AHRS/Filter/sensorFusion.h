@@ -69,7 +69,8 @@ private:
 	float deltaPitch;
 	float deltaRoll;
 
-
+	bool useMagn;
+	float averageDrift;
 
 };
 
