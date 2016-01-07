@@ -8,8 +8,8 @@
 #include "WiFi.h"
 
 
-HAL_UART uart3(UART_IDX3);
-WF121 wf121(&uart3);
+//HAL_UART uart3(UART_IDX3);
+//WF121 wf121(&uart3);
 
 
 WiFi::WiFi() {
@@ -26,10 +26,10 @@ void WiFi::init(){
 }
 
 void WiFi::run(){
-	wf121.init(WIFI_SSID,WIFI_SSID_PW);
-	wf121.enableTCPConnection(WIFI_IP,WIFI_PORT);
-	int k = wf121.status();
-	PRINTF("wifi state is: %d\n",k);
+//	wf121.init(WIFI_SSID,WIFI_SSID_PW);
+//	wf121.enableTCPConnection(WIFI_IP,WIFI_PORT);
+//	int k = wf121.status();
+//	PRINTF("wifi state is: %d\n",k);
 
 
 //	while(1){
@@ -41,6 +41,7 @@ void WiFi::run(){
 //		if(wf121.isDataReady())	getNewMessages();
 //		suspendCallerUntil(NOW() + TTNC_SAMPLERATE*MILLISECONDS);
 //	}
+	ORANGE_ON;
 }
 
 void WiFi::setNewData(UDPMsg msg){
@@ -50,11 +51,11 @@ void WiFi::setNewData(UDPMsg msg){
 
 void WiFi::getNewMessages(){
 	UDPMsg temp;
-	while(wf121.isDataReady()){
-		wf121.read(&temp);
-		if(temp.length<5) {sendErrorMessage(temp);}
-		else tcRaw.publish(temp);
-	}
+//	while(wf121.isDataReady()){
+//		wf121.read(&temp);
+//		if(temp.length<5) {sendErrorMessage(temp);}
+//		else tcRaw.publish(temp);
+//	}
 }
 
 void WiFi::sendErrorMessage(UDPMsg invalidMsg){
@@ -71,5 +72,5 @@ void WiFi::sendErrorMessage(UDPMsg invalidMsg){
 	this->sendNewMessage(&tmp);
 }
 void WiFi::sendNewMessage(UDPMsg *msg){
-	wf121.write(msg);
+//	wf121.write(msg);
 }

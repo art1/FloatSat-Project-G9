@@ -52,7 +52,6 @@ ThermalKnife knife;
 SunFinder sunFinder;
 #endif
 
-
 //RESUMER THREADS
 /**************************** IMU MESSAGES **************************************/
 #ifdef FUSION_ENABLE
@@ -188,7 +187,9 @@ struct sensorsCommThread : public Subscriber, public Thread {
 			break;
 		case CURRENT_CHANGED:
 #ifdef CURRENT_ENABLE
+#ifdef TTNC_ENABLE
 			tm.setNewData(tmp.currentData);
+#endif
 #endif
 			break;
 		default:
