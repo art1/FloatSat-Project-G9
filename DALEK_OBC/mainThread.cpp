@@ -229,7 +229,7 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-	currentSystemMode.activeMode = MOTOR_CONTROL;
+	currentSystemMode.activeMode = MISSION;
 	cmd.command = -1;
 
 }
@@ -251,6 +251,7 @@ void mainThread::run(){
 	while(!imu.initFinished());
 #endif
 #ifdef CAMERA_ENABLE
+	camera.initCamera();
 	while(!camera.initFinished());
 #endif
 #ifdef LIGHT_ENABLE

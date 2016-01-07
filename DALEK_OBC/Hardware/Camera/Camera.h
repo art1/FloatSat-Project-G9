@@ -36,6 +36,7 @@ public:
 
 	void ProcessData();
 	void setNewData(CAM_DATA data);
+	void initCamera();
 	bool initFinished();
 private:
 	CAM_DATA daten;
