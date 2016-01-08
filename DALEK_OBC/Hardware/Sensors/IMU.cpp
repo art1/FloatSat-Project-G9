@@ -26,6 +26,20 @@ HAL_GPIO reset(IMU_RESET_PIN);
 
 uint16_t samples = 0;
 
+// sensitivity and range is set in the init -> can be set as define in basic.h
+static const uint8_t setAccMag[3][2] = {
+		{CTRL_REG1_XM, 0x7F}, // enable accl //0b01111111 -> 200Hz, block update reading, all axes enabled
+		{CTRL_REG5_XM, 0x94}, // -> enable temp readings, set high resolution magnetometer, read frequency mag 100Hz
+		{CTRL_REG7_XM, 0x00}, // continuous conversion mode and rest as default
+};
+
+// sensitivity and range is set in the init -> ca be set as define in basic.h
+static const uint8_t setGyro[][] = {
+		{CTRL_REG1_G, 0x6F}, //0b01101111 Normal power mode, all axes enabled,  190Hz, 50 cutoff
+		{CTRL_REG2_G, 0x22}, // 00100010 -> normal mode, cutoff frequency:3.5
+		{CTRL_REG5_G, 0x10}, // high pass enable
+};
+
 
 
 IMU::IMU() : Thread ("IMU Thread",90){
@@ -100,20 +114,13 @@ void IMU::regInit(){
 
 	/** ACCELEROMETER, MAGNETIC SENSOR AND TEMP SETUP *********************************************/
 	imu_x_cs.setPins(1);
-	transBuf[0] = (CTRL_REG5_XM);
-	transBuf[1] = 0x94; // -> enable temp readings, set high resolution magnetometer, read frequency mag 100Hz
-	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
 
-	//enable Accelerometer
-	transBuf[0] = (CTRL_REG1_XM);
-	transBuf[1] = 0x7F;//0b01111111 -> 200Hz, block update reading, all axes enabled
-	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
-	//	PRINTF("accl enable: %d\n",k);
+	for(int i=0;i<3;i++){
+		transBuf[0] = setAccMag[i][0];
+		transBuf[1] = setAccMag[i][1];
+		i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
+	}
 
-	// setting Magnetic sensor mode to continuous conversion mode
-	transBuf[0] = CTRL_REG7_XM;
-	transBuf[1] = 0x00; //0b00000000 -> continuous conversion mode and rest as default
-	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
 	//	 setting range
 	transBuf[0] = CTRL_REG2_XM;
 	switch(IMU_ACCL_RANGE){
@@ -142,10 +149,12 @@ void IMU::regInit(){
 		suspendCallerUntil(END_OF_TIME);
 		break;
 	}
+
 	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
 
 	//now setting magnetic range
 	imu_x_cs.setPins(1);
+
 	transBuf[0] = CTRL_REG6_XM;
 	switch(IMU_MAGN_RANGE){
 	case 2:
@@ -169,20 +178,22 @@ void IMU::regInit(){
 		suspendCallerUntil(END_OF_TIME);
 		break;
 	}
+
 	k = i2c2.write(ACC_MAG_ADDRESS,transBuf,2);
 
 	imu_x_cs.setPins(0);
 
-
-
-
 	/** GYRO SETTINGS *********************************************** */
 	imu_g_cs.setPins(1);
-	transBuf[0] = CTRL_REG1_G;
-	transBuf[1] = 0x6F; //0b01101111 Normal power mode, all axes enabled,  190Hz, 50 cutoff
-	i2c2.write(GYRO_ADDRESS,transBuf,2);
+
+	for(int i=0;i<3;i++){
+		transBuf[0] = setGyro[i][0];
+		transBuf[1] = setGyro[i][1];
+		i2c2.write(GYRO_ADDRESS,transBuf,2);
+	}
+
+
 	transBuf[0] = CTRL_REG4_G;
-	//	PRINTF("Setting Gyro Scale to %d DPS \n",IMU_GYRO_RANGE);
 	switch(IMU_GYRO_RANGE){
 	case 245:
 		transBuf[1] = GYRO_245DPS;

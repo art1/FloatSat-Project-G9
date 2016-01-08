@@ -175,12 +175,13 @@ int ov7670::Sensor_Init(void){
 
 
 	sccb2.I2CInit();
-	//	for(uint8_t i=0;i<30;i++){
+	for(uint8_t i=0;i<OV7670_REG_NUM;i++){
+		sccb2.ov7670_set(OV7670_Reg[i][0], OV7670_Reg[i][1]);
+	}
+
 	uint8_t t = sccb2.ov7670_get(0x0b);
 	PRINTF("read ID-Code at 0x0b: %d - should be 115\n",t);
-	//	}
 
-	sccb2.ov7670_set(OV7670_Reg[i][0], OV7670_Reg[i][1]);
 
 	//	//	I2C_Configuration();
 	//	sccb.init();
@@ -269,12 +270,12 @@ void ov7670::FIFO_GPIO_Configuration(void){
 }
 void ov7670::OV7670_PB7_Configuration(void){
 
-//	HAL_GPIO testPB7(GPIO_023);
-//	testPB7.init(false);
-//	testPB7.interruptEnable(true);
-//	--> gives you XMalloc after System initialization - wtf?
-//  --> try to comment out all the 9-5 IRQ interrupt stuff from rodos!
-//  --> yes, this helps a lot^
+	//	HAL_GPIO testPB7(GPIO_023);
+	//	testPB7.init(false);
+	//	testPB7.interruptEnable(true);
+	//	--> gives you XMalloc after System initialization - wtf?
+	//  --> try to comment out all the 9-5 IRQ interrupt stuff from rodos!
+	//  --> yes, this helps a lot^
 
 
 	/* Set variables used */
