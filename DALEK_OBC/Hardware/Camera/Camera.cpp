@@ -152,14 +152,14 @@ void Camera::run(){
 
 					//					CMOS_Data = (GPIOC->IDR<<8) & 0xff00;	  /* ( GPIO_ReadInputData(GPIOC) << 8 ) & 0xff00; */
 					// read Data Pins
-					data[0] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6); 	// D0
-					data[1] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_7); 	// D1
-					data[2] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_0);	// D2
-					data[3] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_1);	// D3
-					data[4] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_4);  // D4
-					data[5] = GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_6);	// D5
-					data[6] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_5);	// D6
-					data[7] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_6);  // D7
+					data[7] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6); 	// D0 - R4
+					data[6] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_7); 	// D1 - R3
+					data[5] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_0);	// D2 - R2
+					data[4] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_1);	// D3 - R1
+					data[3] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_4);  // D4 - R0
+					data[2] = GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_6);	// D5 - G5
+					data[1] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_5);	// D6 - G4
+					data[0] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_6);  // D7 - G3
 					tmp = 0;
 
 					for(int i=0;i<8;i++){
@@ -168,23 +168,23 @@ void Camera::run(){
 					//					PRINTF("%d;",tmp);
 					CMOS_Data = (((uint16_t)tmp) << 8) & 0xff00;
 					FIFO_RCLK_H();
-//					if(!(count%WIDTH)){
-////						PRINTF("%d;",CMOS_Data);
-//						PRINTF("%d\n",tmp);
-//					}else{
-//						PRINTF("%d,",tmp);
-////						PRINTF("%d,",CMOS_Data);
-//					}
+					//					if(!(count%WIDTH)){
+					////						PRINTF("%d;",CMOS_Data);
+					//						PRINTF("%d\n",tmp);
+					//					}else{
+					//						PRINTF("%d,",tmp);
+					////						PRINTF("%d,",CMOS_Data);
+					//					}
 					FIFO_RCLK_L();
 					//					CMOS_Data |= (GPIOC->IDR) & 0x00ff;	  /* ( GPIO_ReadInputData(GPIOC) ) & 0x00ff; */
-					data[0] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6); 	// D0
-					data[1] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_7); 	// D1
-					data[2] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_0);	// D2
-					data[3] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_1);	// D3
-					data[4] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_4);  // D4
-					data[5] = GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_6);	// D5
-					data[6] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_5);	// D6
-					data[7] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_6);  // D7
+					data[7] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6); 	// D0 - G2
+					data[6] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_7); 	// D1 - G1
+					data[5] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_0);	// D2 - G0
+					data[4] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_1);	// D3 - B4
+					data[3] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_4);  // D4 - B3
+					data[2] = GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_6);	// D5 - B2
+					data[1] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_5);	// D6 - B1
+					data[0] = GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_6);  // D7 - B0
 					tmp = 0;
 					for(int i=0;i<8;i++){
 						if(data[i]) tmp |= 1 << i;
@@ -192,11 +192,11 @@ void Camera::run(){
 					CMOS_Data |= ((uint16_t)tmp) & 0x00ff;
 					FIFO_RCLK_H();
 					if(!(count%WIDTH)){
-//						PRINTF("%d;",CMOS_Data);
-						PRINTF("%d;\n",tmp);
+						PRINTF("%d;",CMOS_Data);
+						//						PRINTF("%d;\n",tmp);
 					}else{
-						PRINTF("%d,",tmp);
-//						PRINTF("%d,",CMOS_Data);
+						//						PRINTF("%d,",tmp);
+						PRINTF("%d,",CMOS_Data);
 					}
 					//					PRINTF("%d;",tmp);
 					//					PRINTF("%d;",CMOS_Data);

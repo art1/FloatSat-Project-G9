@@ -15,8 +15,8 @@ static const uint8_t OV7670_Reg[OV7670_REG_NUM][2]=
 {
 		/*“‘œ¬Œ™OV7670 QVGA RGB565≤Œ ˝  */
 		{0x3a, 0x04},//
-		{0x40, 0xC0}, // COM15 -> 00110000 QVGA
-		{0x12, 0x10}, // COM7 -> YCbCr
+		{0x40, 0xD0}, // COM15 -> RGB 565 -> 11010000
+		{0x12, 0x14}, // COM7 -> QVGA RGB -> 00010100
 		{0x32, 0x80},
 		{0x17, 0x16},
 		{0x18, 0x04},
