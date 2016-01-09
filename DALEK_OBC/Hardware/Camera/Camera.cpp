@@ -168,13 +168,13 @@ void Camera::run(){
 					//					PRINTF("%d;",tmp);
 					CMOS_Data = (((uint16_t)tmp) << 8) & 0xff00;
 					FIFO_RCLK_H();
-					//					if(!(count%WIDTH)){
-					////						PRINTF("%d;",CMOS_Data);
-					//						PRINTF("%d\n",tmp);
-					//					}else{
-					//						PRINTF("%d,",tmp);
-					////						PRINTF("%d,",CMOS_Data);
-					//					}
+//										if(!(count%WIDTH)){
+//					//						PRINTF("%d;",CMOS_Data);
+//											PRINTF("%d\n",tmp);
+//										}else{
+											PRINTF("%d,",tmp);
+//					//						PRINTF("%d,",CMOS_Data);
+//										}
 					FIFO_RCLK_L();
 					//					CMOS_Data |= (GPIOC->IDR) & 0x00ff;	  /* ( GPIO_ReadInputData(GPIOC) ) & 0x00ff; */
 					data[7] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6); 	// D0 - G2
@@ -191,13 +191,24 @@ void Camera::run(){
 					}
 					CMOS_Data |= ((uint16_t)tmp) & 0x00ff;
 					FIFO_RCLK_H();
-					if(!(count%WIDTH)){
-						PRINTF("%d;",CMOS_Data);
-						//						PRINTF("%d;\n",tmp);
-					}else{
-						//						PRINTF("%d,",tmp);
-						PRINTF("%d,",CMOS_Data);
-					}
+//					if(!(count%WIDTH)){
+////						PRINTF("%d;",CMOS_Data);
+//						PRINTF("%d\n",tmp);
+//					}else{
+						PRINTF("%d,",tmp);
+////						PRINTF("%d,",CMOS_Data);
+//					}
+//					if(!(count%WIDTH)){
+//						PRINTF("%d\n",CMOS_Data);
+//						//						PRINTF("%d;\n",tmp);
+//					}else{
+//						//						PRINTF("%d,",tmp);
+//						PRINTF("%d,",CMOS_Data);
+//					}
+
+//						suspendCallerUntil(NOW()+10*MILLISECONDS);
+
+
 					//					PRINTF("%d;",tmp);
 					//					PRINTF("%d;",CMOS_Data);
 					//					picture[toSend++] = CMOS_Data;

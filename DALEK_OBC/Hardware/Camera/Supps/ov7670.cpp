@@ -13,12 +13,13 @@
 
 static const uint8_t OV7670_Reg[OV7670_REG_NUM][2]=
 {
-		/*“‘œ¬Œ™OV7670 QVGA RGB565≤Œ ˝  */
+		/*“‘œ¬Œ™OV7670 QVGA RGB555≤Œ ˝  */
 		{0x3a, 0x04},//
-		{0x40, 0xD0}, // COM15 -> RGB 565 -> 11010000
-		{0x12, 0x14}, // COM7 -> QVGA RGB -> 00010100
+		{0x40, 0x30}, // COM15 -> RGB 565 -> 11010000
+		{0x12, 0x14}, // COM7 -> QVGA RGB -> 00010100;  QVGA 00010000
 		{0x32, 0x80},
 		{0x17, 0x16},
+
 		{0x18, 0x04},
 		{0x19, 0x02},
 		{0x1a, 0x7b},
@@ -177,8 +178,9 @@ int ov7670::Sensor_Init(void){
 	uint8_t t = sccb2.ov7670_get(0x0b);
 	PRINTF("read ID-Code at 0x0b: %d - should be 115\n",t);
 	//	}
-
-	sccb2.ov7670_set(OV7670_Reg[i][0], OV7670_Reg[i][1]);
+	for(int i=0;i<OV7670_REG_NUM;i++){
+		sccb2.ov7670_set(OV7670_Reg[i][0], OV7670_Reg[i][1]);
+	}
 
 	//	//	I2C_Configuration();
 	//	sccb.init();
