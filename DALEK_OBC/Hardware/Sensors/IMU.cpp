@@ -13,6 +13,7 @@
 
 #define IMU_GYRO	0
 #define IMU_ACCMAG	1
+#define IMU_EXT_MAG		2
 
 static Application senderName("IMU_Data_Publisher",500);
 
@@ -22,14 +23,19 @@ HAL_GPIO imu_x_cs(IMU_XM_CS_PIN);
 
 
 HAL_GPIO reset(IMU_RESET_PIN);
-//HAL_I2C i2c2(I2C_IDX2);
 
 uint16_t samples = 0;
+
+#define SET_EXT_MAGN_REG		2
+
+static const uint8_t setExtMagn[SET_EXT_MAGN_REG][2] = {
+	{EXT_CRA_REG_M, 0x18}, 		// Normal Measurement mode ( no bias), 75Hz
+	{EXT_MR_REG_M, 0x00}		// continuous conversion mode
+};
 
 
 
 IMU::IMU() : Thread ("IMU Thread",90){
-	//TODO: insert correct baudrate
 	cnt_failedReads = 0;
 	samples = 0;
 	k =0;
@@ -47,7 +53,6 @@ IMU::IMU() : Thread ("IMU Thread",90){
 }
 
 IMU::~IMU() {
-	// TODO Auto-generated destructor stub
 }
 
 
@@ -65,14 +70,17 @@ void IMU::regInit(){
 	memset(accl_raw,0,sizeof(accl_raw));
 	memset(magn_raw,0,sizeof(magn_raw));
 	memset(temp_raw,0,sizeof(temp_raw));
+
 	//init GPIOs
 	imu_g_cs.init(true,1,1);
 	imu_x_cs.init(true,1,1);
 	reset.init(true,1,1);
+
 	//init offsets
 	memset(gyroOffset,IMU_GYRO_DEFAULT_OFFSET,sizeof(gyroOffset));
 	memset(acclOffset,IMU_ACCL_DEFAULT_OFFSET,sizeof(acclOffset));
 	memset(magnOffset,IMU_MAGN_DEFAULT_OFFSET,sizeof(magnOffset));
+
 	gyroOffset[0] = -241.0f;
 	gyroOffset[1] = 104.0f;
 	gyroOffset[2] = 208.0f;
@@ -82,6 +90,48 @@ void IMU::regInit(){
 	magnOffset[0] = 0.0f;
 	magnOffset[1] = 0.0f;
 	magnOffset[2] = 0.0f;
+
+#ifdef USE_EXTERN_MAGN
+	/* INIT external magnetometer */
+	for(int i=0;i<SET_EXT_MAGN_REG;i++){
+		transBuf[0] = setExtMagn[i][0];
+		transBuf[1] = setExtMagn[i][1];
+		k = i2c2.write(EXT_MAG_ADDRESS,transBuf,2);
+	}
+
+	transBuf[0] = EXT_CRB_REG_M;
+	switch(EXT_MAGN_RANGE){
+	case 13:
+		transBuf[1] = 0x20;
+		break;
+	case 19:
+		transBuf[1] = 0x40;
+		break;
+	case 25:
+		transBuf[1] = 0x60;
+		break;
+	case 40:
+		transBuf[1] = 0x80;
+		break;
+	case 47:
+		transBuf[1] = 0xA0;
+		break;
+	case 56:
+		transBuf[1] = 0xC0;
+		break;
+	case 81:
+		transBuf[1] = 0xE0;
+		break;
+	default:
+		PRINTF("WRONG EXTERNAL MAGN RANGE DEFINITION IN BASIC.H\n suspending IMU Thread...\n");
+		suspendCallerUntil(END_OF_TIME);
+		break;
+	}
+
+	k = i2c2.write(EXT_MAG_ADDRESS,transBuf,2);
+	PRINTF("init external Mag done with k %d\n",k);
+
+#endif
 
 	/** WHOIS CHECKS *************************************************************** */
 	imu_g_cs.setPins(1);
@@ -274,7 +324,11 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 #endif
 	k = read_multiple_Register(IMU_GYRO,(X_ANGULAR_L),6,gyro_raw);
 	k = read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,6,accl_raw);
+#ifdef USE_EXTERN_MAGN
+	k = read_multiple_Register(IMU_EXT_MAG,EXT_OUT_X_H_M,6,magn_raw);
+#else
 	k = read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,magn_raw);
+#endif
 	k = read_multiple_Register(IMU_ACCMAG,TEMP_L,2,temp_raw);
 
 	// print raw values
@@ -377,7 +431,7 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 		}
 
 		imu_g_cs.setPins(0);
-	}else{
+	}else if(cs == IMU_ACCMAG){
 		imu_x_cs.setPins(1);
 
 		i2c2.writeRead(ACC_MAG_ADDRESS,transBuf,1,recBuf,valuesToRead);
@@ -393,6 +447,14 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 			}
 		}
 
+	} else if(cs == IMU_EXT_MAG){
+
+		i2c2.writeRead(EXT_MAG_ADDRESS,transBuf,1,recBuf,valuesToRead);
+
+		for(int i=0;i<valuesToRead;i+=2){
+			dest[j] =(int16_t)((recBuf[i] << 8) | (recBuf[i+1]));
+			j++;
+		}
 	}
 	return 0;
 
