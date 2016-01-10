@@ -90,12 +90,12 @@ void IMU::regInit(){
 	gyroOffset[1] = 104.0f;
 	gyroOffset[2] = 208.0f;
 #ifdef USE_EXTERN_ACCL
-//	acclOffset[0] = -1335.75f;
-//	acclOffset[1] = -660.25f;
-//	acclOffset[2] = -5550.5f;
-//	magnOffset[0] = 1614.0f;
-//	magnOffset[1] = -15103.5f;
-//	magnOffset[2] = -3570.0f;
+	//	acclOffset[0] = -1335.75f;
+	//	acclOffset[1] = -660.25f;
+	//	acclOffset[2] = -5550.5f;
+	//	magnOffset[0] = 1614.0f;
+	//	magnOffset[1] = -15103.5f;
+	//	magnOffset[2] = -3570.0f;
 #else
 	acclOffset[0] = -4800.500f;
 	acclOffset[1] = 339.500f;
@@ -353,7 +353,7 @@ IMU_DATA_RAW IMU::scaleData(){
 
 #ifdef USE_EXTERN_ACCL
 	tmp.ACCEL_RAW_X = (accl_raw[0] - acclOffset[0])* acclSensitivity;
-	tmp.ACCEL_RAW_Y = (accl_raw[1] - acclOffset[1])* acclSensitivity;
+	tmp.ACCEL_RAW_Y = ((accl_raw[1] - acclOffset[1])* acclSensitivity) *(-1.0); // invert y axis
 	tmp.ACCEL_RAW_Z = ((accl_raw[2] - acclOffset[2])* acclSensitivity);
 #else
 	tmp.ACCEL_RAW_X = (accl_raw[0] - acclOffset[0])* acclSensitivity;
@@ -363,7 +363,7 @@ IMU_DATA_RAW IMU::scaleData(){
 
 #ifdef USE_EXTERN_MAGN
 	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity;
-	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;
+	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity * (-1.0);
 	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;
 #else
 	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity; // TODO scale Data after calibration!!!
@@ -389,17 +389,20 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 #endif
 	k = read_multiple_Register(IMU_GYRO,(X_ANGULAR_L),6,gyro_raw);
 
+#ifdef USE_EXTERN_ACCL
+	k = read_multiple_Register(IMU_EXT_ACC,(EXT_OUT_X_L_A),6,accl_raw);
+#else
+	k = read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,6,accl_raw);
+#endif
+
+
 #ifdef USE_EXTERN_MAGN
 	k = read_multiple_Register(IMU_EXT_MAG,EXT_OUT_X_H_M,6,magn_raw);
 #else
 	k = read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,magn_raw);
 #endif
 
-#ifdef USE_EXTERN_ACCL
-	k = read_multiple_Register(IMU_EXT_ACC,(EXT_OUT_X_L_A),6,accl_raw);
-#else
-	k = read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,6,accl_raw);
-#endif
+
 	k = read_multiple_Register(IMU_ACCMAG,TEMP_L,2,temp_raw);
 
 	// print raw values
@@ -415,7 +418,7 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 	newData.currentSampleTime = tmp;
 	//	PRINTF("seconds now %f\n",tmp);
 
-//				PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  rad/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
+	//				PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  rad/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 
 #ifdef AUTO_RESET_IMU
 	//check for hangs on each channel -> if hang, try to reset IMU
@@ -464,6 +467,17 @@ void IMU::convertToRPY(){
 	//	PRINTF("\nYAW:  %f  PITCH:   %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
 	//	PRINTF("\ndeltaYaw:   %f   deltaPitch:   %f   deltaRoll:   %f   \n",deltaYaw,deltaPitch,deltaRoll);
 
+#ifdef USE_EXTERN_ACCL
+	// calc pitch, then roll then heading, see Application Note AN3192 for the LSM303DLH
+	angleRPY.ACCL_PITCH = asinf(-newData.ACCEL_RAW_X);
+	angleRPY.ACCL_ROLL = asinf(newData.ACCEL_RAW_Y/cosf(angleRPY.ACCL_PITCH));
+	float xh = newData.MAGNETIC_RAW_X*cosf(angleRPY.ACCL_PITCH) + newData.MAGNETIC_RAW_Z*sinf(angleRPY.ACCL_PITCH);
+	float yh = newData.MAGNETIC_RAW_X*sinf(angleRPY.ACCL_ROLL)*sinf(angleRPY.ACCL_PITCH) + newData.MAGNETIC_RAW_Y*cosf(angleRPY.ACCL_ROLL) - newData.MAGNETIC_RAW_Z*sinf(angleRPY.ACCL_ROLL)*cosf(angleRPY.ACCL_PITCH);
+	float zh =-newData.MAGNETIC_RAW_X*cosf(angleRPY.ACCL_ROLL)*sinf(angleRPY.ACCL_PITCH) + newData.MAGNETIC_RAW_Y*sinf(angleRPY.ACCL_ROLL) - newData.MAGNETIC_RAW_Z*cosf(angleRPY.ACCL_ROLL)*cosf(angleRPY.ACCL_PITCH);
+
+	angleRPY.MAG_YAW = 180.0 * atan2f(yh,xh) / M_PI;
+	if(yh <= 0.0) angleRPY.MAG_YAW += 360.0;
+#else
 	// acclererometer convert to RPY -> yaw angle can not be get by accl, so use magnetometer
 	//	angleRPY.MAG_YAW = atan(newData.ACCEL_RAW_Z/(sqrt((newData.ACCEL_RAW_X*newData.ACCEL_RAW_X) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
 	angleRPY.ACCL_PITCH = atan(newData.ACCEL_RAW_X/(sqrt((newData.ACCEL_RAW_Y*newData.ACCEL_RAW_Y) + (newData.ACCEL_RAW_Z*newData.ACCEL_RAW_Z))));
@@ -472,6 +486,9 @@ void IMU::convertToRPY(){
 	angleRPY.MAG_YAW = atan(((newData.MAGNETIC_RAW_X*sin(angleRPY.ACCL_ROLL)*sin(angleRPY.ACCL_PITCH))+(newData.MAGNETIC_RAW_Y*cos(angleRPY.ACCL_ROLL))-(newData.MAGNETIC_RAW_Z*sin(angleRPY.ACCL_ROLL)*cos(angleRPY.ACCL_PITCH)))
 			/((newData.MAGNETIC_RAW_X*cos(angleRPY.ACCL_PITCH)) + (newData.MAGNETIC_RAW_Z*sin(angleRPY.ACCL_PITCH))));
 	//	PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.ACCL_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+#endif
+
+
 
 
 }
@@ -489,15 +506,10 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 	if(valuesToRead < 2) return -1;
 	if(!(valuesToRead%2 == 0)) return -2;
 
-	// select register and set to read
-#ifdef USE_EXTERN_MAGN
-	transBuf[0] = reg;
-#else
-	transBuf[0] = (0x80 | (reg & 0x3F));
-#endif
 	int j  = 0;
 
 	if(cs == IMU_GYRO){
+		transBuf[0] = (0x80 | (reg & 0x3F));
 		imu_g_cs.setPins(1);
 		i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,valuesToRead);
 		for(int i=0;i<valuesToRead;i+=2){
@@ -507,6 +519,8 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 
 		imu_g_cs.setPins(0);
 	}else if(cs == IMU_ACCMAG){
+		transBuf[0] = (0x80 | (reg & 0x3F));
+
 		imu_x_cs.setPins(1);
 
 		i2c2.writeRead(ACC_MAG_ADDRESS,transBuf,1,recBuf,valuesToRead);
@@ -524,6 +538,8 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 
 	} else if(cs == IMU_EXT_MAG){
 
+		transBuf[0] = reg;
+
 		i2c2.writeRead(EXT_MAG_ADDRESS,transBuf,1,recBuf,valuesToRead);
 
 		for(int i=0;i<valuesToRead;i+=2){
@@ -532,10 +548,13 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 			j++;
 		}
 	} else if(cs == IMU_EXT_ACC){
+
+		transBuf[0] = reg;
+
 		i2c2.writeRead(EXT_ACC_ADDRESS,transBuf,1,recBuf,valuesToRead);
 
 		for(int i=0;i<valuesToRead;i+=2){
-//														PRINTF("recBufAcc %d:  %d, %d\n",i,recBuf[i+1],recBuf[i]);
+			//														PRINTF("recBufAcc %d:  %d, %d\n",i,recBuf[i+1],recBuf[i]);
 			int16_t tmp = (recBuf[i] | (recBuf[i+1] <<8));
 			dest[j] =(int16_t) (tmp >> 4); // raw data is 12 bit -> shift by 4s
 			j++;
@@ -570,18 +589,18 @@ void IMU::calibrateSensors(){
 	memset(accl_temp,0,sizeof(accl_temp));
 	if(calAccl){
 		// calibrate accelerometer
-		/** WRONG! NEED TO CALIBRATE EACH AXIS SEPARATE ************TODO****************/
-		for(int i=0;i<CALIBRAION_SAMPLES;i++){
-			read_multiple_Register(IMU_ACCMAG,(X_ACCEL_L),6, temp);
-			accl_temp[0] += temp[0];
-			accl_temp[1] += temp[1];
-			accl_temp[2] += temp[2];
-			//		if(i%100 == 0)PRINTF("\novf;  %d,%d,%d",gyro_temp[0],gyro_temp[1],gyro_temp[2]);
-		}
-		acclOffset[0] = (accl_temp[0] / CALIBRAION_SAMPLES);
-		acclOffset[1] = (accl_temp[1] / CALIBRAION_SAMPLES);
-		acclOffset[2] = (accl_temp[2] / CALIBRAION_SAMPLES);
-		PRINTF("CAL: %f, %f, %f",acclOffset[0],acclOffset[1],acclOffset[2]);
+		//		/** WRONG! NEED TO CALIBRATE EACH AXIS SEPARATE ************TODO****************/
+		//		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+		//			read_multiple_Register(IMU_ACCMAG,(X_ACCEL_L),6, temp);
+		//			accl_temp[0] += temp[0];
+		//			accl_temp[1] += temp[1];
+		//			accl_temp[2] += temp[2];
+		//			//		if(i%100 == 0)PRINTF("\novf;  %d,%d,%d",gyro_temp[0],gyro_temp[1],gyro_temp[2]);
+		//		}
+		//		acclOffset[0] = (accl_temp[0] / CALIBRAION_SAMPLES);
+		//		acclOffset[1] = (accl_temp[1] / CALIBRAION_SAMPLES);
+		//		acclOffset[2] = (accl_temp[2] / CALIBRAION_SAMPLES);
+		//		PRINTF("CAL: %f, %f, %f",acclOffset[0],acclOffset[1],acclOffset[2]);
 
 
 		PRINTF("calibrating - move board to standard position!\n");
@@ -596,7 +615,11 @@ void IMU::calibrateSensors(){
 		PRINTF("calibrate for Z-axis, don't move the board!\n");
 		//calibrate Z-axis (top view STM-board -> blue/black on top)
 		for(int i=0;i<CALIBRAION_SAMPLES;i++){
+			//#ifdef USE_EXTERN_ACCL
+			//			read_multiple_Register(IMU_EXT_ACC,EXT_OUT_X_H_A,2,temp);
+			//#else
 			read_multiple_Register(IMU_ACCMAG,X_ACCEL_L,2,temp);
+			//#endif
 			accl_temp[0] += temp[0];
 			PRINTF("accltemp 0: %"PRId64";  %d\n",accl_temp[0], temp[0]);
 			read_multiple_Register(IMU_ACCMAG,Y_ACCEL_L,2,temp);
@@ -775,7 +798,7 @@ void IMU::run(){
 
 	int printValues = IMU_PRINT_VALUES/IMU_SAMPLERATE;
 	int cnt =0;
-//	suspendCallerUntil(END_OF_TIME);
+	//	suspendCallerUntil(END_OF_TIME);
 	while(1){
 		cnt++;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
@@ -787,9 +810,11 @@ void IMU::run(){
 #endif
 		if(cnt>printValues){
 #ifndef FUSION_ENABLE
-			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
-//			PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
-//			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+			//			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
+			//			PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
+			//			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
+			PRINTF("heading: %f\n",angleRPY.MAG_YAW);
+
 #endif
 			cnt =0;
 			GREEN_TOGGLE;

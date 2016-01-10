@@ -26,7 +26,7 @@
 
 #define TTNC_ENABLE
 #define TELEMETRY_DISABLE
-//#define FUSION_ENABLE
+#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CURRENT_ENABLE
 //#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
@@ -104,8 +104,8 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 
 
 /****************************** IMU STUFF ************************************************/
-//#define USE_EXTERN_MAGN							// use external magnetometer on LSM303DLH board ( connected to I2C1)
-//#define USE_EXTERN_ACCL
+#define USE_EXTERN_MAGN							// use external magnetometer on LSM303DLH board ( connected to I2C1)
+#define USE_EXTERN_ACCL
 
 #define IMU_RESET_PIN			GPIO_055
 #define IMU_G_CS_PIN			GPIO_018

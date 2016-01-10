@@ -9,7 +9,7 @@
 
 #include "sensorFusion.h"
 
-#define GAIN	0.6f
+#define GAIN	0.5f
 
 //static Application senderName("RPY Publisher",501);
 
