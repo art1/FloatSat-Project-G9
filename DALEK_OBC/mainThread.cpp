@@ -229,7 +229,7 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-	currentSystemMode.activeMode = MOTOR_CONTROL;
+	currentSystemMode.activeMode = STANDBY;
 	cmd.command = -1;
 
 }

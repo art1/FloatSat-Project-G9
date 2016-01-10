@@ -10,8 +10,8 @@
 
 #include "../Basic/basic.h"
 #include "../Hardware/Motor.h"
-#include "Controller/AngleControl.h"
-#include "Controller/RotationControl.h"
+//#include "Controller/AngleControl.h"
+//#include "Controller/RotationControl.h"
 
 extern "C" Motor motor;
 
@@ -26,8 +26,8 @@ public:
 	void setMotor(bool _val);
 	void setNewData(IMU_RPY_FILTERED _imu);
 private:
-	AngleControl angCon;
-	RotationControl rotCon;
+//	AngleControl angCon;
+//	RotationControl rotCon;
 	int16_t currentDutyCycle;
 };
 

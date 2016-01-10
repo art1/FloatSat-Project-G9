@@ -7,7 +7,7 @@
 
 #include "MotorControlThread.h"
 
-MotorControlThread::MotorControlThread() : Thread("Motor Control",105,500){
+MotorControlThread::MotorControlThread() : Thread("Motor Control",105,1000){
 	// TODO Auto-generated constructor stub
 
 }
@@ -25,48 +25,49 @@ void MotorControlThread::run(){
 	motor.init();
 	int cnt = 0;
 	bool spin = false;
+	forLoop(i,10)suspendCallerUntil(NOW()+1*SECONDS);
 
 	while(1){
-		suspendCallerUntil(END_OF_TIME);
-//		suspendCallerUntil(NOW()+100*MILLISECONDS);
-//		motor.setspeed(cnt);
-//		cnt++;
-//
-//		if(cnt == 1000){
-//			while(1){
-//				motor.switchDirection(cnt);
-//				suspendCallerUntil(NOW()+5000*MILLISECONDS);
-////				PRINTF("switching direction\n");
-//			}
-//		}
+//		suspendCallerUntil(END_OF_TIME);
+		suspendCallerUntil(NOW()+100*MILLISECONDS);
+		motor.setspeed(cnt);
+		cnt++;
+
+		if(cnt == 1000){
+			while(1){
+				motor.switchDirection(cnt);
+				suspendCallerUntil(NOW()+5000*MILLISECONDS);
+				PRINTF("switching direction\n");
+			}
+		}
 //		PRINTF("couting.. %d\n",cnt);
-		ORANGE_TOGGLE;
+//		ORANGE_TOGGLE;
 	}
 }
 
 void MotorControlThread::setRotationSpeed(float speedCylce){
-	if(angCon.isActive()) angCon.setActive(false); // deactivate Angle Control
-	rotCon.setRotSpeed(speedCylce);
-	rotCon.setActive(true);
-	rotCon.resume();
+//	if(angCon.isActive()) angCon.setActive(false); // deactivate Angle Control
+//	rotCon.setRotSpeed(speedCylce);
+//	rotCon.setActive(true);
+//	rotCon.resume();
 }
 
 void MotorControlThread::gotoAngle(float _angle){
-	if(rotCon.isActive()) rotCon.setActive(false);
-	angCon.setDesAngle(_angle);
-	angCon.setActive(true);
-	angCon.resume();
+//	if(rotCon.isActive()) rotCon.setActive(false);
+//	angCon.setDesAngle(_angle);
+//	angCon.setActive(true);
+//	angCon.resume();
 
 }
 
 void MotorControlThread::setNewData(IMU_RPY_FILTERED _imu){
-	angCon.setNewData(_imu);
-	PRINTF("heading: %f ",_imu.YAW);
+//	angCon.setNewData(_imu);
+//	PRINTF("heading: %f ",_imu.YAW);
 }
 
 
 void MotorControlThread::setMotor(bool _val){
-	if(_val){
-		motor.startMotor();
-	} else motor.stopMotor();
+//	if(_val){
+//		motor.startMotor();
+//	} else motor.stopMotor();
 }
