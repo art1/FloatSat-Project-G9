@@ -22,20 +22,20 @@
 
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
+#define IMU_ENABLE
 
 #define TTNC_ENABLE
-//#define TELEMETRY_DISABLE
-#define FUSION_ENABLE
+#define TELEMETRY_DISABLE
+//#define FUSION_ENABLE
 //#define LIGHT_ENABLE
-#define CURRENT_ENABLE
+//#define CURRENT_ENABLE
 //#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
 //#define MOTOR_ENABLE
-#define SOLAR_ADC_ENABLE
-#define IR_ENABLE
-#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
-#define KNIFE_ENABLE
-#define SUNFINDER_ENABLE
+//#define SOLAR_ADC_ENABLE
+//#define IR_ENABLE
+//#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
+//#define KNIFE_ENABLE
+//#define SUNFINDER_ENABLE
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -104,7 +104,9 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 
 
 /****************************** IMU STUFF ************************************************/
-#define USE_EXTERN_MAGN							// use external magnetometer on LSM303DLH board ( connected to I2C1)
+//#define USE_EXTERN_MAGN							// use external magnetometer on LSM303DLH board ( connected to I2C1)
+//#define USE_EXTERN_ACCL
+
 #define IMU_RESET_PIN			GPIO_055
 #define IMU_G_CS_PIN			GPIO_018
 #define IMU_XM_CS_PIN			GPIO_032
@@ -113,7 +115,9 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define IMU_ACCL_RANGE			6				// value in g, select 2,4,6,8 or 16; sensitivity is set according to chosen value
 #define IMU_MAGN_RANGE			8				// value in gauss, select 2,4,8 or 13; sensitivity is set according to chosen value
 
-#define EXT_MAGN_RANGE			25				//value in gauss*10, select 1.3, 1.9, 2.5, 4.0, 4.7, 5.6 or 8.1; sensitivity/gain is set according to chosen value
+#define EXT_MAGN_RANGE			25				// value in gauss*10, select 1.3, 1.9, 2.5, 4.0, 4.7, 5.6 or 8.1; sensitivity/gain is set according to chosen value
+#define EXT_ACCL_RANGE			2				// value in g, select 2, 4 or 8, gain/sensitivity is then set automatically
+/** TODO EXT ACCL_RANGE other than 2 seems not to work DEBUG HERE */
 
 #define IMU_GYRO_DEFAULT_OFFSET	1
 #define IMU_ACCL_DEFAULT_OFFSET	1
@@ -122,7 +126,7 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define CALIBRAION_SAMPLES		500				// calibration samples for gyro and accl and mag
 #define IMU_SAMPLERATE			20				// read and fuse IMU data every XX milliseconds
 #define IMU_PRINT_VALUES		500				// print values over UART USB every XX  ms
-#define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
+//#define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
 #define RESET_IMU_AFTER			5				// resets the IMU if reading data failed for XXX times (e.g. same data is read, or IMU hangs)
 
 struct IMU_DATA_RAW{

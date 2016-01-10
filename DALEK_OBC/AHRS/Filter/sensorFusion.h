@@ -23,6 +23,7 @@ public:
 	void init();
 	void run();
 	void newData(IMU_DATA_RAW data);
+	/** TODO use CommBuffer insted of setter & resume function */
 
 
 
@@ -71,6 +72,8 @@ private:
 
 	bool useMagn;
 	float averageDrift;
+
+
 
 };
 

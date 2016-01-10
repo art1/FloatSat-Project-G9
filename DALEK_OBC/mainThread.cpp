@@ -249,6 +249,7 @@ void mainThread::run(){
 	i2c2.init(400000);
 	imu.regInit();
 	while(!imu.initFinished());
+	//imu.resume();
 #endif
 #ifdef CAMERA_ENABLE
 	while(!camera.initFinished());
