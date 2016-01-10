@@ -11,7 +11,7 @@
 #include "Basic/basic.h"
 #include "Communication/telecommand.h"
 #include "Communication/telemetry.h"
-#ifndef BLUETOOTH_FALLBACK
+#ifdef WIFI_ENABLE
 #include "Hardware/Comm/WiFi.h"
 #else
 #include "Hardware/Comm/Bluetooth.h"

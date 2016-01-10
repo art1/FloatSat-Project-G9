@@ -9,7 +9,7 @@
 
 #include "sensorFusion.h"
 
-#define GAIN	0.6f
+#define GAIN	0.9f
 
 //static Application senderName("RPY Publisher",501);
 
@@ -52,7 +52,7 @@ sensorFusion::sensorFusion() : Thread("sensorFusion Thread",101){
 	angleRPY.GYRO_ROLL = 0.0f;
 	angleRPY.GYRO_YAW = 0.0f;
 
-	useMagn = false;
+	useMagn = true;
 
 	averageDrift = 0.0f;  // use for drift correction when not using magnetometer...
 }
@@ -90,7 +90,7 @@ void sensorFusion::run(){
 #endif
 		float head;
 		if((filtered.YAW) < 0) head = 360.0 + filtered.YAW;
-		else head = filtered.YAW - averageDrift;
+		else head = filtered.YAW;
 		filtered.YAW = head;
 		imu_filtered.publish(filtered);
 //		PRINTF("%f\n",head);

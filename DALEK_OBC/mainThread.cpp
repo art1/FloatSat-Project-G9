@@ -20,7 +20,7 @@ IMU imu;
 #ifdef TTNC_ENABLE
 Telecommand tc;
 Telemetry tm;
-#ifndef BLUETOOTH_FALLBACK
+#ifdef WIFI_ENABLE
 WiFi wifi;
 #else
 Bluetooth blauzahn;
@@ -51,7 +51,6 @@ ThermalKnife knife;
 #ifdef SUNFINDER_ENABLE
 SunFinder sunFinder;
 #endif
-
 
 //RESUMER THREADS
 /**************************** IMU MESSAGES **************************************/
@@ -104,7 +103,7 @@ struct receiver_telecommand : public Subscriber, public Thread {
 struct receiver_telemetry : public Subscriber, public Thread {
 	receiver_telemetry() : Subscriber(tmPlFrame,"TelemetryPayloadFrame"), Thread("TM-Handler -> Comm",122,500) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
-#ifndef BLUETOOTH_FALLBACK
+#ifdef WIFI_ENABLE
 		wifi.setNewData(*(UDPMsg*)data);
 		wifi.resume();
 #else
@@ -188,7 +187,9 @@ struct sensorsCommThread : public Subscriber, public Thread {
 			break;
 		case CURRENT_CHANGED:
 #ifdef CURRENT_ENABLE
+#ifdef TTNC_ENABLE
 			tm.setNewData(tmp.currentData);
+#endif
 #endif
 			break;
 		default:
@@ -238,7 +239,7 @@ void mainThread::init(){
  * Thread is resumed when new commands from the groundstatoin arrives!
  */
 void mainThread::run(){
-#ifdef BLUETOOTH_FALLBACK
+#ifndef WIFI_ENABLE
 	bt_uart.init(BLUETOOTH_BAUDRATE);
 #endif
 
@@ -248,6 +249,7 @@ void mainThread::run(){
 	i2c2.init(400000);
 	imu.regInit();
 	while(!imu.initFinished());
+	//imu.resume();
 #endif
 #ifdef CAMERA_ENABLE
 	while(!camera.initFinished());

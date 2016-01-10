@@ -30,7 +30,7 @@
 //  void run() {
 //	  uint32_t cnt=0;
 //
-//	  wf121.init("YETENet","yeteyete");
+//	  wf121.init("BKA_Wagen73_HOST","BLUBB888ARTHUR");
 //	  wf121.enableUDPConnection(0xFF01A8C0,12345);
 //
 //	  while(true) {

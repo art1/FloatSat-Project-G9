@@ -10,7 +10,9 @@
 HAL_I2C i2c1(I2C_IDX1);
 HAL_I2C i2c2(I2C_IDX2);
 HAL_ADC adc1(ADC_IDX1);
+#ifndef WIFI_ENABLE
 HAL_UART bt_uart(BLUETOOTH_PORT);
+#endif
 uint8_t VSync = 0;
 
 //declaring topics for RODOS middleware inter-Thread Communication

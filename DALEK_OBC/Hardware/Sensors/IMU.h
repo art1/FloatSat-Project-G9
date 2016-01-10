@@ -15,6 +15,8 @@
 
 #define GYRO_ADDRESS 				0x6B
 #define ACC_MAG_ADDRESS				0x1D
+#define EXT_MAG_ADDRESS				0x1E /**  0x3C write, 0x3D read, but RODOS wants the 7bit adress left aligned, and shifts it by one later*/
+#define EXT_ACC_ADDRESS				0x18
 
 #define GYRO_245DPS_SENSITIVITY		0.00875f
 #define GYRO_500DPS_SENSITIVITY		0.0175f
@@ -30,6 +32,11 @@
 #define MAGN_4GAUSS_SENSITIVITY		0.00016f
 #define MAGN_8GAUSS_SENSITIVITY		0.00032f
 #define MAGN_12GAUSS_SENSITIVITY	0.00048f
+
+#define EXT_ACCL_2G_SENSITIVITY		0.001f
+#define EXT_ACCL_4G_SENSITIVITY		0.002f
+#define EXT_ACCL_8G_SENSITIVITY		0.0039f
+
 
 /** TODO find appropriate values */
 #define MAG_MAX_X 660
@@ -163,8 +170,32 @@ struct IMU_OFFSETS{
 	uint8_t Z_OFFSET_MAG_L;	//1Ah
 	uint8_t Z_OFFSET_MAG_H;	//1Bh
 };
-enum IMU_OFFSET_REG{
-
+enum EXTERNAL_MAGN {
+	//external magnetometer/accelerometer used: LSM303DLH
+	EXT_CTRL_REG1_A = 0x20,
+	EXT_CTRL_REG2_A = 0x21,
+	EXT_CTRL_REG3_A = 0x22,
+	EXT_CTRL_REG4_A = 0x23,
+	EXT_CTRL_REG5_A = 0x24,
+	EXT_REFERENCE_A = 0x26,
+	EXT_STATUS_REG_A = 0x27,
+	EXT_OUT_X_L_A = 0xA8, // enabling increment in register adress with MSB set to 1, normal adress is 0x28
+	EXT_OUT_X_H_A = 0x29,
+	EXT_OUT_Y_L_A = 0x2A,
+	EXT_OUT_Y_H_A = 0x2B,
+	EXT_OUT_Z_L_A = 0x2C,
+	EXT_OUT_Z_H_A = 0x2D,
+	// interrupts aren't needed and so not configured at all
+	EXT_CRA_REG_M = 0x00,
+	EXT_CRB_REG_M = 0x01,
+	EXT_MR_REG_M = 0x02,
+	EXT_OUT_X_H_M = 0x03,
+	EXT_OUT_X_L_M = 0x04,
+	EXT_OUT_Y_H_M = 0x05,
+	EXT_OUT_Y_L_M = 0x06,
+	EXT_OUT_Z_H_M = 0x07,
+	EXT_OUT_Z_L_M = 0x08,
+	//the other interrupt register aren't needed either
 };
 
 
@@ -193,6 +224,8 @@ private:
 	float gyroSensitivity;
 	float acclSensitivity;
 	float magnSensitivity;
+	float extAcclSensitivity;
+	float extMagnSensitivity;
 	float gyroOffset[3];
 	float acclOffset[3];
 	float magnOffset[3];
