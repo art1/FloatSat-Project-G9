@@ -12,6 +12,13 @@
 #include "hal.h"
 #include "../../Basic/basic.h"
 
+/**
+ * This Class takes care of configuring and reading the Build-in IMU on the Extension Board, as well
+ * as configuring and reading an external IMU, if connected (LSM303DLH). If the external IMU is used
+ * (enabling/disabling in basic.h), its Accelerometer and Magnetometer are used for Sensor Fusion and
+ * calculating the Heading (with tilt-compensation), but the Gyroscope from the built-in IMU will be
+ * used!
+ */
 
 #define GYRO_ADDRESS 				0x6B
 #define ACC_MAG_ADDRESS				0x1D
@@ -38,13 +45,31 @@
 #define EXT_ACCL_8G_SENSITIVITY		0.0039f
 
 
-/** TODO find appropriate values */
-#define MAG_MAX_X 660
-#define MAG_MAX_Y 6922
-#define MAG_MAX_Z 2779
-#define MAG_MIN_X -7194
-#define MAG_MIN_Y -562
-#define MAG_MIN_Z -7053
+
+//standard values derived from multiple Calibrations
+#define GYRO_OFFSET_X				-241.0f
+#define GYRO_OFFSET_Y				104.0f
+#define GYRO_OFFSET_Z				208.0f
+
+#define ACCL_OFFSET_X				-4800.500f
+#define ACCL_OFFSET_Y				339.5f
+#define ACCL_OFFSET_Z				-393.0f
+
+#define MAGN_SCALE_X				-23780
+#define MAGN_SCALE_Y				-11616
+#define MAGN_SCALE_Z				-3522
+
+float magn_values[3][3] = {{ 0.1739, 0.0017, 0.0016},
+							 { 0.0017, 0.1853, 0.0188},
+							 { 0.0016, 0.0188, 0.1570}};
+
+/** OLD DEPRECATED VALUES */
+//#define MAG_MAX_X 660
+//#define MAG_MAX_Y 6922
+//#define MAG_MAX_Z 2779
+//#define MAG_MIN_X -7194
+//#define MAG_MIN_Y -562
+//#define MAG_MIN_Z -7053
 
 // Data register adresses
 enum IMU_DATA_REG_ADD{
@@ -199,6 +224,7 @@ enum EXTERNAL_MAGN {
 };
 
 
+
 class IMU : public Thread{
 public:
 	IMU();
@@ -207,12 +233,9 @@ public:
 	void regInit();
 	void run();
 	int resetIMU();
-	IMU_DATA_RAW readIMU_Data();
-	//set period time between executions
-	void setTime(int time);
-	void setGyroScale(int scale);
 	void calibrateSensors();
 	bool initFinished();
+	IMU_DATA_RAW readIMU_Data();
 
 private:
 	bool initDone;
@@ -237,7 +260,7 @@ private:
 	int16_t temp_raw[1];
 	IMU_DATA_RAW oldData;
 	IMU_DATA_RAW newData;
-	// gyro integration things
+
 	struct IMU_RPY_RAW{
 		float GYRO_YAW;
 		float GYRO_ROLL;
@@ -246,6 +269,7 @@ private:
 		float ACCL_ROLL;
 		float ACCL_PITCH;
 	};
+
 	IMU_RPY_RAW angleRPY;
 	float samplerateTime;
 	float oldSamplerateTime;
@@ -257,7 +281,6 @@ private:
 	int cnt_failedReads;
 	bool calibrationFinished;
 	int k =0;
-
 	int debugTime =0;
 
 	bool calGyro;

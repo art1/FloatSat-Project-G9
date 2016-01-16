@@ -53,7 +53,7 @@ IMU::IMU() : Thread ("IMU Thread",90){
 	calibrationFinished = false;
 	calGyro = false;
 	calAccl = false;
-	calMagn = false;
+	calMagn = true;
 	initDone = false;
 }
 
@@ -86,9 +86,9 @@ void IMU::regInit(){
 	memset(acclOffset,IMU_ACCL_DEFAULT_OFFSET,sizeof(acclOffset));
 	memset(magnOffset,IMU_MAGN_DEFAULT_OFFSET,sizeof(magnOffset));
 
-	gyroOffset[0] = -241.0f;
-	gyroOffset[1] = 104.0f;
-	gyroOffset[2] = 208.0f;
+	gyroOffset[0] = GYRO_OFFSET_X;
+	gyroOffset[1] = GYRO_OFFSET_Y;
+	gyroOffset[2] = GYRO_OFFSET_Z;
 #ifdef USE_EXTERN_ACCL
 	//	acclOffset[0] = -1335.75f;
 	//	acclOffset[1] = -660.25f;
@@ -97,9 +97,12 @@ void IMU::regInit(){
 	//	magnOffset[1] = -15103.5f;
 	//	magnOffset[2] = -3570.0f;
 #else
-	acclOffset[0] = -4800.500f;
-	acclOffset[1] = 339.500f;
-	acclOffset[2] = -393.0f;
+	acclOffset[0] = ACCL_OFFSET_X;
+	acclOffset[1] = ACCL_OFFSET_Y;
+	acclOffset[2] = ACCL_OFFSET_Z;
+	magnOffset[0] = MAGN_SCALE_X;
+	magnOffset[1] = MAGN_SCALE_Y;
+	magnOffset[2] = MAGN_SCALE_Z;
 #endif
 
 
@@ -188,7 +191,7 @@ void IMU::regInit(){
 	/** WHOIS CHECKS *************************************************************** */
 	imu_g_cs.setPins(1);
 	k=imu_g_cs.readPins();
-	PRINTF("IMU G CS PIN:%d\n",k);
+//	PRINTF("IMU G CS PIN:%d\n",k);
 	transBuf[0] = (0x80 | (WHO_AM_I_GYRO));
 	k = i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,1);
 	//	PRINTF("whois gyro: k=%d -  %d\n",k,recBuf[0]); // should be 212 ,0xD4
@@ -311,10 +314,10 @@ void IMU::regInit(){
 	imu_g_cs.setPins(1);
 	transBuf[0] =(0x80 | CTRL_REG1_G);
 	k = i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,1);
-	PRINTF("got k=%d  -  GYRO REG1:%d\n",k,recBuf[0]); // should be 0xCf -> 207
+	PRINTF("init return IMU=%d  -  GYRO REG1:%d\n",k,recBuf[0]); // should be 0xCf -> 207
 	imu_g_cs.setPins(0);
-	// do only once
 
+	// do only once
 	calibrateSensors();
 	while(!calibrationFinished);
 
@@ -326,9 +329,6 @@ bool IMU::initFinished(){
 
 //TODO retcodes
 int IMU::resetIMU(){
-	//cycle PD7 off->on for reset //TODO: but how fast???
-	//	leds.blinkAll(100,0);
-	//		suspendCallerUntil(NOW()+200*MILLISECONDS);
 
 	// reset I2C lines
 	i2c2.reset();
@@ -366,9 +366,17 @@ IMU_DATA_RAW IMU::scaleData(){
 	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity * (-1.0);
 	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;
 #else
-	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity; // TODO scale Data after calibration!!!
+	// scale data with hard ironed values
+    tmp[0] = magn_raw[0] - magnOffset[0];
+    tmp[1] = magn_raw[1] - magnOffset[1];
+    tmp[2] = magn_raw[2] - magnOffset[2];
+	tmp.MAGNETIC_RAW_X = magn_values[0][0] * tmp[0] + magn_values[0][1] * tmp[1] + magn_values[0][2] * tmp[2];
+	tmp.MAGNETIC_RAW_Y = magn_values[1][0] * tmp[0] + magn_values[1][1] * tmp[1] + magn_values[1][2] * tmp[2];
+	tmp.MAGNETIC_RAW_Z = magn_values[2][0] * tmp[0] + magn_values[2][1] * tmp[1] + magn_values[2][2] * tmp[2];
+	/* OLD CALIBRATION METHOD - DEPRECATED
+	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;
-	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;
+	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;*/
 #endif
 
 
@@ -503,15 +511,19 @@ void IMU::convertToRPY(){
  */
 /** TODO destination size check! */
 int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *dest){
+
 	if(valuesToRead < 2) return -1;
+
 	if(!(valuesToRead%2 == 0)) return -2;
 
 	int j  = 0;
 
 	if(cs == IMU_GYRO){
+
 		transBuf[0] = (0x80 | (reg & 0x3F));
 		imu_g_cs.setPins(1);
 		i2c2.writeRead(GYRO_ADDRESS,transBuf,1,recBuf,valuesToRead);
+
 		for(int i=0;i<valuesToRead;i+=2){
 			dest[j] =(int16_t)(recBuf[i] | (recBuf[i+1] << 8));
 			j++;
@@ -522,15 +534,13 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 		transBuf[0] = (0x80 | (reg & 0x3F));
 
 		imu_x_cs.setPins(1);
-
 		i2c2.writeRead(ACC_MAG_ADDRESS,transBuf,1,recBuf,valuesToRead);
-
 		imu_x_cs.setPins(0);
+
 		if(dest == temp_raw){
 			temp_raw[0] = (((int16_t) recBuf[1] << 12) | recBuf[0] << 4 ) >> 4; // temperature is signed 12bit integer
 		}else {
 			for(int i=0;i<valuesToRead;i+=2){
-				//											PRINTF("recBufMag %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
 				dest[j] =(int16_t)(recBuf[i] | (recBuf[i+1] << 8));
 				j++;
 			}
@@ -543,7 +553,6 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 		i2c2.writeRead(EXT_MAG_ADDRESS,transBuf,1,recBuf,valuesToRead);
 
 		for(int i=0;i<valuesToRead;i+=2){
-			//			PRINTF("recBufMag %d:  %d, %d\n",i,recBuf[i],recBuf[i+1]);
 			dest[j] =(int16_t)((recBuf[i] << 8) | (recBuf[i+1]));
 			j++;
 		}
@@ -554,7 +563,6 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 		i2c2.writeRead(EXT_ACC_ADDRESS,transBuf,1,recBuf,valuesToRead);
 
 		for(int i=0;i<valuesToRead;i+=2){
-			//														PRINTF("recBufAcc %d:  %d, %d\n",i,recBuf[i+1],recBuf[i]);
 			int16_t tmp = (recBuf[i] | (recBuf[i+1] <<8));
 			dest[j] =(int16_t) (tmp >> 4); // raw data is 12 bit -> shift by 4s
 			j++;
@@ -568,15 +576,6 @@ int IMU::read_multiple_Register(int cs,uint8_t reg,int valuesToRead, int16_t *de
 
 
 
-void IMU::setTime(int time){
-	this->time = time;
-	PRINTF("setting period time to %d\n",time);
-}
-
-// setter functions
-void IMU::setGyroScale(int scale){
-
-}
 
 
 void IMU::calibrateSensors(){
@@ -587,22 +586,8 @@ void IMU::calibrateSensors(){
 	memset(gyro_temp,0,sizeof(gyro_temp));
 	memset(temp,0,sizeof(temp));
 	memset(accl_temp,0,sizeof(accl_temp));
+
 	if(calAccl){
-		// calibrate accelerometer
-		//		/** WRONG! NEED TO CALIBRATE EACH AXIS SEPARATE ************TODO****************/
-		//		for(int i=0;i<CALIBRAION_SAMPLES;i++){
-		//			read_multiple_Register(IMU_ACCMAG,(X_ACCEL_L),6, temp);
-		//			accl_temp[0] += temp[0];
-		//			accl_temp[1] += temp[1];
-		//			accl_temp[2] += temp[2];
-		//			//		if(i%100 == 0)PRINTF("\novf;  %d,%d,%d",gyro_temp[0],gyro_temp[1],gyro_temp[2]);
-		//		}
-		//		acclOffset[0] = (accl_temp[0] / CALIBRAION_SAMPLES);
-		//		acclOffset[1] = (accl_temp[1] / CALIBRAION_SAMPLES);
-		//		acclOffset[2] = (accl_temp[2] / CALIBRAION_SAMPLES);
-		//		PRINTF("CAL: %f, %f, %f",acclOffset[0],acclOffset[1],acclOffset[2]);
-
-
 		PRINTF("calibrating - move board to standard position!\n");
 		int cnt = 0;
 		GREEN_OFF;
@@ -732,6 +717,7 @@ void IMU::calibrateSensors(){
 		PRINTF("ACCL CAL: %f, %f, %f\n",acclOffset[0],acclOffset[1],acclOffset[2]);
 		calAccl = false;
 	}
+
 	if(calGyro){
 		PRINTF("now calibrate Gyro; don't touch the board\n");
 		int cnt = 0;
@@ -756,28 +742,39 @@ void IMU::calibrateSensors(){
 		PRINTF("GYRO CAL: %f, %f, %f\n",gyroOffset[0],gyroOffset[1],gyroOffset[2]);
 		calGyro = false;
 	}
+
 	int16_t minX,minY,minZ = 0;
 	int16_t maxX,maxY,maxZ = 0;
 	if(calMagn){
+		/** USE Ellipsoid fit for internal magnetometer calibration, credits for the matlab script goes to Christoph Hagen! */
+
 		BLUE_ON; ORANGE_ON;
 		PRINTF("calibrating Magnetometer, prepare...\n");
 		suspendCallerUntil(NOW()+500*MILLISECONDS);
-		PRINTF("you have now 30 seconds to move 360 degree in all directions  and do a figure 8! go..\n");
+		PRINTF("you have now 30 seconds to move 360 degree in all directions! go..\n");
 		int cnt = 0;
 		while(cnt <= CALIBRAION_SAMPLES){
 			read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,temp);
-			if(temp[0] < minX) minX = temp[0];
-			else if(temp[0] > maxX) maxX = temp[0];
-
-			if(temp[1] < minY) minY = temp[1];
-			else if(temp[1] > maxY) maxY = temp[1];
-
-			if(temp[2] < minZ) minZ = temp[2];
-			else if(temp[2] > maxZ) maxZ = temp[2];
+			//CSV Output
+			PRINTF("%f,%f,%f\n",temp[0],temp[1],temp[2]);
 			Delay_millis(5);
 			BLUE_TOGGLE;
 			cnt++;
 		}
+//		while(cnt <= CALIBRAION_SAMPLES){
+//			read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,temp);
+//			if(temp[0] < minX) minX = temp[0];
+//			else if(temp[0] > maxX) maxX = temp[0];
+//
+//			if(temp[1] < minY) minY = temp[1];
+//			else if(temp[1] > maxY) maxY = temp[1];
+//
+//			if(temp[2] < minZ) minZ = temp[2];
+//			else if(temp[2] > maxZ) maxZ = temp[2];
+//			Delay_millis(5);
+//			BLUE_TOGGLE;
+//			cnt++;
+//		}
 		BLUE_OFF; ORANGE_OFF;
 		PRINTF("calibration finished, calculating values.., min x %d, max x %d\n",minX,maxX);
 		magnOffset[0] = ((float)minX + (float)maxX) / 2.0;
@@ -792,13 +789,14 @@ void IMU::calibrateSensors(){
 
 
 void IMU::run(){
-	PRINTF("run called\n");
+
 	int tmp = 0;
 	debugTime = NOW()*SECONDS;
 
 	int printValues = IMU_PRINT_VALUES/IMU_SAMPLERATE;
 	int cnt =0;
 	//	suspendCallerUntil(END_OF_TIME);
+
 	while(1){
 		cnt++;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
@@ -817,7 +815,6 @@ void IMU::run(){
 
 #endif
 			cnt =0;
-			GREEN_TOGGLE;
 		}
 
 	}

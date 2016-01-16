@@ -153,12 +153,12 @@ static const uint8_t OV7670_Reg[OV7670_REG_NUM][2]=
 
 
 ov7670::ov7670() {
-	// TODO Auto-generated constructor stub
+
 
 }
 
 ov7670::~ov7670() {
-	// TODO Auto-generated destructor stub
+
 }
 
 

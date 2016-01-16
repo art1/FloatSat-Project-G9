@@ -8,12 +8,9 @@
 #include "InfraredSensors.h"
 
 InfraredSensors::InfraredSensors() : Thread("Infrared Thread",111,1000){
-	// TODO Auto-generated constructor stub
-
 }
 
 InfraredSensors::~InfraredSensors() {
-	// TODO Auto-generated destructor stub
 }
 
 void InfraredSensors::init(){
@@ -24,12 +21,16 @@ void InfraredSensors::init(){
 }
 
 void InfraredSensors::run(){
+
 	adc1.init(IR_ONE);
 	adc1.init(IR_TWO);
 	adc1.init(IR_THREE);
+
 	INTERCOMM tmp;
 	tmp.changedVal = IR_CHANGED;
+
 	if(!isActive()) suspendCallerUntil(END_OF_TIME);
+
 	while(1){
 		suspendCallerUntil(NOW()+IR_SAMPLERATE*MILLISECONDS);
 		if(isActive()){

@@ -26,13 +26,13 @@ HAL_PWM MotorPWM(PWM_IDX12);
 
 
 Motor::Motor() {
-	// TODO Auto-generated constructor stub
+
 	dutyCycle = 1; // start motor always in CW directino
 	clockwise = true;
 }
 
 Motor::~Motor() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void Motor::init(){

@@ -8,12 +8,12 @@
 #include "MotorControlThread.h"
 
 MotorControlThread::MotorControlThread() : Thread("Motor Control",105,1000){
-	// TODO Auto-generated constructor stub
+
 
 }
 
 MotorControlThread::~MotorControlThread() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void MotorControlThread::init(){

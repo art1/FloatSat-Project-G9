@@ -8,11 +8,11 @@
 #include "audioPlayback.h"
 
 audioPlayback::audioPlayback() {
-	// TODO Auto-generated constructor stub
+
 
 }
 
 audioPlayback::~audioPlayback() {
-	// TODO Auto-generated destructor stub
+
 }
 

@@ -21,15 +21,15 @@ void Telemetry::init(){
 }
 
 void Telemetry::run(){
-	/** TODO add function to activate and eactivate telemetry */
+	/** TODO add function to activate and deactivate telemetry */
 	while(1){
-#ifdef TELEMETRY_DISABLE
+#ifndef TELEMETRY_ENABLE
 		suspendCallerUntil(END_OF_TIME);
 #endif
 		buildFrame();
 		tmPlFrame.publish(msg);
 		frameNumber++;
-		PRINTF("sent %d bytes\n",msg.length);
+//		PRINTF("sent %d bytes\n",msg.length);
 		suspendCallerUntil(NOW()+TM_SAMPLERATE*MILLISECONDS);
 	}
 }
@@ -39,32 +39,44 @@ void Telemetry::run(){
 void Telemetry::setNewData(IMU_RPY_FILTERED _imu){
 	this->imu.put(_imu);
 }
+
 void Telemetry::setNewData(IMU_DATA_RAW _imuRaw){
 	this->imuRaw.put(_imuRaw);
 }
+
 void Telemetry::setNewData(LUX_DATA _lux){
 	this->lux.put(_lux);
 }
+
 void Telemetry::setNewData(SOLAR_DATA _sol){
 	this->sol.put(_sol);
 }
+
 void Telemetry::setNewData(IR_DATA _ir){
 	this->ir.put(_ir);
 }
+
 void Telemetry::setNewData(CURRENT_DATA _current){
 	this->current.put(_current);
 }
+
 void Telemetry::setNewData(INTERCOMM _interComm){
 
 }
+
 void Telemetry::setNewData(ACTIVE_SYSTEM_MODE _mode){
 	this->systemMode = _mode;
 }
+
 uint32_t Telemetry::getCurrentFrameNumber(){
 	return this->frameNumber;
 }
 
+/**
+ * Builds a Frame with the most recent values of all sensors.
+ */
 void Telemetry::buildFrame(){
+
 	msg.length = 0;
 	memset(msg.data,0,sizeof(msg.data));
 
@@ -83,7 +95,9 @@ void Telemetry::buildFrame(){
 	for(int i=-1;i<15;i++){
 		switch (i) {
 		case -1:
-			forLoop(j,3){msg.data[msg.length++] = FRAME_START;}// adding $$$
+			forLoop(j,3){
+				msg.data[msg.length++] = FRAME_START;
+			} // adding $$$
 			break;
 		case TM_FRAMETYPE:
 			msg.data[msg.length++] = TM;
@@ -104,7 +118,9 @@ void Telemetry::buildFrame(){
 			break;
 		case ROLL:
 			floatToChar(tmp,rpy.ROLL);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case PITCH:
 			floatToChar(tmp,rpy.PITCH);
@@ -120,43 +136,63 @@ void Telemetry::buildFrame(){
 			break;
 		case GYRO_X:
 			floatToChar(tmp,rpyRaw.ANGULAR_RAW_X);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case GYRO_Y:
 			floatToChar(tmp,rpyRaw.ANGULAR_RAW_Y);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case GYRO_Z:
 			floatToChar(tmp,rpyRaw.ANGULAR_RAW_Z);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case ACCL_X:
 			floatToChar(tmp,rpyRaw.ACCEL_RAW_X);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case ACCL_Y:
 			floatToChar(tmp,rpyRaw.ACCEL_RAW_Y);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case ACCL_Z:
 			floatToChar(tmp,rpyRaw.ACCEL_RAW_Z);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case MAG_X:
 			floatToChar(tmp,rpyRaw.MAGNETIC_RAW_X);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case MAG_Y:
 			floatToChar(tmp,rpyRaw.MAGNETIC_RAW_Y);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case MAG_Z:
 			floatToChar(tmp,rpyRaw.MAGNETIC_RAW_Z);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case TEMP:
 			floatToChar(tmp,rpyRaw.TEMP_RAW);
-			forLoop(j,4){msg.data[msg.length++] = tmp[j];}
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
 			break;
 		case SOLAR_VOLTAGE:
 			longToChar(tmp,(uint32_t)s.Voltage);
@@ -165,21 +201,21 @@ void Telemetry::buildFrame(){
 			}
 			break;
 		case BATTERY_VOLTAGE:
-			/** TODO */
+			/** TODO Battery Voltage */
 			// adding dummy values here
 			forLoop(j,4){
 				msg.data[msg.length++] = 0x00;
 			}
 			break;
 		case CURRENT:
-			/** TODO */
+			/** TODO CURRENT Telemetry*/
 			// adding dummy values here
 			forLoop(j,4){
 				msg.data[msg.length++] = 0x00;
 			}
 			break;
 		case MOTOR_SPEED:
-			/** TODO */
+			/** TODO Motor SPeed*/
 			// adding dummy values here
 			forLoop(j,4){
 				msg.data[msg.length++] = 0x00;
@@ -216,7 +252,7 @@ void Telemetry::buildFrame(){
 		//		msg.data[msg.length++] = VALUE_SEPERATOR;
 	}
 	forLoop(j,3){msg.data[msg.length++] = FRAME_END;}
-	PRINTF("added %d bytes",msg.length);
+//	PRINTF("added %d bytes",msg.length);
 }
 
 
@@ -246,7 +282,6 @@ void Telemetry::sendPayload(CAM_DATA _camData){
 			break;
 		case PAYLOAD:
 			forLoop(i,100){
-//				shortToChar(tmp,*(_camData.picture[i]));
 				uint16_t *p = _camData.picture;
 				shortToChar(tmp,p[i]);
 				forLoop(j,2) msg.data[msg.length++] = tmp[j];
@@ -263,7 +298,7 @@ void Telemetry::sendPayload(CAM_DATA _camData){
 		}
 	}
 	forLoop(j,3){msg.data[msg.length++] = FRAME_END;}
-	PRINTF("added %d bytes",msg.length);
+//	PRINTF("added %d bytes",msg.length);
 
 	tmPlFrame.publish(msg);
 	frameNumber++;

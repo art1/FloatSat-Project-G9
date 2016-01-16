@@ -16,7 +16,7 @@ Bluetooth::Bluetooth() : Thread("Bluetooth",110,2000) {
 }
 
 Bluetooth::~Bluetooth() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void Bluetooth::init(){

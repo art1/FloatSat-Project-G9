@@ -8,12 +8,12 @@
 #include "mySCCB.h"
 
 mySCCB::mySCCB() {
-	// TODO Auto-generated constructor stub
+
 
 }
 
 mySCCB::~mySCCB() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void mySCCB::init(){

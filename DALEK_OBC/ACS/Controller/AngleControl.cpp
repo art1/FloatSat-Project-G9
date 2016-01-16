@@ -22,7 +22,7 @@ AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 }
 
 AngleControl::~AngleControl() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void AngleControl::init(){
