@@ -59,6 +59,7 @@ struct receiver_Fusion : public Subscriber, public Thread {
 	receiver_Fusion(const char* _name) : Subscriber(imu_rawData,"IMU Raw Data"),Thread("IMU->Fusion Raw",119,500) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		fusion.newData(*(IMU_DATA_RAW*)data);
+		motorControl.setNewData(*(IMU_DATA_RAW*)data);
 #ifdef TTNC_ENABLE
 		tm.setNewData(*(IMU_DATA_RAW*)data);
 #endif

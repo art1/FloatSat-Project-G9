@@ -22,7 +22,7 @@ AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 	iGain = 0.0f;
 	dGain = 0.0f;
 
-	integral = 0.0f;
+	i = 0.0f;
 	period = 0.0f;
 	dt = 0.0f;
 
@@ -50,13 +50,13 @@ void AngleControl::run(){
 
 		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng,rpy.YAW);
 
-		pPart = error * pGain;
 
-		integral += error*period;
-		iPart = error * iGain;
-
+		i += error*period;
 		dt = (error - lastError) / period;
-		dPart = error * dGain;
+
+		pPart = error * pGain;
+		iPart = i * iGain;
+		dPart = dt * dGain;
 
 		controlOut = pPart + iPart + dPart;
 
@@ -64,6 +64,7 @@ void AngleControl::run(){
 		cnt++;
 
 		motor.setspeed((int16_t)controlOut);
+
 		lastTime = SECONDS_NOW();
 		lastError = error;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
@@ -83,7 +84,7 @@ void AngleControl::setNewData(VAR_CONTROL *_val){
 			iGain = _val->value;
 			break;
 		case SET_ANGLE_D:
-
+			dGain = _val->value;
 			break;
 		default:
 			break;

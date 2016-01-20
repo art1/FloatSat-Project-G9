@@ -26,6 +26,7 @@ public:
 	void setMotor(bool _val);
 	void setNewData(IMU_RPY_FILTERED _imu);
 	void setNewData(VAR_CONTROL *_varC);
+	void setNewData(IMU_DATA_RAW _imu);
 private:
 	AngleControl angCon;
 	RotationControl rotCon;

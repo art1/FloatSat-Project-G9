@@ -64,6 +64,9 @@ void MotorControlThread::setNewData(IMU_RPY_FILTERED _imu){
 	angCon.setNewData(_imu);
 //	PRINTF("heading: %f ",_imu.YAW);
 }
+void MotorControlThread::setNewData(IMU_DATA_RAW _dat){
+	rotCon.setNewData(_dat);
+}
 
 void MotorControlThread::setNewData(VAR_CONTROL *_varC){
 	switch (_varC->changedVal) {

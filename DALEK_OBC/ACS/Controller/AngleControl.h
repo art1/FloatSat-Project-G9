@@ -37,7 +37,7 @@ private:
 	float dPart;
 	float dGain;
 
-	float integral;
+	float i;
 	float dt;
 	float period;
 	float lastTime;

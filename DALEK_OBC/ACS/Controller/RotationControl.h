@@ -23,13 +23,31 @@ public:
 	void setActive(bool _val);
 	void setRotSpeed(float _speed);
 	void setNewData(VAR_CONTROL *_val);
+	void setNewData(IMU_DATA_RAW _val);
 private:
-	float pGain;
-	float iGain;
-	float dGain;
+
 	bool active;
 	float desSpeed;
 	float currentSpeed;
+
+	float error;
+	float lastError;
+	float controlOut;
+	float pPart;
+	float pGain;
+	float iPart;
+	float iGain;
+	float dPart;
+	float dGain;
+
+	float i;
+	float dt;
+	float period;
+
+	float lastTime;
+
+
+	CommBuffer<IMU_DATA_RAW> imuData;
 
 };
 
