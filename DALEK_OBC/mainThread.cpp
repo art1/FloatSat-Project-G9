@@ -321,18 +321,25 @@ void mainThread::run(){
 	//	}
 
 	PRINTF("SYSTEM HELLO!\n");
-
+	bool switchedMode = false;
 	while(1){
 		//check which mode
 		if(cmd.command == GOTO_MODE){
 			currentSystemMode.activeMode = (int) cmd.commandValue;
-			PRINTF("here cmd\n");
-		} else {
+			PRINTF("here cmd, going to mode %d\n",currentSystemMode.activeMode);
+			if(currentSystemMode.activeMode == STANDBY){
+				switchedMode = true;				// going to standby immediately after received command
+				ORANGE_ON;
+			} else ORANGE_OFF;
+		}
+		if(!(cmd.command == GOTO_MODE) || switchedMode) {
+			switchedMode = false;
 			PRINTF("hello, active Mode: %d\n",currentSystemMode.activeMode);
 			switch (currentSystemMode.activeMode) {
 			case STANDBY:
 				// do nothing, only blink a led or some shit
 				PRINTF("DALEK waiting for commands!\n");
+				motorControl.setMotor(false);
 				break;
 			case SUN_FINDING:
 #ifdef SUNFINDER_ENABLE
@@ -344,8 +351,7 @@ void mainThread::run(){
 #ifdef MOTOR_ENABLE
 				// seting motor speed,
 				PRINTF("motor control mode with command %d\n",cmd.command);
-				cmd.command = GOTO_ANGLE;
-				cmd.commandValue = 90.0;
+
 				switch (cmd.command) {
 				case SET_ROTATION_SPEED:
 
@@ -394,6 +400,7 @@ void mainThread::run(){
 			}
 		}
 		suspendCallerUntil(END_OF_TIME);
+
 	}
 
 

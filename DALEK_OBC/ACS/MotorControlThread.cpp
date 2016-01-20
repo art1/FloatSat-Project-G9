@@ -87,5 +87,9 @@ void MotorControlThread::setNewData(VAR_CONTROL *_varC){
 void MotorControlThread::setMotor(bool _val){
 	if(_val){
 		motor.startMotor();
-	} else motor.stopMotor();
+	} else {
+		motor.stopMotor();
+		angCon.setActive(false);
+		rotCon.setActive(false);
+	}
 }
