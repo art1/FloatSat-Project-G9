@@ -10,14 +10,21 @@
 AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 	active = false;
 	error = 0.0f;
+	lastError = 0.0f;
 	desAng = 0.0f;
 	heading = 0.0f;
 
 	pPart = 0.0f;
 	iPart = 0.0f;
+	dPart = 0.0f;
 
 	pGain = 0.01f;
 	iGain = 0.0f;
+	dGain = 0.0f;
+
+	integral = 0.0f;
+	period = 0.0f;
+	dt = 0.0f;
 
 }
 
@@ -32,17 +39,33 @@ void AngleControl::init(){
 void AngleControl::run(){
 	IMU_RPY_FILTERED rpy;
 	int cnt = 0;
+
 	while(1){
+
 		if(!isActive()) suspendCallerUntil(END_OF_TIME);
+
 		imuData.get(rpy);
 		error = rpy.YAW - desAng;
-		if(!(cnt % 100))PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng,rpy.YAW);
+		period = SECONDS_NOW() - lastTime;
+
+		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng,rpy.YAW);
+
 		pPart = error * pGain;
-		controlOut = pPart;
-		if(!(cnt % 100))PRINTF("control output: %f\n",controlOut);
+
+		integral += error*period;
+		iPart = error * iGain;
+
+		dt = (error - lastError) / period;
+		dPart = error * dGain;
+
+		controlOut = pPart + iPart + dPart;
+
+		if(!(cnt % 100)) PRINTF("control output: %f\n",controlOut);
 		cnt++;
 
 		motor.setspeed((int16_t)controlOut);
+		lastTime = SECONDS_NOW();
+		lastError = error;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
 	}
 }

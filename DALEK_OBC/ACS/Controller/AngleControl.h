@@ -28,11 +28,19 @@ private:
 	float desAng;
 	float heading;
 	float error;
+	float lastError;
 	float controlOut;
 	float pPart;
 	float pGain;
 	float iPart;
 	float iGain;
+	float dPart;
+	float dGain;
+
+	float integral;
+	float dt;
+	float period;
+	float lastTime;
 	CommBuffer<IMU_RPY_FILTERED> imuData;
 
 };
