@@ -107,7 +107,16 @@ enum commands{
 	CONTROL_MOTOR, //with command value 0 -> stop and command val 1 -> start motor
 	GOTO_ANGLE,
 	// Mission Stuff
-	TAKE_PICTURE_AT
+	TAKE_PICTURE_AT,
+	// only for Debug Communication -> used before big Mode Loop (used in setNewData in mainthread)
+	SET_BETA_GAIN,
+	SET_ANGLE_P,
+	SET_ANGLE_I,
+	SET_ANGLE_D,
+	SET_ROTAT_P,
+	SET_ROTAT_I,
+	SET_ROTAT_D,
+	ENABLE_TELEMETRY
 };
 
 enum system_mode{

@@ -25,7 +25,7 @@
 #define IMU_ENABLE
 
 #define TTNC_ENABLE
-#define TELEMETRY_ENABLE
+//#define TELEMETRY_ENABLE
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CURRENT_ENABLE
@@ -126,7 +126,7 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define CALIBRAION_SAMPLES		500				// calibration samples for gyro and accl and mag
 #define IMU_SAMPLERATE			20				// read and fuse IMU data every XX milliseconds
 #define IMU_PRINT_VALUES		500				// print values over UART USB every XX  ms
-//#define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
+#define AUTO_RESET_IMU							// automatically resets the imu after RESET_IMU_AFTER_FAIL times failed to read data
 #define RESET_IMU_AFTER			5				// resets the IMU if reading data failed for XXX times (e.g. same data is read, or IMU hangs)
 
 struct IMU_DATA_RAW{
@@ -247,6 +247,21 @@ struct CURRENT_DATA{
 
 
 /* ***************************************** Inter-Thread Communication for Sensors ***********************/
+
+/*
+ * 	SET_BETA_GAIN,
+	SET_ANGLE_P,
+	SET_ANGLE_I,
+	SET_ANGLE_D,
+	SET_ROTAT_P,
+	SET_ROTAT_I,
+	SET_ROTAT_D for changedVal
+ */
+struct VAR_CONTROL{
+	int changedVal;
+	float value;
+};
+
 struct INTERCOMM{
 	int changedVal;
 	LUX_DATA luxData;
@@ -256,6 +271,7 @@ struct INTERCOMM{
 	CAM_DATA camData;
 	IMU_RPY_FILTERED imuData;
 	CURRENT_DATA currentData;
+	VAR_CONTROL varControlData;
 };
 enum INTERCOMM_CHANGED{
 	LUX_CHANGED,
@@ -264,7 +280,8 @@ enum INTERCOMM_CHANGED{
 	KNIFE_CHANGED,
 	CAM_CHANGED,
 	IMU_CHANGED,
-	CURRENT_CHANGED
+	CURRENT_CHANGED,
+	VARIABLE_CHANGED
 };
 
 

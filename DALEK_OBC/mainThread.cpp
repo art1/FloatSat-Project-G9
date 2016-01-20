@@ -192,6 +192,11 @@ struct sensorsCommThread : public Subscriber, public Thread {
 #endif
 #endif
 			break;
+		case VARIABLE_CHANGED:
+#ifdef MOTOR_ENABLE
+			motorControl.setNewData(&tmp.varControlData);
+#endif
+			break;
 		default:
 			break;
 
@@ -207,7 +212,37 @@ mainThread::mainThread(const char* name) : Thread(name){
 
 void mainThread::setNewData(COMMAND_FRAME _t){
 	this->cmd = _t;
-	PRINTF("set new values %f\n",cmd.commandValue);
+	PRINTF("set new command values %f\n",cmd.commandValue);
+	VAR_CONTROL var;
+	var.changedVal = cmd.command;
+	var.value = cmd.commandValue;
+
+	switch (cmd.command) {
+	case SET_BETA_GAIN:
+		PRINTF("Setting new Beta Gain %f\n",var.value);
+		fusion.setNewData(&var);
+		break;
+	case SET_ANGLE_P:
+	case SET_ANGLE_I:
+	case SET_ANGLE_D:
+	case SET_ROTAT_P:
+	case SET_ROTAT_I:
+	case SET_ROTAT_D:
+		PRINTF("SEtting new PID values...\n");
+		motorControl.setNewData(&var);
+		break;
+	case ENABLE_TELEMETRY:
+		if((int)cmd.commandValue == 1) {
+			PRINTF("Enabling Telemetry\n");
+			tm.setActive(true);
+			tm.resume();
+		}else{
+			tm.setActive(false);
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 void mainThread::init(){
@@ -229,7 +264,7 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-	currentSystemMode.activeMode = STANDBY;
+	currentSystemMode.activeMode = MOTOR_CONTROL;
 	cmd.command = -1;
 
 }
@@ -353,7 +388,6 @@ void mainThread::run(){
 					default:
 						break;
 					}
-
 					break;
 					default:
 						break;

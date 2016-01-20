@@ -17,6 +17,8 @@ public:
 	virtual ~Telemetry();
 	void init();
 	void run();
+	void setActive(bool _val);
+	bool isActive();
 	void setNewData(IMU_RPY_FILTERED _imu);
 	void setNewData(IMU_DATA_RAW _imuRaw);
 	void setNewData(LUX_DATA _lux);
@@ -30,6 +32,7 @@ public:
 	uint32_t getCurrentFrameNumber();
 
 private:
+	bool active;
 	CommBuffer<TELEMETRY> tmBuf;
 	UDPMsg msg;
 	uint32_t frameNumber;

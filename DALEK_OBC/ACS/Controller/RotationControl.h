@@ -22,7 +22,11 @@ public:
 	bool isActive();
 	void setActive(bool _val);
 	void setRotSpeed(float _speed);
+	void setNewData(VAR_CONTROL *_val);
 private:
+	float pGain;
+	float iGain;
+	float dGain;
 	bool active;
 	float desSpeed;
 	float currentSpeed;

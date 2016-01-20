@@ -22,6 +22,7 @@ public:
 	void setActive(bool _val);
 	void setDesAngle(float _val);
 	void setNewData(IMU_RPY_FILTERED);
+	void setNewData(VAR_CONTROL *_val);
 private:
 	bool active;
 	float desAng;

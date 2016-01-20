@@ -16,7 +16,7 @@ AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 	pPart = 0.0f;
 	iPart = 0.0f;
 
-	pGain = 10.0f;
+	pGain = 0.01f;
 	iGain = 0.0f;
 
 }
@@ -50,6 +50,21 @@ void AngleControl::run(){
 
 void AngleControl::setNewData(IMU_RPY_FILTERED _imu){
 	this->imuData.put(_imu);
+}
+void AngleControl::setNewData(VAR_CONTROL *_val){
+	switch (_val->changedVal) {
+		case SET_ANGLE_P:
+			pGain = _val->value;
+			break;
+		case SET_ANGLE_I:
+			iGain = _val->value;
+			break;
+		case SET_ANGLE_D:
+
+			break;
+		default:
+			break;
+	}
 }
 
 void AngleControl::setDesAngle(float _val){

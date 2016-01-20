@@ -9,7 +9,7 @@
 
 #include "sensorFusion.h"
 
-#define GAIN	0.9f
+#define GAIN	0.4f
 
 //static Application senderName("RPY Publisher",501);
 
@@ -106,6 +106,13 @@ void sensorFusion::run(){
 			BLUE_TOGGLE;
 		}
 		cnt++;
+	}
+}
+
+
+void sensorFusion::setNewData(VAR_CONTROL *_varC){
+	if(_varC->changedVal == SET_BETA_GAIN){
+		this->beta = _varC->value;
 	}
 }
 

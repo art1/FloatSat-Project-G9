@@ -51,17 +51,21 @@
 #define GYRO_OFFSET_Y				104.0f
 #define GYRO_OFFSET_Z				208.0f
 
-#define ACCL_OFFSET_X				-4800.500f
-#define ACCL_OFFSET_Y				339.5f
-#define ACCL_OFFSET_Z				-393.0f
+#define ACCL_OFFSET_X				-243.500f	//old-4800.500f
+#define ACCL_OFFSET_Y				-41.0f  	//old339.5f
+#define ACCL_OFFSET_Z				-377.25f 	//old-393.0f
 
-#define MAGN_SCALE_X				-23780
-#define MAGN_SCALE_Y				-11616
-#define MAGN_SCALE_Z				-3522
 
-float magn_values[3][3] = {{ 0.1739, 0.0017, 0.0016},
-							 { 0.0017, 0.1853, 0.0188},
-							 { 0.0016, 0.0188, 0.1570}};
+//ACCL CAL: -243.500, -41.000, -377.250
+
+#define MAGN_SCALE_X				9120
+#define MAGN_SCALE_Y				-534
+#define MAGN_SCALE_Z				-1647
+
+
+
+
+
 
 /** OLD DEPRECATED VALUES */
 //#define MAG_MAX_X 660

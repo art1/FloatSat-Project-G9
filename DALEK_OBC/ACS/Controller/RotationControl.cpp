@@ -30,6 +30,21 @@ void RotationControl::run(){
 void RotationControl::setRotSpeed(float _speed){
 	this->desSpeed = _speed;
 }
+void RotationControl::setNewData(VAR_CONTROL *_val){
+	switch (_val->changedVal) {
+		case SET_ROTAT_P:
+			pGain = _val->value;
+			break;
+		case SET_ROTAT_I:
+			iGain = _val->value;
+			break;
+		case SET_ROTAT_D:
+			dGain = _val->value;
+			break;
+		default:
+			break;
+	}
+}
 bool RotationControl::isActive(){
 	return active;
 }

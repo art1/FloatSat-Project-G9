@@ -17,15 +17,19 @@ Telemetry::~Telemetry(){
 
 
 void Telemetry::init(){
-
+#ifdef TELEMETRY_ENABLE
+	acrive = true;
+#else
+	active = false;
+#endif
 }
 
 void Telemetry::run(){
 	/** TODO add function to activate and deactivate telemetry */
 	while(1){
-#ifndef TELEMETRY_ENABLE
-		suspendCallerUntil(END_OF_TIME);
-#endif
+		while(!isActive()){
+			suspendCallerUntil(END_OF_TIME);
+		}
 		buildFrame();
 		tmPlFrame.publish(msg);
 		frameNumber++;
@@ -34,7 +38,13 @@ void Telemetry::run(){
 	}
 }
 
+void Telemetry::setActive(bool _val){
+	this->active = _val;
+}
 
+bool Telemetry::isActive(){
+	return this->active;
+}
 
 void Telemetry::setNewData(IMU_RPY_FILTERED _imu){
 	this->imu.put(_imu);
