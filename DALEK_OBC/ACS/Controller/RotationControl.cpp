@@ -42,7 +42,7 @@ void RotationControl::run(){
 		if(!isActive()) suspendCallerUntil(END_OF_TIME);
 
 		imuData.get(raw);
-		error = raw.ANGULAR_RAW_Z - desSpeed;
+		error = desSpeed - (raw.ANGULAR_RAW_Z*TO_DEG) ;//- desSpeed;
 		period = SECONDS_NOW() - lastTime;
 
 		if(!(cnt % 100)) PRINTF("dps error: %f, des: %f, current: %f\n",error,desSpeed,raw.ANGULAR_RAW_Z);

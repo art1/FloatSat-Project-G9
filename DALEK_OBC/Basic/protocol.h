@@ -39,7 +39,7 @@
 
 
 #define COMMAND_FRAME_SIZE		24	// size in bytes including start and end characters
-#define TELEMETRY_FRAME_SIZE    58  // size in bytes including start and end characters
+#define TELEMETRY_FRAME_SIZE    107 //58  // size in bytes including start and end characters
 #define PAYLOAD_FRAME_SIZE      224 // size in bytes including start and end characters
 #define PAYLOAD_DATA_SIZE       200 // this is the size of only the payload data in the payload frame
 
@@ -73,6 +73,8 @@ enum telemetryFrame{
 	IR_DATA_ONE,
 	IR_DATA_TWO,
 	IR_DATA_THREE,
+	GS_SUNFINDER,
+	SUN_INCIDENCE_ANGLE,
 	TM_LOCALTIME
 };
 enum payloadFrame{
@@ -156,6 +158,8 @@ struct TELEMETRY_FRAME{
 	float irDataOne;			// in centimeter
 	float irDataTwo;			// in centimeter
 	float irDataThree;			// in centimeter
+	uint8_t gs_sunfinder;		// values for Groundstation, 0: default, 1: sunfinder starts, 2: finished rotation, 3: rotates to sun finished, 4: start deployemt, 5: finished and stabilizes
+	float incidenceAngle;		// calculated sun incidence angle
 	int64_t localTime;			// in nanoseconds since system start!
 };
 
