@@ -8,14 +8,12 @@
 #include "SolarPanels.h"
 
 SolarPanels::SolarPanels() : Thread("SolarPanels",104, 500){
-	// TODO Auto-generated constructor stub
 	solData.activated = false;
 	solData.Voltage = 0;
 
 }
 
 SolarPanels::~SolarPanels() {
-	// TODO Auto-generated destructor stub
 }
 
 void SolarPanels::init(){
@@ -30,12 +28,14 @@ void SolarPanels::run(){
 
 	while(1){
 		suspendCallerUntil(NOW()+SOLAR_SAMPLERATE*MILLISECONDS);
+
 		if(isActive()){
 			solData.Voltage = adc1.read(SolarVoltageADC);
 //			PRINTF("read solar Voltage: %d\n",solData.Voltage);
 			tmp.solData = solData;
 			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
+
 	}
 
 }

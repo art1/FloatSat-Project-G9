@@ -39,7 +39,7 @@
 
 
 #define COMMAND_FRAME_SIZE		24	// size in bytes including start and end characters
-#define TELEMETRY_FRAME_SIZE    58  // size in bytes including start and end characters
+#define TELEMETRY_FRAME_SIZE    107 //58  // size in bytes including start and end characters
 #define PAYLOAD_FRAME_SIZE      224 // size in bytes including start and end characters
 #define PAYLOAD_DATA_SIZE       200 // this is the size of only the payload data in the payload frame
 
@@ -73,6 +73,8 @@ enum telemetryFrame{
 	IR_DATA_ONE,
 	IR_DATA_TWO,
 	IR_DATA_THREE,
+	GS_SUNFINDER,
+	SUN_INCIDENCE_ANGLE,
 	TM_LOCALTIME
 };
 enum payloadFrame{
@@ -107,7 +109,17 @@ enum commands{
 	CONTROL_MOTOR, //with command value 0 -> stop and command val 1 -> start motor
 	GOTO_ANGLE,
 	// Mission Stuff
-	TAKE_PICTURE_AT
+	TAKE_PICTURE_AT,
+	EXTERMINAATE,
+	// only for Debug Communication -> used before big Mode Loop (used in setNewData in mainthread)
+	SET_BETA_GAIN,
+	SET_ANGLE_P,
+	SET_ANGLE_I,
+	SET_ANGLE_D,
+	SET_ROTAT_P,
+	SET_ROTAT_I,
+	SET_ROTAT_D,
+	ENABLE_TELEMETRY
 };
 
 enum system_mode{
@@ -140,13 +152,15 @@ struct TELEMETRY_FRAME{
 	float magnY;
 	float magnZ;
 	float temp;					// degree celsius
-	int32_t solarVoltage;		// in Volts
-	int32_t batteryVoltage;		// in Volts
+	float solarVoltage;		// in Volts
+	float batteryVoltage;		// in Volts
 	float current;				// in Ampere
 	float motorSpeed;			// in ???? dps?
 	float irDataOne;			// in centimeter
 	float irDataTwo;			// in centimeter
 	float irDataThree;			// in centimeter
+	uint8_t gs_sunfinder;		// values for Groundstation, 0: default, 1: sunfinder starts, 2: finished rotation, 3: rotates to sun finished, 4: start deployemt, 5: finished and stabilizes
+	float incidenceAngle;		// calculated sun incidence angle
 	int64_t localTime;			// in nanoseconds since system start!
 };
 

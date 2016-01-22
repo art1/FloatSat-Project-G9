@@ -16,13 +16,13 @@
 //WF121 wf121(&uart3);
 
 Telecommand::Telecommand() : Thread("Telecommand",102,1000){
-	// TODO Auto-generated constructor stub
+
 
 
 }
 
 Telecommand::~Telecommand() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void Telecommand::init(){

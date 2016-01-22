@@ -9,7 +9,7 @@
 
 #include "sensorFusion.h"
 
-#define GAIN	0.6f
+#define GAIN	0.4f
 
 //static Application senderName("RPY Publisher",501);
 
@@ -17,7 +17,7 @@
 
 
 sensorFusion::sensorFusion() : Thread("sensorFusion Thread",101){
-	// TODO Auto-generated constructor stub
+
 	beta = GAIN;
 	integrationDelta = 20000.0f;
 	sampleDiff = 0.0f;
@@ -52,13 +52,13 @@ sensorFusion::sensorFusion() : Thread("sensorFusion Thread",101){
 	angleRPY.GYRO_ROLL = 0.0f;
 	angleRPY.GYRO_YAW = 0.0f;
 
-	useMagn = false;
+	useMagn = true;
 
 	averageDrift = 0.0f;  // use for drift correction when not using magnetometer...
 }
 
 sensorFusion::~sensorFusion() {
-	// TODO Auto-generated destructor stub
+
 }
 
 
@@ -90,7 +90,7 @@ void sensorFusion::run(){
 #endif
 		float head;
 		if((filtered.YAW) < 0) head = 360.0 + filtered.YAW;
-		else head = filtered.YAW - averageDrift;
+		else head = filtered.YAW;
 		filtered.YAW = head;
 		imu_filtered.publish(filtered);
 //		PRINTF("%f\n",head);
@@ -99,13 +99,20 @@ void sensorFusion::run(){
 			//			PRINTF("roll:   %f   pitch:   %f   yaw:   %f\n",bank*TO_DEG,pitch*TO_DEG,heading*TO_DEG);
 //			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL*TO_DEG,filtered.PITCH*TO_DEG,filtered.YAW*TO_DEG);
 //			PRINTF("filtered: ROLL    %f    PITCH    %f    YAW     %f\n",filtered.ROLL,filtered.PITCH,filtered.YAW);
-			PRINTF("heading: %f\n",head);
+//			PRINTF("heading: %f\n",head);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 			//			PRINTF("\nYAW:   %f   PITCH:   %f   ROLL:   %f   \n",angleRPY.MAG_YAW,angleRPY.ACCL_PITCH,angleRPY.ACCL_ROLL);
 			cnt = 0;
 			BLUE_TOGGLE;
 		}
 		cnt++;
+	}
+}
+
+
+void sensorFusion::setNewData(VAR_CONTROL *_varC){
+	if(_varC->changedVal == SET_BETA_GAIN){
+		this->beta = _varC->value;
 	}
 }
 

@@ -59,6 +59,9 @@ struct receiver_Fusion : public Subscriber, public Thread {
 	receiver_Fusion(const char* _name) : Subscriber(imu_rawData,"IMU Raw Data"),Thread("IMU->Fusion Raw",119,500) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		fusion.newData(*(IMU_DATA_RAW*)data);
+#ifdef MOTOR_ENABLE
+		motorControl.setNewData(*(IMU_DATA_RAW*)data);
+#endif
 #ifdef TTNC_ENABLE
 		tm.setNewData(*(IMU_DATA_RAW*)data);
 #endif
@@ -181,7 +184,9 @@ struct sensorsCommThread : public Subscriber, public Thread {
 				camera.setNewData(tmp.camData);
 				camera.resume();
 			} else if (tmp.camData.sendImage){
+#ifdef TELEMETRY_ENABLE
 				tm.sendPayload(tmp.camData);
+#endif
 			}
 #endif
 			break;
@@ -191,6 +196,14 @@ struct sensorsCommThread : public Subscriber, public Thread {
 			tm.setNewData(tmp.currentData);
 #endif
 #endif
+			break;
+		case VARIABLE_CHANGED:
+#ifdef MOTOR_ENABLE
+			motorControl.setNewData(&tmp.varControlData);
+#endif
+			break;
+		case SUNFINDER_TM_CHANGED:
+
 			break;
 		default:
 			break;
@@ -207,7 +220,43 @@ mainThread::mainThread(const char* name) : Thread(name){
 
 void mainThread::setNewData(COMMAND_FRAME _t){
 	this->cmd = _t;
-	PRINTF("set new values %f\n",cmd.commandValue);
+	PRINTF("set new command values %f\n",cmd.commandValue);
+	VAR_CONTROL var;
+	var.changedVal = cmd.command;
+	var.value = cmd.commandValue;
+
+	switch (cmd.command) {
+	case SET_BETA_GAIN:
+		PRINTF("Setting new Beta Gain %f\n",var.value);
+#ifdef FUSION_ENABLE
+		fusion.setNewData(&var);
+#endif
+		break;
+	case SET_ANGLE_P:
+	case SET_ANGLE_I:
+	case SET_ANGLE_D:
+	case SET_ROTAT_P:
+	case SET_ROTAT_I:
+	case SET_ROTAT_D:
+		PRINTF("SEtting new PID values...\n");
+#ifdef MOTOR_ENABLE
+		motorControl.setNewData(&var);
+#endif
+		break;
+	case ENABLE_TELEMETRY:
+#ifdef TELEMETRY_ENABLE
+		if((int)cmd.commandValue == 1) {
+			PRINTF("Enabling Telemetry\n");
+			tm.setActive(true);
+			tm.resume();
+		}else{
+			tm.setActive(false);
+		}
+#endif
+		break;
+	default:
+		break;
+	}
 }
 
 void mainThread::init(){
@@ -249,6 +298,7 @@ void mainThread::run(){
 	i2c2.init(400000);
 	imu.regInit();
 	while(!imu.initFinished());
+	//imu.resume();
 #endif
 #ifdef CAMERA_ENABLE
 	camera.initCamera();
@@ -286,18 +336,27 @@ void mainThread::run(){
 	//	}
 
 	PRINTF("SYSTEM HELLO!\n");
-
+	bool switchedMode = false;
 	while(1){
 		//check which mode
 		if(cmd.command == GOTO_MODE){
 			currentSystemMode.activeMode = (int) cmd.commandValue;
-			PRINTF("here cmd\n");
-		} else {
+			PRINTF("here cmd, going to mode %d\n",currentSystemMode.activeMode);
+			if(currentSystemMode.activeMode == STANDBY){
+				switchedMode = true;				// going to standby immediately after received command
+				ORANGE_ON;
+			} else ORANGE_OFF;
+		}
+		if(!(cmd.command == GOTO_MODE) || switchedMode) {
+			switchedMode = false;
 			PRINTF("hello, active Mode: %d\n",currentSystemMode.activeMode);
 			switch (currentSystemMode.activeMode) {
 			case STANDBY:
 				// do nothing, only blink a led or some shit
 				PRINTF("DALEK waiting for commands!\n");
+#ifdef MOTOR_ENABLE
+				motorControl.setMotor(false);
+#endif
 				break;
 			case SUN_FINDING:
 #ifdef SUNFINDER_ENABLE
@@ -309,8 +368,7 @@ void mainThread::run(){
 #ifdef MOTOR_ENABLE
 				// seting motor speed,
 				PRINTF("motor control mode with command %d\n",cmd.command);
-				cmd.command = GOTO_ANGLE;
-				cmd.commandValue = 90.0;
+
 				switch (cmd.command) {
 				case SET_ROTATION_SPEED:
 
@@ -353,13 +411,13 @@ void mainThread::run(){
 					default:
 						break;
 					}
-
 					break;
 					default:
 						break;
 			}
 		}
 		suspendCallerUntil(END_OF_TIME);
+
 	}
 
 

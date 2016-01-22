@@ -14,12 +14,12 @@ static Application senderName("Lux_Data_Publisher",500);
 
 
 lightSensor::lightSensor() : Thread("Light Sensor",108, 1000){
-	// TODO Auto-generated constructor stub
+
 	activated = false;
 }
 
 lightSensor::~lightSensor() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void lightSensor::init(){
@@ -27,6 +27,7 @@ void lightSensor::init(){
 }
 
 void lightSensor::initSensor(){
+
 	int k=0;
 	lux = 0.0f;
 	activated =false;
@@ -39,7 +40,7 @@ void lightSensor::initSensor(){
 	transBuf[0] = REG_CONTROL;
 	transBuf[1] = TURN_ON;
 	k = i2c1.writeRead(DEVICE_ADRESS,transBuf,2,recBuf,1);
-//	PRINTF("turn on return: %d\n",recBuf[0]);
+		PRINTF("turn on return: %d\n",recBuf[0]);
 	if(recBuf[0] != TURN_ON){
 		PRINTF("error turning on the light sensor! please check connections!\n");
 		activated =false;
@@ -49,23 +50,23 @@ void lightSensor::initSensor(){
 	if(activated){
 		transBuf[0] = LIGHT_INTEGRATION_ADRESS;
 		switch (LIGHT_INTEGRATION_TIME) {
-			case 13:
-				if(LIGHT_GAIN == 1){
-					transBuf[1] = 0x10;
-				} else transBuf[1] = 0x00;
-				break;
-			case 101:
-				if(LIGHT_GAIN == 1){
-					transBuf[1] = 0x11;
-				} else transBuf[1] = 0x01;
-				break;
-			case 420:
-				if(LIGHT_GAIN == 1){
-					transBuf[1] = 0x12;
-				} else transBuf[1] = 0x02;
-				break;
-			default:
-				break;
+		case 13:
+			if(LIGHT_GAIN == 1){
+				transBuf[1] = 0x10;
+			} else transBuf[1] = 0x00;
+			break;
+		case 101:
+			if(LIGHT_GAIN == 1){
+				transBuf[1] = 0x11;
+			} else transBuf[1] = 0x01;
+			break;
+		case 420:
+			if(LIGHT_GAIN == 1){
+				transBuf[1] = 0x12;
+			} else transBuf[1] = 0x02;
+			break;
+		default:
+			break;
 		}
 		k = i2c1.write(DEVICE_ADRESS,transBuf,2);
 	}
@@ -80,17 +81,23 @@ void lightSensor::setActive(LUX_DATA val){
 }
 
 void lightSensor::run(){
+
 	INTERCOMM tmp;
 	tmp.changedVal = LUX_CHANGED;
 	if(!isActive())initSensor();
+
 	while(1){
+
 		suspendCallerUntil(NOW()+LIGHT_SAMPLERATE*MILLISECONDS);
+
 		if(pub_data.activated){
-		readRawData();
-		calculateLux();
-		tmp.luxData = pub_data;
-		interThreadComm.publish(tmp);
+			readRawData();
+			calculateLux();
+			tmp.luxData = pub_data;
+			PRINTF("lux data: %d\n",tmp.luxData.LUX);
+			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
+
 	}
 }
 
@@ -164,7 +171,6 @@ void lightSensor::readRawData(){
 	// read channel 0 -> visible & IR
 	transBuf[0] = ((REG_DATA0_LOW & 0x0F )| 0x90); //
 	i2c1.writeRead(DEVICE_ADRESS,transBuf,1,recBuf,2);
-//	PRINTF("raw high: %d low: %d",recBuf[1],recBuf[0]);
 	ch0 = (uint16_t)(recBuf[0] | (recBuf[1] << 8));
 
 	transBuf[0] = ((REG_DATA1_LOW & 0x0F)| 0x90);

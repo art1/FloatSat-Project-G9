@@ -22,9 +22,10 @@
 
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
+#define IMU_ENABLE
+
 #define TTNC_ENABLE
-#define TELEMETRY_DISABLE
+//#define TELEMETRY_ENABLE
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CURRENT_ENABLE
@@ -93,7 +94,9 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define WIFI_SSID_PW			"EXTERMINATE"
 #define WIFI_IP					0xFF01A8C0 // in hex and reverse
 #define WIFI_PORT				7777
+
 #define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
+
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
 #define BLUETOOTH_BUFFER		512				// in bytes, should be enough for Command Frames! (currently 24 needed)
@@ -101,13 +104,20 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 
 
 /****************************** IMU STUFF ************************************************/
+//#define USE_EXTERN_MAGN							// use external magnetometer on LSM303DLH board ( connected to I2C1)
+//#define USE_EXTERN_ACCL
+
 #define IMU_RESET_PIN			GPIO_055
 #define IMU_G_CS_PIN			GPIO_018
 #define IMU_XM_CS_PIN			GPIO_032
 
-#define IMU_GYRO_RANGE			500			// in DPS, select 245, 500 or 2000 sensitivity is set according to chosen value here
+#define IMU_GYRO_RANGE			500				// in DPS, select 245, 500 or 2000 sensitivity is set according to chosen value here
 #define IMU_ACCL_RANGE			6				// value in g, select 2,4,6,8 or 16; sensitivity is set according to chosen value
 #define IMU_MAGN_RANGE			8				// value in gauss, select 2,4,8 or 13; sensitivity is set according to chosen value
+
+#define EXT_MAGN_RANGE			25				// value in gauss*10, select 1.3, 1.9, 2.5, 4.0, 4.7, 5.6 or 8.1; sensitivity/gain is set according to chosen value
+#define EXT_ACCL_RANGE			2				// value in g, select 2, 4 or 8, gain/sensitivity is then set automatically
+/** TODO EXT ACCL_RANGE other than 2 seems not to work DEBUG HERE */
 
 #define IMU_GYRO_DEFAULT_OFFSET	1
 #define IMU_ACCL_DEFAULT_OFFSET	1
@@ -176,7 +186,7 @@ struct CAM_DATA{
 
 
 /* ***************************************** SolarPanel STUFF **********************************************/
-#define SolarVoltageADC			ADC_CH_001		//PA1 Pin
+#define SolarVoltageADC			ADC_CH_005 		//PA1 Pin
 #define SOLAR_SAMPLERATE		100				//Samplerate in milliseconds
 struct SOLAR_DATA{
 	bool activated;
@@ -186,9 +196,9 @@ struct SOLAR_DATA{
 
 
 /* ***************************************** Infrared Sensor STUFF **********************************************/
-#define IR_ONE					ADC_CH_002		// PA2
-#define IR_TWO					ADC_CH_003		// PA3
-#define IR_THREE				ADC_CH_005		// PA5
+#define IR_ONE					ADC_CH_001		// PA2
+#define IR_TWO					ADC_CH_002		// PA3
+#define IR_THREE				ADC_CH_003		// PA5
 #define IR_SAMPLERATE			200				// Samplerate in missileconds
 struct IR_DATA{
 	bool activated;
@@ -236,7 +246,31 @@ struct CURRENT_DATA{
 
 
 
+/* ***************************************** SUN FINDER TELEMETRY STUFF ******************************************/
+struct SUNFINDER_TM{
+	uint8_t currentProgress;
+	float sunIncidenceAngle;
+};
+
+
+
+
 /* ***************************************** Inter-Thread Communication for Sensors ***********************/
+
+/*
+ * 	SET_BETA_GAIN,
+	SET_ANGLE_P,
+	SET_ANGLE_I,
+	SET_ANGLE_D,
+	SET_ROTAT_P,
+	SET_ROTAT_I,
+	SET_ROTAT_D for changedVal
+ */
+struct VAR_CONTROL{
+	int changedVal;
+	float value;
+};
+
 struct INTERCOMM{
 	int changedVal;
 	LUX_DATA luxData;
@@ -246,6 +280,8 @@ struct INTERCOMM{
 	CAM_DATA camData;
 	IMU_RPY_FILTERED imuData;
 	CURRENT_DATA currentData;
+	VAR_CONTROL varControlData;
+	SUNFINDER_TM sunTM;
 };
 enum INTERCOMM_CHANGED{
 	LUX_CHANGED,
@@ -254,7 +290,9 @@ enum INTERCOMM_CHANGED{
 	KNIFE_CHANGED,
 	CAM_CHANGED,
 	IMU_CHANGED,
-	CURRENT_CHANGED
+	CURRENT_CHANGED,
+	VARIABLE_CHANGED,
+	SUNFINDER_TM_CHANGED
 };
 
 

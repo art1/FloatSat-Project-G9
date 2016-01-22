@@ -8,14 +8,14 @@
 #include "SunFinder.h"
 
 SunFinder::SunFinder() : Thread("SunFinder",115, 1000){
-	// TODO Auto-generated constructor stub
+
 	activated = false;
 	currentHeadingIndex = 0;
 	memset(heading,0,sizeof(heading));
 }
 
 SunFinder::~SunFinder() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void SunFinder::setActive(bool _val){
@@ -70,6 +70,7 @@ void SunFinder::init(){
 void SunFinder::run(){
 	while(1){
 		suspendCallerUntil(END_OF_TIME);
+		/** TODO include the communication stuff for Toms telemetry **/
 		if(isActive()){
 			/** TODO sunFinder Thread */
 			PRINTF("searching for sun...\n");

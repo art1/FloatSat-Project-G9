@@ -8,12 +8,12 @@
 #include "currentSensors.h"
 
 currentSensors::currentSensors() : Thread("Current Sensor Thread",111,500) {
-	// TODO Auto-generated constructor stub
+
 	current.changedVal = CURRENT_CHANGED;
 }
 
 currentSensors::~currentSensors() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void currentSensors::init(){

@@ -13,11 +13,11 @@ WF121 wf121(&uart3);
 
 
 WiFi::WiFi() {
-	// TODO Auto-generated constructor stub
+
 }
 
 WiFi::~WiFi() {
-	// TODO Auto-generated destructor stub
+
 }
 
 

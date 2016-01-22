@@ -26,13 +26,13 @@ HAL_PWM MotorPWM(PWM_IDX12);
 
 
 Motor::Motor() {
-	// TODO Auto-generated constructor stub
+
 	dutyCycle = 1; // start motor always in CW directino
 	clockwise = true;
 }
 
 Motor::~Motor() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void Motor::init(){
@@ -40,11 +40,13 @@ void Motor::init(){
 	MotorPWM.init(5000, 1000);
 	HBRIDGE_A_INA.init(true, 1, 0);
 	HBRIDGE_A_INB.init(true, 1, 1);
+	run();
 }
 
 void Motor::run(){
 	PRINTF("Starting Motor\n");
 	startMotor();
+//	suspendCallerUntil(END_OF_TIME);
 	//	pwm.write(250);
 	//	int cnt = 0;
 	//	while(1){
@@ -129,6 +131,7 @@ int Motor::switchDirection(int currentSpeed){
 void Motor::despinTo(int _currentSpeed,int _finalVal){
 	for(int i=_currentSpeed;i>_finalVal;i--){
 		MotorPWM.write(i);
+//		Delay_millis(100);
 	}
 
 }

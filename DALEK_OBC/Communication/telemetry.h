@@ -17,6 +17,8 @@ public:
 	virtual ~Telemetry();
 	void init();
 	void run();
+	void setActive(bool _val);
+	bool isActive();
 	void setNewData(IMU_RPY_FILTERED _imu);
 	void setNewData(IMU_DATA_RAW _imuRaw);
 	void setNewData(LUX_DATA _lux);
@@ -25,11 +27,14 @@ public:
 	void setNewData(CURRENT_DATA _current);
 	void setNewData(ACTIVE_SYSTEM_MODE _mode);
 	void setNewData(INTERCOMM _interComm);
+	void setNewData(SUNFINDER_TM _sunTM);
 	void sendPayload(CAM_DATA _camData);
+
 
 	uint32_t getCurrentFrameNumber();
 
 private:
+	bool active;
 	CommBuffer<TELEMETRY> tmBuf;
 	UDPMsg msg;
 	uint32_t frameNumber;
@@ -44,6 +49,7 @@ private:
 	RingBuffer<SOLAR_DATA,5> sol;
 	RingBuffer<IR_DATA,5> ir;
 	RingBuffer<CURRENT_DATA, 5> current;
+	RingBuffer<SUNFINDER_TM, 5> sunTMData;
 
 
 

@@ -12,9 +12,18 @@
 #include "hal.h"
 #include "../../Basic/basic.h"
 
+/**
+ * This Class takes care of configuring and reading the Build-in IMU on the Extension Board, as well
+ * as configuring and reading an external IMU, if connected (LSM303DLH). If the external IMU is used
+ * (enabling/disabling in basic.h), its Accelerometer and Magnetometer are used for Sensor Fusion and
+ * calculating the Heading (with tilt-compensation), but the Gyroscope from the built-in IMU will be
+ * used!
+ */
 
 #define GYRO_ADDRESS 				0x6B
 #define ACC_MAG_ADDRESS				0x1D
+#define EXT_MAG_ADDRESS				0x1E /**  0x3C write, 0x3D read, but RODOS wants the 7bit adress left aligned, and shifts it by one later*/
+#define EXT_ACC_ADDRESS				0x18
 
 #define GYRO_245DPS_SENSITIVITY		0.00875f
 #define GYRO_500DPS_SENSITIVITY		0.0175f
@@ -31,13 +40,40 @@
 #define MAGN_8GAUSS_SENSITIVITY		0.00032f
 #define MAGN_12GAUSS_SENSITIVITY	0.00048f
 
-/** TODO find appropriate values */
-#define MAG_MAX_X 660
-#define MAG_MAX_Y 6922
-#define MAG_MAX_Z 2779
-#define MAG_MIN_X -7194
-#define MAG_MIN_Y -562
-#define MAG_MIN_Z -7053
+#define EXT_ACCL_2G_SENSITIVITY		0.001f
+#define EXT_ACCL_4G_SENSITIVITY		0.002f
+#define EXT_ACCL_8G_SENSITIVITY		0.0039f
+
+
+
+//standard values derived from multiple Calibrations
+#define GYRO_OFFSET_X				-241.0f
+#define GYRO_OFFSET_Y				104.0f
+#define GYRO_OFFSET_Z				208.0f
+
+#define ACCL_OFFSET_X				-243.500f	//old-4800.500f
+#define ACCL_OFFSET_Y				-41.0f  	//old339.5f
+#define ACCL_OFFSET_Z				-377.25f 	//old-393.0f
+
+
+//ACCL CAL: -243.500, -41.000, -377.250
+
+#define MAGN_SCALE_X				9120
+#define MAGN_SCALE_Y				-534
+#define MAGN_SCALE_Z				-1647
+
+
+
+
+
+
+/** OLD DEPRECATED VALUES */
+//#define MAG_MAX_X 660
+//#define MAG_MAX_Y 6922
+//#define MAG_MAX_Z 2779
+//#define MAG_MIN_X -7194
+//#define MAG_MIN_Y -562
+//#define MAG_MIN_Z -7053
 
 // Data register adresses
 enum IMU_DATA_REG_ADD{
@@ -163,9 +199,34 @@ struct IMU_OFFSETS{
 	uint8_t Z_OFFSET_MAG_L;	//1Ah
 	uint8_t Z_OFFSET_MAG_H;	//1Bh
 };
-enum IMU_OFFSET_REG{
-
+enum EXTERNAL_MAGN {
+	//external magnetometer/accelerometer used: LSM303DLH
+	EXT_CTRL_REG1_A = 0x20,
+	EXT_CTRL_REG2_A = 0x21,
+	EXT_CTRL_REG3_A = 0x22,
+	EXT_CTRL_REG4_A = 0x23,
+	EXT_CTRL_REG5_A = 0x24,
+	EXT_REFERENCE_A = 0x26,
+	EXT_STATUS_REG_A = 0x27,
+	EXT_OUT_X_L_A = 0xA8, // enabling increment in register adress with MSB set to 1, normal adress is 0x28
+	EXT_OUT_X_H_A = 0x29,
+	EXT_OUT_Y_L_A = 0x2A,
+	EXT_OUT_Y_H_A = 0x2B,
+	EXT_OUT_Z_L_A = 0x2C,
+	EXT_OUT_Z_H_A = 0x2D,
+	// interrupts aren't needed and so not configured at all
+	EXT_CRA_REG_M = 0x00,
+	EXT_CRB_REG_M = 0x01,
+	EXT_MR_REG_M = 0x02,
+	EXT_OUT_X_H_M = 0x03,
+	EXT_OUT_X_L_M = 0x04,
+	EXT_OUT_Y_H_M = 0x05,
+	EXT_OUT_Y_L_M = 0x06,
+	EXT_OUT_Z_H_M = 0x07,
+	EXT_OUT_Z_L_M = 0x08,
+	//the other interrupt register aren't needed either
 };
+
 
 
 class IMU : public Thread{
@@ -176,12 +237,9 @@ public:
 	void regInit();
 	void run();
 	int resetIMU();
-	IMU_DATA_RAW readIMU_Data();
-	//set period time between executions
-	void setTime(int time);
-	void setGyroScale(int scale);
 	void calibrateSensors();
 	bool initFinished();
+	IMU_DATA_RAW readIMU_Data();
 
 private:
 	bool initDone;
@@ -193,6 +251,8 @@ private:
 	float gyroSensitivity;
 	float acclSensitivity;
 	float magnSensitivity;
+	float extAcclSensitivity;
+	float extMagnSensitivity;
 	float gyroOffset[3];
 	float acclOffset[3];
 	float magnOffset[3];
@@ -204,7 +264,7 @@ private:
 	int16_t temp_raw[1];
 	IMU_DATA_RAW oldData;
 	IMU_DATA_RAW newData;
-	// gyro integration things
+
 	struct IMU_RPY_RAW{
 		float GYRO_YAW;
 		float GYRO_ROLL;
@@ -213,6 +273,7 @@ private:
 		float ACCL_ROLL;
 		float ACCL_PITCH;
 	};
+
 	IMU_RPY_RAW angleRPY;
 	float samplerateTime;
 	float oldSamplerateTime;
@@ -224,7 +285,6 @@ private:
 	int cnt_failedReads;
 	bool calibrationFinished;
 	int k =0;
-
 	int debugTime =0;
 
 	bool calGyro;

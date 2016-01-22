@@ -7,13 +7,13 @@
 
 #include "MotorControlThread.h"
 
-MotorControlThread::MotorControlThread() : Thread("Motor Control",105,500){
-	// TODO Auto-generated constructor stub
+MotorControlThread::MotorControlThread() : Thread("Motor Control",105,1000){
+
 
 }
 
 MotorControlThread::~MotorControlThread() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void MotorControlThread::init(){
@@ -25,6 +25,7 @@ void MotorControlThread::run(){
 	motor.init();
 	int cnt = 0;
 	bool spin = false;
+//	forLoop(i,10)suspendCallerUntil(NOW()+1*SECONDS);
 
 	while(1){
 		suspendCallerUntil(END_OF_TIME);
@@ -36,11 +37,11 @@ void MotorControlThread::run(){
 //			while(1){
 //				motor.switchDirection(cnt);
 //				suspendCallerUntil(NOW()+5000*MILLISECONDS);
-////				PRINTF("switching direction\n");
+//				PRINTF("switching direction\n");
 //			}
 //		}
 //		PRINTF("couting.. %d\n",cnt);
-		ORANGE_TOGGLE;
+//		ORANGE_TOGGLE;
 	}
 }
 
@@ -61,12 +62,37 @@ void MotorControlThread::gotoAngle(float _angle){
 
 void MotorControlThread::setNewData(IMU_RPY_FILTERED _imu){
 	angCon.setNewData(_imu);
-	PRINTF("heading: %f ",_imu.YAW);
+//	PRINTF("heading: %f ",_imu.YAW);
 }
+void MotorControlThread::setNewData(IMU_DATA_RAW _dat){
+	rotCon.setNewData(_dat);
+}
+
+void MotorControlThread::setNewData(VAR_CONTROL *_varC){
+	switch (_varC->changedVal) {
+		case SET_ANGLE_P:
+		case SET_ANGLE_I:
+		case SET_ANGLE_D:
+			angCon.setNewData(_varC);
+			break;
+		case SET_ROTAT_P:
+		case SET_ROTAT_I:
+		case SET_ROTAT_D:
+			rotCon.setNewData(_varC);
+			break;
+		default:
+			break;
+	}
+}
+
 
 
 void MotorControlThread::setMotor(bool _val){
 	if(_val){
 		motor.startMotor();
-	} else motor.stopMotor();
+	} else {
+		motor.stopMotor();
+		angCon.setActive(false);
+		rotCon.setActive(false);
+	}
 }
