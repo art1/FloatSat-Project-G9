@@ -11,28 +11,35 @@
 #include "../../../Basic/sysDelay/systick.h"
 #include "mySCCB.h"
 #include "SCCB.h"
+#include "ov7670Register.h"
 
 #include "stm32f4xx.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_exti.h"
 
+
+#define CAMERA_FORMAT	0	// RAW 0, YUV 0, BAW 0, RGB 1
+#define IMAGESIZE		(WIDTH*HEIGHT)
+
+
+
 #define FIFO_CS_PIN     GPIO_Pin_12  	// PC12
 #define FIFO_RRST_PIN   GPIO_Pin_8		// PC08
 #define FIFO_RCLK_PIN   GPIO_Pin_8		// PA08
 #define FIFO_WE_PIN     GPIO_Pin_11		// PC11 -> is WR Pin on the 22pin version
 
-#define FIFO_CS_H()     GPIOC->BSRRL =FIFO_CS_PIN	  /* GPIO_SetBits(GPIOD , FIFO_CS_PIN)   */
-#define FIFO_CS_L()     GPIOC->BSRRH =FIFO_CS_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_CS_PIN) */
+#define FIFO_CS_H()     GPIOC->BSRRH =FIFO_CS_PIN	  /* GPIO_SetBits(GPIOD , FIFO_CS_PIN)   */
+#define FIFO_CS_L()     GPIOC->BSRRL =FIFO_CS_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_CS_PIN) */
 
-#define FIFO_RRST_H()   GPIOC->BSRRL =FIFO_RRST_PIN	  /* GPIO_SetBits(GPIOE , FIFO_RRST_PIN)   */
-#define FIFO_RRST_L()   GPIOC->BSRRH =FIFO_RRST_PIN	  /* GPIO_ResetBits(GPIOE , FIFO_RRST_PIN) */
+#define FIFO_RRST_H()   GPIOC->BSRRH =FIFO_RRST_PIN	  /* GPIO_SetBits(GPIOE , FIFO_RRST_PIN)   */
+#define FIFO_RRST_L()   GPIOC->BSRRL =FIFO_RRST_PIN	  /* GPIO_ResetBits(GPIOE , FIFO_RRST_PIN) */
 
-#define FIFO_RCLK_H()   GPIOA->BSRRL =FIFO_RCLK_PIN	  /* GPIO_SetBits(GPIOE , FIFO_RCLK_PIN)   */
-#define FIFO_RCLK_L()   GPIOA->BSRRH =FIFO_RCLK_PIN	  /* GPIO_ResetBits(GPIOE , FIFO_RCLK_PIN) */
+#define FIFO_RCLK_H()   GPIOA->BSRRH =FIFO_RCLK_PIN	  /* GPIO_SetBits(GPIOE , FIFO_RCLK_PIN)   */
+#define FIFO_RCLK_L()   GPIOA->BSRRL =FIFO_RCLK_PIN	  /* GPIO_ResetBits(GPIOE , FIFO_RCLK_PIN) */
 
-#define FIFO_WE_H()     GPIOC->BSRRL =FIFO_WE_PIN	  /* GPIO_SetBits(GPIOD , FIFO_WE_PIN)   */
-#define FIFO_WE_L()     GPIOC->BSRRH =FIFO_WE_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_WE_PIN) */
+#define FIFO_WE_H()     GPIOC->BSRRH =FIFO_WE_PIN	  /* GPIO_SetBits(GPIOD , FIFO_WE_PIN)   */
+#define FIFO_WE_L()     GPIOC->BSRRL =FIFO_WE_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_WE_PIN) */
 
 #define OV7670							   0x73
 #define OV7670_REG_NUM                     114
@@ -62,13 +69,14 @@ public:
 	void FIFO_GPIO_Configuration(void);
 	void OV7670_PB7_Configuration(void);
 //	void OV7670_EXTI_Configuration(void);
-	int  OV7670_ReadReg(uint8_t reg,uint16_t regValue);
-	int  OV7670_WriteReg(uint8_t reg,uint16_t regValue);
+
 //	static const uint8_t OV7670_Reg[OV7670_REG_NUM][2];
 private:
 	mySCCB sccb;
 	Sccb sccb2;
 	uint8_t Vsync;	 /* ÷°Õ¨≤Ω–≈∫≈ */
+	uint8_t  ReadReg(uint8_t reg);
+	int  WriteReg(uint8_t reg,uint8_t regValue);
 
 
 

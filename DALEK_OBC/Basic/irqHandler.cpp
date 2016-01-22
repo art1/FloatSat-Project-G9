@@ -42,7 +42,7 @@
 extern "C" void EXTI9_5_IRQHandler(void)
 {
 //	PRINTF("interrupt handler called!\n");
-//	test++;
+	test++;
   if ( EXTI_GetITStatus(EXTI_Line7) != RESET )
   {
      if( VSync == 0 )

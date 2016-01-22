@@ -25,7 +25,7 @@
 #define IMU_ENABLE
 
 #define TTNC_ENABLE
-#define TELEMETRY_ENABLE
+//#define TELEMETRY_ENABLE
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CURRENT_ENABLE
@@ -167,8 +167,8 @@ struct LUX_DATA{
 /* ***************************************** Camera STUFF **********************************************/
 #define CAM_READ				0x43
 #define CAM_WRITE				0x42
-#define IM_HEIGHT				480
-#define IM_WIDTH				640
+#define WIDTH					160
+#define HEIGHT					120
 #define DCMI_CAPTUREMODE		DCMI_CaptureMode_SnapShot
 #define DCMI_CAPTURERATE		DCMI_CaptureRate_All_Frame
 

@@ -14,8 +14,7 @@
 
 
 
-#define WIDTH						320
-#define HEIGHT						240
+
 
 //#define CAPTUREMODE					DCMI_CaptureMode_SnapShot
 //#define FRAMERATE					DCMI_CaptureRate_All_Frame

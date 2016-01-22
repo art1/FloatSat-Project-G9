@@ -23,6 +23,7 @@ Camera::Camera() : Thread("Camera",99){
 	//	processData = false;
 	//	sendPic = true;
 	initDone = false;
+	VSync = -1;
 }
 
 
@@ -66,7 +67,6 @@ void Camera::run(){
 
 
 
-	VSync = 0;
 	INTERCOMM comm;
 	uint8_t data[8];
 	uint8_t tmp;
@@ -75,13 +75,13 @@ void Camera::run(){
 		suspendCallerUntil(END_OF_TIME);
 	}
 
+	VSync = 0;
 
 	while(1){
 		//		suspendCallerUntil(END_OF_TIME);
 		//		suspendCallerUntil(NOW() + 1500*MILLISECONDS);
 		ORANGE_ON;
 		if(captureImage){
-
 			PRINTF("capturing imageo!\n");
 			uint32_t count;
 			uint16_t CMOS_Data;

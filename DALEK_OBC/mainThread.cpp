@@ -393,6 +393,7 @@ void mainThread::run(){
 				case MISSION:
 					// execute mission
 					PRINTF("mission mode!\n");
+					cmd.command = TAKE_PICTURE_AT;
 					switch (cmd.command) {
 					case TAKE_PICTURE_AT:
 						// taking picture at angle!
