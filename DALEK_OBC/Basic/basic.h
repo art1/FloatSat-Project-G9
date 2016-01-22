@@ -25,7 +25,7 @@
 #define IMU_ENABLE
 
 #define TTNC_ENABLE
-//#define TELEMETRY_ENABLE
+#define TELEMETRY_ENABLE
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CURRENT_ENABLE

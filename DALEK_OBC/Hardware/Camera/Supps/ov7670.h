@@ -22,17 +22,17 @@
 #define FIFO_RCLK_PIN   GPIO_Pin_8		// PA08
 #define FIFO_WE_PIN     GPIO_Pin_11		// PC11 -> is WR Pin on the 22pin version
 
-#define FIFO_CS_H()     GPIOC->BSRRH =FIFO_CS_PIN	  /* GPIO_SetBits(GPIOD , FIFO_CS_PIN)   */
-#define FIFO_CS_L()     GPIOC->BSRRL =FIFO_CS_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_CS_PIN) */
+#define FIFO_CS_H()     GPIOC->BSRRL =FIFO_CS_PIN	  /* GPIO_SetBits(GPIOD , FIFO_CS_PIN)   */
+#define FIFO_CS_L()     GPIOC->BSRRH =FIFO_CS_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_CS_PIN) */
 
-#define FIFO_RRST_H()   GPIOC->BSRRH =FIFO_RRST_PIN	  /* GPIO_SetBits(GPIOE , FIFO_RRST_PIN)   */
-#define FIFO_RRST_L()   GPIOC->BSRRL =FIFO_RRST_PIN	  /* GPIO_ResetBits(GPIOE , FIFO_RRST_PIN) */
+#define FIFO_RRST_H()   GPIOC->BSRRL =FIFO_RRST_PIN	  /* GPIO_SetBits(GPIOE , FIFO_RRST_PIN)   */
+#define FIFO_RRST_L()   GPIOC->BSRRH =FIFO_RRST_PIN	  /* GPIO_ResetBits(GPIOE , FIFO_RRST_PIN) */
 
-#define FIFO_RCLK_H()   GPIOA->BSRRH =FIFO_RCLK_PIN	  /* GPIO_SetBits(GPIOE , FIFO_RCLK_PIN)   */
-#define FIFO_RCLK_L()   GPIOA->BSRRL =FIFO_RCLK_PIN	  /* GPIO_ResetBits(GPIOE , FIFO_RCLK_PIN) */
+#define FIFO_RCLK_H()   GPIOA->BSRRL =FIFO_RCLK_PIN	  /* GPIO_SetBits(GPIOE , FIFO_RCLK_PIN)   */
+#define FIFO_RCLK_L()   GPIOA->BSRRH =FIFO_RCLK_PIN	  /* GPIO_ResetBits(GPIOE , FIFO_RCLK_PIN) */
 
-#define FIFO_WE_H()     GPIOC->BSRRH =FIFO_WE_PIN	  /* GPIO_SetBits(GPIOD , FIFO_WE_PIN)   */
-#define FIFO_WE_L()     GPIOC->BSRRL =FIFO_WE_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_WE_PIN) */
+#define FIFO_WE_H()     GPIOC->BSRRL =FIFO_WE_PIN	  /* GPIO_SetBits(GPIOD , FIFO_WE_PIN)   */
+#define FIFO_WE_L()     GPIOC->BSRRH =FIFO_WE_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_WE_PIN) */
 
 #define OV7670							   0x73
 #define OV7670_REG_NUM                     114
@@ -59,7 +59,6 @@ public:
 	ov7670();
 	virtual ~ov7670();
 	int Sensor_Init(void);
-	void GPIO_Configuration();
 	void FIFO_GPIO_Configuration(void);
 	void OV7670_PB7_Configuration(void);
 //	void OV7670_EXTI_Configuration(void);

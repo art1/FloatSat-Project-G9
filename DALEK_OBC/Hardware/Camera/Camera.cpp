@@ -12,7 +12,6 @@
 #define ONE_BYTE_REG_ADDR 0x01
 #define TWO_BYTE_REG_ADDR 0x02
 
-//Camera camera("camera_thread");
 
 
 
@@ -26,52 +25,8 @@ Camera::Camera() : Thread("Camera",99){
 	initDone = false;
 }
 
-void Camera::initTimer(){
-	//	GPIO_InitTypeDef GPIO_InitStructure;
-	//
-	//	RCC_ClockSecuritySystemCmd(ENABLE);
-	//
-	//	/* Enable GPIOs clocks */
-	//	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-	//
-	//	GPIO_PinAFConfig(GPIOA, GPIO_PinSource8, GPIO_AF_MCO);
-	//
-	//	/* Configure MCO (PA8) */
-	//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
-	//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	//	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	//	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	//
-	//	RCC_MCO1Config(RCC_MCO1Source_PLLCLK, RCC_MCO1Div_4);
-}
 
 
-void Camera::OV7670_SCCB() {
-	//	PRINTF("starting InitOV7670 init\n");
-	//	uint16_t x = 0;
-	//	int res = 0;
-	//	res = sccb.ov7670_set(0x12, 0x80);
-	//	res = sccb.ov7670_set(0x12, 0x00);
-	////	PRINTF("res is %d\n",res);
-	//	while (init_registers[x][0] != 0xFF && init_registers[x][1] != 0xFF) {
-	//		PRINTF("init register: status x=%d\n", x);
-	//
-	//		res = sccb.ov7670_set((unsigned char) init_registers[x][0],
-	//				(unsigned char) init_registers[x][1]);
-	//		uint8_t read = sccb.ov7670_get((unsigned char) init_registers[x][0]);
-	//		PRINTF("SCCB Init %d: reg 0x%x = 0x%x = 0x%x \n", x,
-	//				init_registers[x][0], init_registers[x][1], read);
-	//		if (res) {
-	//			PRINTF("ERROR I2C %d\n", res);
-	//		}
-	//		x++;
-	//		delayx(5);
-	//
-	//	}
-
-}
 
 void Camera::init() {
 

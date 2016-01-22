@@ -40,8 +40,6 @@ public:
 	bool initFinished();
 private:
 	CAM_DATA daten;
-	void initTimer();
-	void OV7670_SCCB();
 	ov7670 cam;
 	uint16_t picture[100];
 	HAL_GPIO ledo;
