@@ -29,8 +29,8 @@
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CURRENT_ENABLE
-//#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
-#define MOTOR_ENABLE
+#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
+//#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
 //#define IR_ENABLE
 //#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
@@ -186,7 +186,7 @@ struct CAM_DATA{
 
 
 /* ***************************************** SolarPanel STUFF **********************************************/
-#define SolarVoltageADC			ADC_CH_001		//PA1 Pin
+#define SolarVoltageADC			ADC_CH_005 		//PA1 Pin
 #define SOLAR_SAMPLERATE		100				//Samplerate in milliseconds
 struct SOLAR_DATA{
 	bool activated;
@@ -196,9 +196,9 @@ struct SOLAR_DATA{
 
 
 /* ***************************************** Infrared Sensor STUFF **********************************************/
-#define IR_ONE					ADC_CH_002		// PA2
-#define IR_TWO					ADC_CH_003		// PA3
-#define IR_THREE				ADC_CH_005		// PA5
+#define IR_ONE					ADC_CH_001		// PA2
+#define IR_TWO					ADC_CH_002		// PA3
+#define IR_THREE				ADC_CH_003		// PA5
 #define IR_SAMPLERATE			200				// Samplerate in missileconds
 struct IR_DATA{
 	bool activated;
@@ -246,6 +246,15 @@ struct CURRENT_DATA{
 
 
 
+/* ***************************************** SUN FINDER TELEMETRY STUFF ******************************************/
+struct SUNFINDER_TM{
+	uint8_t currentProgress;
+	float sunIncidenceAngle;
+};
+
+
+
+
 /* ***************************************** Inter-Thread Communication for Sensors ***********************/
 
 /*
@@ -272,6 +281,7 @@ struct INTERCOMM{
 	IMU_RPY_FILTERED imuData;
 	CURRENT_DATA currentData;
 	VAR_CONTROL varControlData;
+	SUNFINDER_TM sunTM;
 };
 enum INTERCOMM_CHANGED{
 	LUX_CHANGED,
@@ -281,7 +291,8 @@ enum INTERCOMM_CHANGED{
 	CAM_CHANGED,
 	IMU_CHANGED,
 	CURRENT_CHANGED,
-	VARIABLE_CHANGED
+	VARIABLE_CHANGED,
+	SUNFINDER_TM_CHANGED
 };
 
 

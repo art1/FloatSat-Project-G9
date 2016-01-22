@@ -27,7 +27,9 @@ public:
 	void setNewData(CURRENT_DATA _current);
 	void setNewData(ACTIVE_SYSTEM_MODE _mode);
 	void setNewData(INTERCOMM _interComm);
+	void setNewData(SUNFINDER_TM _sunTM);
 	void sendPayload(CAM_DATA _camData);
+
 
 	uint32_t getCurrentFrameNumber();
 
@@ -47,6 +49,7 @@ private:
 	RingBuffer<SOLAR_DATA,5> sol;
 	RingBuffer<IR_DATA,5> ir;
 	RingBuffer<CURRENT_DATA, 5> current;
+	RingBuffer<SUNFINDER_TM, 5> sunTMData;
 
 
 

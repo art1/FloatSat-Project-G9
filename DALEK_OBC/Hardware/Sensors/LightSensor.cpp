@@ -40,7 +40,7 @@ void lightSensor::initSensor(){
 	transBuf[0] = REG_CONTROL;
 	transBuf[1] = TURN_ON;
 	k = i2c1.writeRead(DEVICE_ADRESS,transBuf,2,recBuf,1);
-	//	PRINTF("turn on return: %d\n",recBuf[0]);
+		PRINTF("turn on return: %d\n",recBuf[0]);
 	if(recBuf[0] != TURN_ON){
 		PRINTF("error turning on the light sensor! please check connections!\n");
 		activated =false;
@@ -94,6 +94,7 @@ void lightSensor::run(){
 			readRawData();
 			calculateLux();
 			tmp.luxData = pub_data;
+			PRINTF("lux data: %d\n",tmp.luxData.LUX);
 			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
 

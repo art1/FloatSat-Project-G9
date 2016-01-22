@@ -70,6 +70,7 @@ void SunFinder::init(){
 void SunFinder::run(){
 	while(1){
 		suspendCallerUntil(END_OF_TIME);
+		/** TODO include the communication stuff for Toms telemetry **/
 		if(isActive()){
 			/** TODO sunFinder Thread */
 			PRINTF("searching for sun...\n");

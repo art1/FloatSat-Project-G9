@@ -59,7 +59,9 @@ struct receiver_Fusion : public Subscriber, public Thread {
 	receiver_Fusion(const char* _name) : Subscriber(imu_rawData,"IMU Raw Data"),Thread("IMU->Fusion Raw",119,500) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		fusion.newData(*(IMU_DATA_RAW*)data);
+#ifdef MOTOR_ENABLE
 		motorControl.setNewData(*(IMU_DATA_RAW*)data);
+#endif
 #ifdef TTNC_ENABLE
 		tm.setNewData(*(IMU_DATA_RAW*)data);
 #endif
@@ -182,7 +184,9 @@ struct sensorsCommThread : public Subscriber, public Thread {
 				camera.setNewData(tmp.camData);
 				camera.resume();
 			} else if (tmp.camData.sendImage){
+#ifdef TELEMETRY_ENABLE
 				tm.sendPayload(tmp.camData);
+#endif
 			}
 #endif
 			break;
@@ -197,6 +201,9 @@ struct sensorsCommThread : public Subscriber, public Thread {
 #ifdef MOTOR_ENABLE
 			motorControl.setNewData(&tmp.varControlData);
 #endif
+			break;
+		case SUNFINDER_TM_CHANGED:
+
 			break;
 		default:
 			break;
@@ -221,7 +228,9 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 	switch (cmd.command) {
 	case SET_BETA_GAIN:
 		PRINTF("Setting new Beta Gain %f\n",var.value);
+#ifdef FUSION_ENABLE
 		fusion.setNewData(&var);
+#endif
 		break;
 	case SET_ANGLE_P:
 	case SET_ANGLE_I:
@@ -230,9 +239,12 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 	case SET_ROTAT_I:
 	case SET_ROTAT_D:
 		PRINTF("SEtting new PID values...\n");
+#ifdef MOTOR_ENABLE
 		motorControl.setNewData(&var);
+#endif
 		break;
 	case ENABLE_TELEMETRY:
+#ifdef TELEMETRY_ENABLE
 		if((int)cmd.commandValue == 1) {
 			PRINTF("Enabling Telemetry\n");
 			tm.setActive(true);
@@ -240,6 +252,7 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 		}else{
 			tm.setActive(false);
 		}
+#endif
 		break;
 	default:
 		break;
@@ -340,7 +353,9 @@ void mainThread::run(){
 			case STANDBY:
 				// do nothing, only blink a led or some shit
 				PRINTF("DALEK waiting for commands!\n");
+#ifdef MOTOR_ENABLE
 				motorControl.setMotor(false);
+#endif
 				break;
 			case SUN_FINDING:
 #ifdef SUNFINDER_ENABLE

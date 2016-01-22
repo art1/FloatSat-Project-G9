@@ -37,9 +37,9 @@ void InfraredSensors::run(){
 			irData.sensorOne = (float)adc1.read(IR_ONE);
 			irData.sensorTwo = (float)adc1.read(IR_TWO);
 			irData.sensorThree = (float)adc1.read(IR_THREE);
-//			PRINTF("read IR Data: %d, %d, %d\n",irData.sensorOne,irData.sensorTwo,irData.sensorThree);
-			tmp.irData = irData;
 			linearizeData();
+			PRINTF("read IR Data: %f, %f, %f\n",irData.sensorOne,irData.sensorTwo,irData.sensorThree);
+			tmp.irData = irData;
 			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
 	}

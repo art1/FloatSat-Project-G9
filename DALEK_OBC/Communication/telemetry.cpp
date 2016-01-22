@@ -18,7 +18,7 @@ Telemetry::~Telemetry(){
 
 void Telemetry::init(){
 #ifdef TELEMETRY_ENABLE
-	acrive = true;
+	active = true;
 #else
 	active = false;
 #endif
@@ -74,6 +74,10 @@ void Telemetry::setNewData(INTERCOMM _interComm){
 
 }
 
+void Telemetry::setNewData(SUNFINDER_TM _sunTM){
+	this->sunTMData.put(_sunTM);
+}
+
 void Telemetry::setNewData(ACTIVE_SYSTEM_MODE _mode){
 	this->systemMode = _mode;
 }
@@ -101,6 +105,8 @@ void Telemetry::buildFrame(){
 	sol.get(s);
 	IMU_DATA_RAW rpyRaw;
 	imuRaw.get(rpyRaw);
+	SUNFINDER_TM sunData;
+	sunTMData.get(sunData);
 
 	for(int i=-1;i<15;i++){
 		switch (i) {
@@ -245,6 +251,15 @@ void Telemetry::buildFrame(){
 			break;
 		case IR_DATA_THREE:
 			floatToChar(tmp,irData.sensorThree);
+			forLoop(j,4){
+				msg.data[msg.length++] = tmp[j];
+			}
+			break;
+		case GS_SUNFINDER:
+			msg.data[msg.length++] = sunData.currentProgress;
+			break;
+		case SUN_INCIDENCE_ANGLE:
+			floatToChar(tmp,sunData.sunIncidenceAngle);
 			forLoop(j,4){
 				msg.data[msg.length++] = tmp[j];
 			}

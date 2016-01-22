@@ -110,6 +110,7 @@ enum commands{
 	GOTO_ANGLE,
 	// Mission Stuff
 	TAKE_PICTURE_AT,
+	EXTERMINAATE,
 	// only for Debug Communication -> used before big Mode Loop (used in setNewData in mainthread)
 	SET_BETA_GAIN,
 	SET_ANGLE_P,
@@ -151,8 +152,8 @@ struct TELEMETRY_FRAME{
 	float magnY;
 	float magnZ;
 	float temp;					// degree celsius
-	int32_t solarVoltage;		// in Volts
-	int32_t batteryVoltage;		// in Volts
+	float solarVoltage;		// in Volts
+	float batteryVoltage;		// in Volts
 	float current;				// in Ampere
 	float motorSpeed;			// in ???? dps?
 	float irDataOne;			// in centimeter
