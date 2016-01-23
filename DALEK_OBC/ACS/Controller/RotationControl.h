@@ -13,6 +13,8 @@
 
 extern "C" Motor motor;
 
+
+
 class RotationControl : public Thread{
 public:
 	RotationControl();

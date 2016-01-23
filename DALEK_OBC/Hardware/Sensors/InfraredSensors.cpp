@@ -5,6 +5,11 @@
  *      Author: arthur
  */
 
+// ADC1 linearization equation: y= (366184 / (x - 176)) - 11
+// ADC2 linearization equation: y= (349312 /( x -72)) -11
+// ADC3 linearization equation: y= 367980 /( x -114) -11
+
+
 #include "InfraredSensors.h"
 
 InfraredSensors::InfraredSensors() : Thread("Infrared Thread",111,1000){
@@ -34,9 +39,9 @@ void InfraredSensors::run(){
 	while(1){
 		suspendCallerUntil(NOW()+IR_SAMPLERATE*MILLISECONDS);
 		if(isActive()){
-			irData.sensorOne = (float)adc1.read(IR_ONE);
-			irData.sensorTwo = (float)adc1.read(IR_TWO);
-			irData.sensorThree = (float)adc1.read(IR_THREE);
+			irData.sensorOne = adc1.read(IR_ONE);
+			irData.sensorTwo = adc1.read(IR_TWO);
+			irData.sensorThree = adc1.read(IR_THREE);
 			linearizeData();
 			PRINTF("read IR Data: %f, %f, %f\n",irData.sensorOne,irData.sensorTwo,irData.sensorThree);
 			tmp.irData = irData;
@@ -47,9 +52,13 @@ void InfraredSensors::run(){
 
 void InfraredSensors::linearizeData(){
 	/** TODO measure the linearization for correct value */
-	irData.sensorOne = powf((3027.4/irData.sensorOne),1.2134);
-	irData.sensorTwo = powf((3027.4/irData.sensorTwo),1.2134);
-	irData.sensorThree= powf((3027.4/irData.sensorThree),1.2134);
+//	irData.sensorOne = powf((3027.4/irData.sensorOne),1.2134);
+//	irData.sensorTwo = powf((3027.4/irData.sensorTwo),1.2134);
+//	irData.sensorThree= powf((3027.4/irData.sensorThree),1.2134);
+
+	irData.sensorOne = (float)(366184 / (irData.sensorOne -176)) -11;
+	irData.sensorTwo = (float)(349312 / (irData.sensorTwo -72)) -11;
+	irData.sensorThree = (float)(367980 / (irData.sensorThree -114)) -11;
 }
 
 void InfraredSensors::setNewData(IR_DATA at){

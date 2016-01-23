@@ -29,10 +29,10 @@
 #define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CURRENT_ENABLE
-#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
-//#define MOTOR_ENABLE
+//#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
+#define MOTOR_ENABLE
 //#define SOLAR_ADC_ENABLE
-//#define IR_ENABLE
+#define IR_ENABLE
 //#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
 //#define KNIFE_ENABLE
 //#define SUNFINDER_ENABLE
@@ -65,7 +65,7 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define COMPL_GAIN				0.98f			// Complementary Filter Gain
 #define forLoop(x,n)			for(int x=0;x<n;x++)
 
-
+#define I_ERROR_LIMITATION		6				// add integral error only if error is big -> avoid stupid integration of small errors
 
 
 /****************************** LED STUFF ************************************************/

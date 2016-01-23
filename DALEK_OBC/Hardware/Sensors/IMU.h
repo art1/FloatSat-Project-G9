@@ -58,9 +58,9 @@
 
 //ACCL CAL: -243.500, -41.000, -377.250
 
-#define MAGN_SCALE_X				9120
-#define MAGN_SCALE_Y				-534
-#define MAGN_SCALE_Z				-1647
+#define MAGN_SCALE_X				3053
+#define MAGN_SCALE_Y				-336
+#define MAGN_SCALE_Z				-1123
 
 
 
@@ -290,6 +290,7 @@ private:
 	bool calGyro;
 	bool calAccl;
 	bool calMagn;
+	bool calMagnSpinning;
 
 
 

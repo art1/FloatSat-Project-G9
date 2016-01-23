@@ -56,6 +56,9 @@ void RotationControl::run(){
 
 		controlOut = pPart + iPart + dPart;
 
+		// control output deckeln
+		if(controlOut > 1000) controlOut = 1000;
+
 		if(!(cnt % 100)) PRINTF("control output: %f\n",controlOut);
 		cnt++;
 
