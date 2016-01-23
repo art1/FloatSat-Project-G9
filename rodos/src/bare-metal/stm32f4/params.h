@@ -50,9 +50,9 @@ namespace RODOS {
  *
  */
 #ifndef UART_DEBUG
-#define UART_DEBUG                        UART_IDX3, GPIO_056, GPIO_057 // PD8 and PD9 // UART intern -> not when using wifi!
+//#define UART_DEBUG                        UART_IDX3, GPIO_056, GPIO_057 // PD8 and PD9 // UART intern -> not when using wifi!
 //#define UART_DEBUG                      UART_IDX2, GPIO_053, GPIO_054 // PD5 and PD6	// UART external device -> when using wifi
-//#define UART_DEBUG                      UART_IDX4, GPIO_000, GPIO_001 // PA0 and PA1
+#define UART_DEBUG                      UART_IDX4, GPIO_000, GPIO_001 // PA0 and PA1
 //#define UART_DEBUG                      UART_IDX5
 #endif
 

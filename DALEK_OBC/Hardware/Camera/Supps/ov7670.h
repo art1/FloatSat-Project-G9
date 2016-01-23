@@ -42,7 +42,7 @@
 #define FIFO_WE_L()     GPIOC->BSRRL =FIFO_WE_PIN	  /* GPIO_ResetBits(GPIOD , FIFO_WE_PIN) */
 
 #define OV7670							   0x73
-#define OV7670_REG_NUM                     114
+#define OV7670_REG_NUM                     168
 
 #define PORT_VSYNC_CMOS                    GPIOB
 #define RCC_AHB1Periph_PORT_VSYNC_CMOS     RCC_AHB1Periph_GPIOB
