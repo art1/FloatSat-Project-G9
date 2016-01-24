@@ -40,13 +40,33 @@ void lightSensor::initSensor(){
 	transBuf[0] = REG_CONTROL;
 	transBuf[1] = TURN_ON;
 	k = i2c1.writeRead(DEVICE_ADRESS,transBuf,2,recBuf,1);
-		PRINTF("turn on return: %d\n",recBuf[0]);
+	while(k < 0){
+		PRINTF("turn on return: %d with i2c-k %d\n",recBuf[0],k);
+		i2c1.reset();
+		suspendCallerUntil(NOW()+200*MILLISECONDS);
+		i2c1.init(400000);
+		suspendCallerUntil(NOW()+200*MILLISECONDS);
+		k = i2c1.writeRead(DEVICE_ADRESS,transBuf,2,recBuf,1);
+		PRINTF("turn on return: %d with i2c-k %d\n",recBuf[0],k);
+
+	}
+//	k = i2c1.writeRead(0x39,transBuf,2,recBuf,1);
+//	PRINTF("turn on return: %d with i2c-k %d\n",recBuf[0],k);
+//	k = i2c1.writeRead(0x49,transBuf,2,recBuf,1);
+//	PRINTF("turn on return: %d with i2c-k %d\n",recBuf[0],k);
+
+	for(uint8_t i=0;i<15;i++){
+		transBuf[0] = 0x82;
+		k = i2c1.writeRead(DEVICE_ADRESS,transBuf,1,recBuf,1);
+		PRINTF("reg: %d val: %d  i2c-k %d\n",transBuf[0],recBuf[0],k);
+
+	}
 	if(recBuf[0] != TURN_ON){
 		PRINTF("error turning on the light sensor! please check connections!\n");
 		activated =false;
 	} else activated = true;
 
-	// setting gain 'n' shit
+	// setting gain
 	if(activated){
 		transBuf[0] = LIGHT_INTEGRATION_ADRESS;
 		switch (LIGHT_INTEGRATION_TIME) {
@@ -87,6 +107,7 @@ void lightSensor::run(){
 	if(!isActive())initSensor();
 
 	while(1){
+		//		if(!activated) suspendCallerUntil(END_OF_TIME);
 
 		suspendCallerUntil(NOW()+LIGHT_SAMPLERATE*MILLISECONDS);
 

@@ -16,7 +16,7 @@
 
 
 
-#define DEVICE_ADRESS	0x29
+#define DEVICE_ADRESS	0x39
 
 #define TURN_ON			0x03
 #define TURN_OFF		0x00

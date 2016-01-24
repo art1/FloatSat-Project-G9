@@ -93,7 +93,9 @@ bool Camera::initFinished(){
 
 void Camera::run(){
 
-
+//#ifndef CAMERA_ENABLE
+//	suspendCallerUntil(END_OF_TIME);
+//#endif
 
 	memset(picture,0,sizeof(picture));
 	reset.setPins(1);
