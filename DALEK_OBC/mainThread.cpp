@@ -55,6 +55,9 @@ SunFinder sunFinder;
 currentSensors current;
 #endif
 
+HAL_GPIO laser(GPIO_015);
+
+
 //RESUMER THREADS
 /**************************** IMU MESSAGES **************************************/
 #ifdef FUSION_ENABLE
@@ -283,6 +286,7 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	currentSystemMode.activeMode = STANDBY;
 	cmd.command = -1;
+	laser.init(true,1,0);
 
 }
 
@@ -409,6 +413,10 @@ void mainThread::run(){
 						tempComm.changedVal = CAM_CHANGED;
 						interThreadComm.publish(tempComm);
 #endif
+						break;
+					case EXTERMINATE:
+						if((int)cmd.commandValue == 1) laser.setPins(1);
+						else laser.setPins(0);
 						break;
 					default:
 						break;

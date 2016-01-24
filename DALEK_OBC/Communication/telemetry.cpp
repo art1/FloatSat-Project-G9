@@ -107,6 +107,14 @@ void Telemetry::buildFrame(){
 	imuRaw.get(rpyRaw);
 	SUNFINDER_TM sunData;
 	sunTMData.get(sunData);
+	CURRENT_DATA cur;
+	current.get(cur);
+
+	PRINTF("yaw %f pitch %f roll %f - IR %f %f %f - LUX %d - "
+			"SolVolt %f - BattVolt %f - Current %f\n",rpy.YAW,rpy.PITCH,rpy.ROLL,
+			irData.sensorOne,irData.sensorTwo,irData.sensorThree,
+			l.LUX,s.Voltage,cur.batteryVoltage,cur.batteryCurrent);
+
 
 	for(int i=-1;i<15;i++){
 		switch (i) {

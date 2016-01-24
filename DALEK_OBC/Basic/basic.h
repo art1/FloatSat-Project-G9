@@ -22,17 +22,17 @@
 
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
+#define IMU_ENABLE
 
-//#define TTNC_ENABLE
+#define TTNC_ENABLE
 //#define TELEMETRY_ENABLE
-//#define FUSION_ENABLE
+#define FUSION_ENABLE
 #define LIGHT_ENABLE
 #define CURRENT_ENABLE
 //#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
 //#define MOTOR_ENABLE
-//#define SOLAR_ADC_ENABLE
-//#define IR_ENABLE
+#define SOLAR_ADC_ENABLE
+#define IR_ENABLE
 //#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
 //#define KNIFE_ENABLE
 //#define SUNFINDER_ENABLE
@@ -187,7 +187,7 @@ struct CAM_DATA{
 
 /* ***************************************** SolarPanel STUFF **********************************************/
 #define SolarVoltageADC			ADC_CH_005 		//PA1 Pin
-#define SOLAR_SAMPLERATE		100				//Samplerate in milliseconds
+#define SOLAR_SAMPLERATE		200				//Samplerate in milliseconds
 struct SOLAR_DATA{
 	bool activated;
 	int32_t Voltage;
@@ -238,10 +238,11 @@ struct KNIFE_DATA{
 
 
 /* ***************************************** Current Sensor STUFF ******************************************/
-#define CURRENT_SAMPLERATE			200 // in milliseconds
+#define CURRENT_SAMPLERATE			2000 // in milliseconds
 struct CURRENT_DATA{
-	float currentBattery;
+	float batteryCurrent;
 	float power;
+	float batteryVoltage;
 };
 
 

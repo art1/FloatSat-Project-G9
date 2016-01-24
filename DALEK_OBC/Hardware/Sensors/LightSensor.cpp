@@ -100,7 +100,6 @@ void lightSensor::run(){
 	if(!isActive())initSensor();
 
 	while(1){
-		//		if(!activated) suspendCallerUntil(END_OF_TIME);
 
 		suspendCallerUntil(NOW()+LIGHT_SAMPLERATE*MILLISECONDS);
 
@@ -108,7 +107,6 @@ void lightSensor::run(){
 			readRawData();
 			calculateLux();
 			tmp.luxData = pub_data;
-//			PRINTF("lux data: %d\n",tmp.luxData.LUX);
 			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
 

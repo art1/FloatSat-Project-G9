@@ -110,7 +110,7 @@ enum commands{
 	GOTO_ANGLE,
 	// Mission Stuff
 	TAKE_PICTURE_AT,
-	EXTERMINAATE,
+	EXTERMINATE,
 	// only for Debug Communication -> used before big Mode Loop (used in setNewData in mainthread)
 	SET_BETA_GAIN,
 	SET_ANGLE_P,
