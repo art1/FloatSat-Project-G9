@@ -308,11 +308,11 @@ void mainThread::run(){
 #endif
 #ifdef LIGHT_ENABLE
 	i2c1.init(400000);
-	LUX_DATA temp;
-	temp.activated = true;
-	tempComm.luxData = temp;
-	tempComm.changedVal = LUX_CHANGED;
-	interThreadComm.publish(tempComm);
+//	LUX_DATA temp;
+//	temp.activated = true;
+//	tempComm.luxData = temp;
+//	tempComm.changedVal = LUX_CHANGED;
+//	interThreadComm.publish(tempComm);
 #endif
 #ifdef CURRENT_ENABLE
 #ifndef LIGHT_ENABLE

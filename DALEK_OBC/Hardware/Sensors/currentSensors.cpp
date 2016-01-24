@@ -21,11 +21,18 @@ void currentSensors::init(){
 }
 
 void currentSensors::run(){
+	suspendCallerUntil(NOW()+1000*MILLISECONDS);
 	configSensors();
 	txBuf[0] = 0x00;
 	int b = i2c1.writeRead(CURRENT_BATTERY_ADRESS,txBuf,1,rxBuf,1);
 	PRINTF("Current read return: %d, reg: %d\n", b,rxBuf[0]);
-
+	while(b < 0){
+		i2c1.reset();
+		i2c1.init();
+		int b = i2c1.writeRead(CURRENT_BATTERY_ADRESS,txBuf,1,rxBuf,1);
+		PRINTF("Current read return: %d, reg: %d\n", b,rxBuf[0]);
+		suspendCallerUntil(NOW()+500*MILLISECONDS);
+	}
 	suspendCallerUntil(END_OF_TIME);
 	while(1){
 		readRawData();

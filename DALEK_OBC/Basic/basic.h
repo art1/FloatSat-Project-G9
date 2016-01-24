@@ -27,7 +27,7 @@
 //#define TTNC_ENABLE
 //#define TELEMETRY_ENABLE
 //#define FUSION_ENABLE
-//#define LIGHT_ENABLE
+#define LIGHT_ENABLE
 #define CURRENT_ENABLE
 //#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
 //#define MOTOR_ENABLE

@@ -23,7 +23,7 @@ lightSensor::~lightSensor() {
 }
 
 void lightSensor::init(){
-
+	pub_data.activated = true;
 }
 
 void lightSensor::initSensor(){
@@ -34,7 +34,7 @@ void lightSensor::initSensor(){
 	memset(transBuf,0,sizeof(transBuf));
 	memset(recBuf,0,sizeof(recBuf));
 	pub_data.LUX = 0;
-	pub_data.activated = false;
+	pub_data.activated = true;
 
 	//turn on the light sensor
 	transBuf[0] = REG_CONTROL;
@@ -52,15 +52,8 @@ void lightSensor::initSensor(){
 	}
 //	k = i2c1.writeRead(0x39,transBuf,2,recBuf,1);
 //	PRINTF("turn on return: %d with i2c-k %d\n",recBuf[0],k);
-//	k = i2c1.writeRead(0x49,transBuf,2,recBuf,1);
-//	PRINTF("turn on return: %d with i2c-k %d\n",recBuf[0],k);
+	PRINTF("turn on return: %d with i2c-k %d\n",recBuf[0],k);
 
-	for(uint8_t i=0;i<15;i++){
-		transBuf[0] = 0x82;
-		k = i2c1.writeRead(DEVICE_ADRESS,transBuf,1,recBuf,1);
-		PRINTF("reg: %d val: %d  i2c-k %d\n",transBuf[0],recBuf[0],k);
-
-	}
 	if(recBuf[0] != TURN_ON){
 		PRINTF("error turning on the light sensor! please check connections!\n");
 		activated =false;
@@ -101,7 +94,7 @@ void lightSensor::setActive(LUX_DATA val){
 }
 
 void lightSensor::run(){
-
+	suspendCallerUntil(NOW()+1000*MILLISECONDS);
 	INTERCOMM tmp;
 	tmp.changedVal = LUX_CHANGED;
 	if(!isActive())initSensor();
@@ -115,7 +108,7 @@ void lightSensor::run(){
 			readRawData();
 			calculateLux();
 			tmp.luxData = pub_data;
-			PRINTF("lux data: %d\n",tmp.luxData.LUX);
+//			PRINTF("lux data: %d\n",tmp.luxData.LUX);
 			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
 
@@ -197,4 +190,5 @@ void lightSensor::readRawData(){
 	transBuf[0] = ((REG_DATA1_LOW & 0x0F)| 0x90);
 	i2c1.writeRead(DEVICE_ADRESS,transBuf,1,recBuf,2);
 	ch1 = (uint16_t)(recBuf[0] | (recBuf[1] << 8));
+//	PRINTF("raw data %d %d\n",ch0,ch1);
 }
