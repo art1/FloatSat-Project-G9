@@ -30,6 +30,7 @@
 
 #include "Hardware/Sensors/SolarPanels.h"
 #include "Hardware/Sensors/InfraredSensors.h"
+#include "Hardware/Sensors/currentSensors.h"
 #include "Hardware/ThermalKnife.h"
 #include "Mission/SunFinder.h"
 

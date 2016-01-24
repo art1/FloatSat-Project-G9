@@ -51,6 +51,12 @@ ThermalKnife knife;
 #ifdef SUNFINDER_ENABLE
 SunFinder sunFinder;
 #endif
+#ifdef CURRENT_ENABLE
+currentSensors current;
+#endif
+
+HAL_GPIO laser(GPIO_015);
+
 
 //RESUMER THREADS
 /**************************** IMU MESSAGES **************************************/
@@ -288,9 +294,12 @@ void mainThread::init(){
  * Thread is resumed when new commands from the groundstatoin arrives!
  */
 void mainThread::run(){
+	laser.init(true,1,0);
+
 #ifndef WIFI_ENABLE
 	bt_uart.init(BLUETOOTH_BAUDRATE);
 #endif
+
 
 	//enable ADC1 channel with 12 Bit Resolution
 	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);
@@ -304,13 +313,14 @@ void mainThread::run(){
 	camera.initCamera();
 	while(!camera.initFinished());
 #endif
+
 #ifdef LIGHT_ENABLE
 	i2c1.init(400000);
-	LUX_DATA temp;
-	temp.activated = true;
-	tempComm.luxData = temp;
-	tempComm.changedVal = LUX_CHANGED;
-	interThreadComm.publish(tempComm);
+//	LUX_DATA temp;
+//	temp.activated = true;
+//	tempComm.luxData = temp;
+//	tempComm.changedVal = LUX_CHANGED;
+//	interThreadComm.publish(tempComm);
 #endif
 #ifdef CURRENT_ENABLE
 #ifndef LIGHT_ENABLE
@@ -408,6 +418,10 @@ void mainThread::run(){
 						tempComm.changedVal = CAM_CHANGED;
 						interThreadComm.publish(tempComm);
 #endif
+						break;
+					case EXTERMINATE:
+						if((int)cmd.commandValue == 1) laser.setPins(1);
+						else laser.setPins(0);
 						break;
 					default:
 						break;

@@ -49,22 +49,22 @@ void Bluetooth::getNewMessages(){
 //	memset(temp.data,0,sizeof(temp.data));
 	memset(recBuf,0,sizeof(recBuf));
 
-	PRINTF("Received!\n");
+//	PRINTF("Received!\n");
 	int number = 0;
 
 	if(bt_uart.isDataReady()){
 
 		int k = bt_uart.read(recBuf,BLUETOOTH_BUFFER);
-		PRINTF("read %d chars\n",k);
+//		PRINTF("read %d chars\n",k);
 
 		if(k >= COMMAND_FRAME_SIZE){
 			for(int i=0;i<COMMAND_FRAME_SIZE;i++)
 			{
 				temp.data[i] = recBuf[i];
-				PRINTF("%d ",recBuf[i]);
+//				PRINTF("%d ",recBuf[i]);
 				temp.length++;
 			}
-			PRINTF("\n length is %d\n",temp.length);
+//			PRINTF("\n length is %d\n",temp.length);
 
 
 

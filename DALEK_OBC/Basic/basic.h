@@ -22,11 +22,11 @@
 
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-#define IMU_ENABLE
+//#define IMU_ENABLE
 
-#define TTNC_ENABLE
+//#define TTNC_ENABLE
 //#define TELEMETRY_ENABLE
-#define FUSION_ENABLE
+//#define FUSION_ENABLE
 //#define LIGHT_ENABLE
 //#define CURRENT_ENABLE
 #define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
@@ -65,7 +65,7 @@ extern "C" uint8_t VSync;						// camera, for IRQ handler
 #define COMPL_GAIN				0.98f			// Complementary Filter Gain
 #define forLoop(x,n)			for(int x=0;x<n;x++)
 
-
+#define I_ERROR_LIMITATION		6				// add integral error only if error is big -> avoid stupid integration of small errors
 
 
 /****************************** LED STUFF ************************************************/
@@ -187,7 +187,7 @@ struct CAM_DATA{
 
 /* ***************************************** SolarPanel STUFF **********************************************/
 #define SolarVoltageADC			ADC_CH_005 		//PA1 Pin
-#define SOLAR_SAMPLERATE		100				//Samplerate in milliseconds
+#define SOLAR_SAMPLERATE		200				//Samplerate in milliseconds
 struct SOLAR_DATA{
 	bool activated;
 	int32_t Voltage;
@@ -238,10 +238,11 @@ struct KNIFE_DATA{
 
 
 /* ***************************************** Current Sensor STUFF ******************************************/
-#define CURRENT_SAMPLERATE			200 // in milliseconds
+#define CURRENT_SAMPLERATE			2000 // in milliseconds
 struct CURRENT_DATA{
-	float currentBattery;
+	float batteryCurrent;
 	float power;
+	float batteryVoltage;
 };
 
 

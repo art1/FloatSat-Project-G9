@@ -26,7 +26,7 @@ HAL_PWM MotorPWM(PWM_IDX12);
 
 
 Motor::Motor() {
-
+	lastDutyCycle = 0;
 	dutyCycle = 1; // start motor always in CW directino
 	clockwise = true;
 }
@@ -81,6 +81,16 @@ int Motor::setspeed(int16_t duty){
 	} else MotorPWM.write(duty);
 
 
+	// rampe fahren falls duty cycle zu stark springt (-> big wheel draws too much current if sudden hcnage in duty cycle)
+	if(abs((duty - lastDutyCycle)) >= MOTOR_RAMP_THRESHOLD){
+		PRINTF("too sudden change in control! driving a ramp\n");
+		if(duty < lastDutyCycle){
+			spinDownTo(lastDutyCycle,duty);
+		} else if(duty > lastDutyCycle){
+			spinUpTo(lastDutyCycle,duty);
+		}
+	}
+
 	dutyCycle = duty;
 //	if(duty != 0){
 //		if((duty < 0) && clockwise){
@@ -115,7 +125,7 @@ int Motor::switchDirection(int currentSpeed){
 	bool tmp = false;
 
 	if(currentSpeed > 350){
-		despinTo(currentSpeed,350);
+		spinDownTo(currentSpeed,350);
 		tmp = true;
 	}
 
@@ -128,10 +138,10 @@ int Motor::switchDirection(int currentSpeed){
 	if(tmp) MotorPWM.write(currentSpeed);
 }
 
-void Motor::despinTo(int _currentSpeed,int _finalVal){
+void Motor::spinDownTo(int _currentSpeed,int _finalVal){
 	for(int i=_currentSpeed;i>_finalVal;i--){
 		MotorPWM.write(i);
-//		Delay_millis(100);
+		Delay_millis(1);
 	}
 
 }
@@ -139,6 +149,7 @@ void Motor::despinTo(int _currentSpeed,int _finalVal){
 void Motor::spinUpTo(int _currentSpeed,int _finalVal){
 	for(int i=_currentSpeed;i<_finalVal;i++){
 		MotorPWM.write(i);
+		Delay_millis(1);
 	}
 }
 

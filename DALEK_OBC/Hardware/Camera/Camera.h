@@ -16,7 +16,7 @@
 
 
 
-//#define CAPTUREMODE					DCMI_CaptureMode_SnapShot
+//#define CAPTUREMODE				DCMI_CaptureMode_SnapShot
 //#define FRAMERATE					DCMI_CaptureRate_All_Frame
 //#define CAPTUREMODE				DCMI_CaptureMode_Continuous
 //#define FRAMERATE					DCMI_CaptureRate_1of4_Frame

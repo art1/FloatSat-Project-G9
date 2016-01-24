@@ -15,7 +15,7 @@
 
 
 
-Camera::Camera() : Thread("Camera",99){
+Camera::Camera() : Thread("Camera",50){
 	reset = HAL_GPIO(GPIO_010); //PA10
 	power = HAL_GPIO(GPIO_033); //PC01
 	isActive = false;
@@ -46,11 +46,13 @@ bool Camera::initFinished(){
 	return initDone;
 }
 
+
 void Camera::initCamera(){
+	PRINTF("starting cam init\n");
+
 	memset(picture,0,sizeof(picture));
 	reset.setPins(1);
 	power.setPins(0);
-	PRINTF("starting cam init\n");
 	FIFO_CS_L();
 
 	FIFO_CS_H();
@@ -122,14 +124,15 @@ void Camera::run(){
 					}
 					//					PRINTF("%d;",tmp);
 					CMOS_Data = (((uint16_t)tmp) << 8) & 0xff00;
+
 					FIFO_RCLK_H();
-//										if(!(count%WIDTH)){
-//					//						PRINTF("%d;",CMOS_Data);
-//											PRINTF("%d\n",tmp);
-//										}else{
-											PRINTF("%d,",tmp);
-//					//						PRINTF("%d,",CMOS_Data);
-//										}
+					//										if(!(count%WIDTH)){
+					//					//						PRINTF("%d;",CMOS_Data);
+					//											PRINTF("%d\n",tmp);
+					//										}else{
+					PRINTF("%d,",tmp);
+					//					//						PRINTF("%d,",CMOS_Data);
+					//										}
 					FIFO_RCLK_L();
 					//					CMOS_Data |= (GPIOC->IDR) & 0x00ff;	  /* ( GPIO_ReadInputData(GPIOC) ) & 0x00ff; */
 					data[0] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6); 	// D0 - G2
@@ -146,42 +149,43 @@ void Camera::run(){
 					}
 					CMOS_Data |= ((uint16_t)tmp) & 0x00ff;
 					FIFO_RCLK_H();
-//					if(!(count%WIDTH)){
-////						PRINTF("%d;",CMOS_Data);
-//						PRINTF("%d\n",tmp);
-//					}else{
-						PRINTF("%d,",tmp);
-////						PRINTF("%d,",CMOS_Data);
-//					}
-//					if(!(count%WIDTH)){
-//						PRINTF("%d\n",CMOS_Data);
-//						//						PRINTF("%d;\n",tmp);
-//					}else{
-//						//						PRINTF("%d,",tmp);
-//						PRINTF("%d,",CMOS_Data);
-//					}
-
-//						suspendCallerUntil(NOW()+10*MILLISECONDS);
-
-
-					//					PRINTF("%d;",tmp);
-					//					PRINTF("%d;",CMOS_Data);
-					//					picture[toSend++] = CMOS_Data;
-					//					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
-					//						comm.camData.activateCamera = false;
-					//						comm.camData.capture = false;
-					//						comm.camData.sendImage = true;
-					//						comm.camData.picture = picture;
-					//						comm.camData.width = WIDTH;
-					//						comm.camData.height = HEIGHT;
-					//						comm.camData.consecutiveFrame = consFrame;
-					//						comm.changedVal = CAM_CHANGED;
-					//						interThreadComm.publish(comm);
-					//						suspendCallerUntil(NOW()+50*MILLISECONDS);
-					////						suspendCallerUntil(END_OF_TIME);
-					//						consFrame++;
-					//						toSend = 0;
+					//					if(!(count%WIDTH)){
+					////						PRINTF("%d;",CMOS_Data);
+					//						PRINTF("%d\n",tmp);
+					//					}else{
+					PRINTF("%d,",tmp);
+					////						PRINTF("%d,",CMOS_Data);
 					//					}
+					//					if(!(count%WIDTH)){
+					//						PRINTF("%d\n",CMOS_Data);
+					//						//						PRINTF("%d;\n",tmp);
+					//					}else{
+					//						//						PRINTF("%d,",tmp);
+					//						PRINTF("%d,",CMOS_Data);
+					//					}
+
+
+					//						suspendCallerUntil(NOW()+10*MILLISECONDS);
+
+
+					PRINTF("%d;",tmp);
+					PRINTF("%d;",CMOS_Data);
+					picture[toSend++] = CMOS_Data;
+					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
+						comm.camData.activateCamera = false;
+						comm.camData.capture = false;
+						comm.camData.sendImage = true;
+						comm.camData.picture = picture;
+						comm.camData.width = WIDTH;
+						comm.camData.height = HEIGHT;
+						comm.camData.consecutiveFrame = consFrame;
+						comm.changedVal = CAM_CHANGED;
+						interThreadComm.publish(comm);
+						suspendCallerUntil(NOW()+50*MILLISECONDS);
+						//						suspendCallerUntil(END_OF_TIME);
+						consFrame++;
+						toSend = 0;
+					}
 
 				}
 				ORANGE_OFF;
