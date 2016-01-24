@@ -21,7 +21,7 @@ void currentSensors::init(){
 }
 
 void currentSensors::run(){
-	suspendCallerUntil(NOW()+1000*MILLISECONDS);
+	suspendCallerUntil(NOW()+2000*MILLISECONDS);
 
 	configSensors();
 

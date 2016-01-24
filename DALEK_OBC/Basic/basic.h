@@ -22,17 +22,17 @@
 
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-#define IMU_ENABLE
+//#define IMU_ENABLE
 
-#define TTNC_ENABLE
+//#define TTNC_ENABLE
 //#define TELEMETRY_ENABLE
-#define FUSION_ENABLE
-#define LIGHT_ENABLE
-#define CURRENT_ENABLE
-//#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
+//#define FUSION_ENABLE
+//#define LIGHT_ENABLE
+//#define CURRENT_ENABLE
+#define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
 //#define MOTOR_ENABLE
-#define SOLAR_ADC_ENABLE
-#define IR_ENABLE
+//#define SOLAR_ADC_ENABLE
+//#define IR_ENABLE
 //#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
 //#define KNIFE_ENABLE
 //#define SUNFINDER_ENABLE

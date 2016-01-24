@@ -23,8 +23,7 @@ void SolarPanels::init(){
 void SolarPanels::run(){
 	INTERCOMM tmp;
 	tmp.changedVal = SOLAR_CHANGED;
-//	suspendCallerUntil(END_OF_TIME);
-//	if(!isActive) init();
+	suspendCallerUntil(END_OF_TIME);
 
 	while(1){
 		suspendCallerUntil(NOW()+SOLAR_SAMPLERATE*MILLISECONDS);
@@ -32,7 +31,7 @@ void SolarPanels::run(){
 		if(isActive()){
 			solData.Voltage = adc1.read(SolarVoltageADC);
 			tmp.solData = solData;
-			PRINTF("Solar Voltage: %d\n",solData.Voltage);
+//			PRINTF("Solar Voltage: %d\n",solData.Voltage);
 			interThreadComm.publish(tmp);
 		} else suspendCallerUntil(END_OF_TIME);
 

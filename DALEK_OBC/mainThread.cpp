@@ -286,7 +286,6 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	currentSystemMode.activeMode = STANDBY;
 	cmd.command = -1;
-	laser.init(true,1,0);
 
 }
 
@@ -295,8 +294,13 @@ void mainThread::init(){
  * Thread is resumed when new commands from the groundstatoin arrives!
  */
 void mainThread::run(){
+	laser.init(true,1,0);
+
 #ifndef WIFI_ENABLE
 	bt_uart.init(BLUETOOTH_BAUDRATE);
+#endif
+#ifdef CAMERA_ENABLE
+	while(!camera.initFinished());
 #endif
 
 	//enable ADC1 channel with 12 Bit Resolution
@@ -307,9 +311,7 @@ void mainThread::run(){
 	while(!imu.initFinished());
 	//imu.resume();
 #endif
-#ifdef CAMERA_ENABLE
-	while(!camera.initFinished());
-#endif
+
 #ifdef LIGHT_ENABLE
 	i2c1.init(400000);
 //	LUX_DATA temp;

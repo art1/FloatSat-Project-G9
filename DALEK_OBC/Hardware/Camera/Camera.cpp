@@ -16,7 +16,7 @@
 
 
 
-Camera::Camera() : Thread("Camera",99){
+Camera::Camera() : Thread("Camera",50){
 	reset = HAL_GPIO(GPIO_010); //PA10
 	power = HAL_GPIO(GPIO_033); //PC01
 	isActive = false;
@@ -92,15 +92,11 @@ bool Camera::initFinished(){
 
 
 void Camera::run(){
-
-//#ifndef CAMERA_ENABLE
-//	suspendCallerUntil(END_OF_TIME);
-//#endif
+	PRINTF("starting cam init\n");
 
 	memset(picture,0,sizeof(picture));
 	reset.setPins(1);
 	power.setPins(0);
-	PRINTF("starting cam init\n");
 	FIFO_CS_L();
 
 	FIFO_CS_H();
@@ -164,7 +160,7 @@ void Camera::run(){
 					for(int i=0;i<8;i++){
 						if(data[i]) tmp |= 1 << i;
 					}
-					PRINTF("%d;",tmp);
+//					PRINTF("%d;",tmp);
 //					CMOS_Data = ((uint16_t)tmp << 8) & 0xff00;
 					FIFO_RCLK_H();
 
@@ -184,24 +180,24 @@ void Camera::run(){
 					}
 					CMOS_Data = (tmp) & 0x00ff;
 					FIFO_RCLK_H();
-					PRINTF("%d;",tmp);
+//					PRINTF("%d;",tmp);
 //					PRINTF("%d;",CMOS_Data);
-//					picture[toSend++] = CMOS_Data;
-//					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
-//						comm.camData.activateCamera = false;
-//						comm.camData.capture = false;
-//						comm.camData.sendImage = true;
-//						comm.camData.picture = picture;
-//						comm.camData.width = WIDTH;
-//						comm.camData.height = HEIGHT;
-//						comm.camData.consecutiveFrame = consFrame;
-//						comm.changedVal = CAM_CHANGED;
-//						interThreadComm.publish(comm);
+					picture[toSend++] = CMOS_Data;
+					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
+						comm.camData.activateCamera = false;
+						comm.camData.capture = false;
+						comm.camData.sendImage = true;
+						comm.camData.picture = picture;
+						comm.camData.width = WIDTH;
+						comm.camData.height = HEIGHT;
+						comm.camData.consecutiveFrame = consFrame;
+						comm.changedVal = CAM_CHANGED;
+						interThreadComm.publish(comm);
 //						suspendCallerUntil(NOW()+50*MILLISECONDS);
-////						suspendCallerUntil(END_OF_TIME);
-//						consFrame++;
-//						toSend = 0;
-//					}
+//						suspendCallerUntil(END_OF_TIME);
+						consFrame++;
+						toSend = 0;
+					}
 
 				}
 				ORANGE_OFF;

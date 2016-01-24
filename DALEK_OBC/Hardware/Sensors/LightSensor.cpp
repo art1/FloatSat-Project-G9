@@ -94,7 +94,7 @@ void lightSensor::setActive(LUX_DATA val){
 }
 
 void lightSensor::run(){
-	suspendCallerUntil(NOW()+1000*MILLISECONDS);
+	suspendCallerUntil(NOW()+2000*MILLISECONDS);
 	INTERCOMM tmp;
 	tmp.changedVal = LUX_CHANGED;
 	if(!isActive())initSensor();
