@@ -153,7 +153,7 @@ void Camera::run(){
 					////						PRINTF("%d;",CMOS_Data);
 					//						PRINTF("%d\n",tmp);
 					//					}else{
-					PRINTF("%d,",tmp);
+//					PRINTF("%d,",tmp);
 					////						PRINTF("%d,",CMOS_Data);
 					//					}
 					//					if(!(count%WIDTH)){
@@ -169,23 +169,25 @@ void Camera::run(){
 
 
 					PRINTF("%d;",tmp);
-					PRINTF("%d;",CMOS_Data);
-					picture[toSend++] = CMOS_Data;
-					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
-						comm.camData.activateCamera = false;
-						comm.camData.capture = false;
-						comm.camData.sendImage = true;
-						comm.camData.picture = picture;
-						comm.camData.width = WIDTH;
-						comm.camData.height = HEIGHT;
-						comm.camData.consecutiveFrame = consFrame;
-						comm.changedVal = CAM_CHANGED;
-						interThreadComm.publish(comm);
-						suspendCallerUntil(NOW()+50*MILLISECONDS);
-						//						suspendCallerUntil(END_OF_TIME);
-						consFrame++;
-						toSend = 0;
-					}
+//					PRINTF("%d;",CMOS_Data);
+//					picture[toSend++] = CMOS_Data;
+//					if(toSend == 100){ // 100 since uint16_t and there must be some overhead because telemetry!
+//						PRINTF("Sending Frame %d\n",consFrame);
+//						comm.camData.activateCamera = false;
+//						comm.camData.capture = false;
+//						comm.camData.sendImage = true;
+//						comm.camData.picture = picture;
+//						comm.camData.width = WIDTH;
+//						comm.camData.height = HEIGHT;
+//						comm.camData.consecutiveFrame = consFrame;
+//						comm.changedVal = CAM_CHANGED;
+//						interThreadComm.publish(comm);
+//						//suspendCallerUntil(NOW()+50*MILLISECONDS);
+//						//						suspendCallerUntil(END_OF_TIME);
+//						suspendCallerUntil(NOW()+50*MILLISECONDS);
+//						consFrame++;
+//						toSend = 0;
+//					}
 
 				}
 				ORANGE_OFF;

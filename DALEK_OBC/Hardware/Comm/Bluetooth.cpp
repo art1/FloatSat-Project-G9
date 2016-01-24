@@ -120,6 +120,7 @@ void Bluetooth::sendEchoMessage(UDPMsg echoMsg){
 }
 
 void Bluetooth::sendNewMessage(UDPMsg *msg){
+//	PRINTF("sendig data\n")
 #ifndef WIFI_ENABLE
 	bt_uart.write(reinterpret_cast<const char*>(msg->data),msg->length);
 #endif

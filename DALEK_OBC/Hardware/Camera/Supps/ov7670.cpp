@@ -12,8 +12,7 @@
 
 
 static const uint8_t OV7670_Reg[OV7670_REG_NUM][2]=
-{
-		{0x3a, 0x04},
+{	{0x3a, 0x04},
 		{0x40, 0xd0},
 		{0x32, 0x80},
 		{0x17, 0x16},
@@ -24,8 +23,8 @@ static const uint8_t OV7670_Reg[OV7670_REG_NUM][2]=
 		{0x12, 0x14},
 		{ 0x0c, 0x04 }, // COM3
 		{ 0x3e, 0x1A }, // COM14
-		{ 0x70, 0x3a }, // SCALING_XSC
-		{ 0x71, 0x35 }, // SCALING_YSC
+		{ 0x70, 0xba }, // SCALING_XSC, original 3a, test pattern 7a
+		{ 0x71, 0xb5 }, // SCALING_YSC, original 35, test pattern 75
 		{ 0x72, 0xee }, // SCALING_DCWCTR
 		{ 0x73, 0xf2 }, // SCALING_PCLK_DIV
 		{ 0xa2, 0x02 }, // SCALING_PCLK_DELAY
@@ -82,7 +81,7 @@ static const uint8_t OV7670_Reg[OV7670_REG_NUM][2]=
 		{0x4e, 0x20},
 		{0x69, 0x0c},///////////////////////
 		{0x6b, 0x80},//PLL  30 FPS bei DIV 1
-		//		{0x6b, 0x60},//PLL	20 FPS bei DIV 2
+//		{0x6b, 0x60},//PLL	20 FPS bei DIV 2
 		{0x74, 0x19},
 		{0x8d, 0x4f},
 		{0x8e, 0x00},
@@ -154,6 +153,7 @@ static const uint8_t OV7670_Reg[OV7670_REG_NUM][2]=
 		{0x9d, 0x4c},
 		{0x9e, 0x3f},
 		{0x78, 0x04},
+
 		{0x79, 0x01},
 		{0xc8, 0xf0},
 		{0x79, 0x0f},
@@ -181,7 +181,9 @@ static const uint8_t OV7670_Reg[OV7670_REG_NUM][2]=
 		{0x55, 0x00},
 		{0x56, 0x40},
 		{0x3b, 0x42},//0x82,//0xc0,//0xc2,	//night mode
-		{ 0xff, 0xff }
+		// #########################################################################
+		// END MARKER
+		{ 0xff, 0xff },
 		//		/*“‘œ¬Œ™OV7670 QVGA RGB565≤Œ ˝  */
 		//		{0x3a, 0x04},//
 		//		{0x40, 0x10},
@@ -347,7 +349,8 @@ int ov7670::Sensor_Init(void){
 	for(uint8_t i=0;i<OV7670_REG_NUM;i++){
 		sccb2.ov7670_set(OV7670_Reg[i][0], OV7670_Reg[i][1]);
 	}
-
+	sccb2.ov7670_set(0x70,0x7a);
+	sccb2.ov7670_set(0x71,0x75);
 
 
 	uint8_t t = sccb2.ov7670_get(REG_PID);
@@ -898,9 +901,9 @@ int ov7670::Sensor_Init(void){
 
 	PRINTF("reading all registers again now:\n");
 	uint8_t tmp;
-	for(uint8_t i=0;i< 201;i++){
-		tmp = ReadReg(i);
-		PRINTF("Reg: %02x, Val: %02x\n",i,tmp);
+	for(uint8_t i=0;i< OV7670_REG_NUM;i++){
+		tmp = ReadReg(OV7670_Reg[i][0]);
+		PRINTF("Reg: %02x, Val: %02x\n",OV7670_Reg[i][0],tmp);
 	}
 
 	return 1;

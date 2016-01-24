@@ -22,9 +22,9 @@
 
 
 /***************************** ENABLE AND DISABLE SHIT ***********************************/
-//#define IMU_ENABLE
+#define IMU_ENABLE
 
-//#define TTNC_ENABLE
+#define TTNC_ENABLE
 //#define TELEMETRY_ENABLE
 //#define FUSION_ENABLE
 //#define LIGHT_ENABLE
