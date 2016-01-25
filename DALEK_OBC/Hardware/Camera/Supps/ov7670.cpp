@@ -348,9 +348,11 @@ int ov7670::Sensor_Init(void){
 	sccb2.I2CInit();
 	for(uint8_t i=0;i<OV7670_REG_NUM;i++){
 		sccb2.ov7670_set(OV7670_Reg[i][0], OV7670_Reg[i][1]);
+
 	}
 	sccb2.ov7670_set(0x70,0x7a);
 	sccb2.ov7670_set(0x71,0x75);
+
 
 
 	uint8_t t = sccb2.ov7670_get(REG_PID);

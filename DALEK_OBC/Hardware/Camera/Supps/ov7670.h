@@ -72,7 +72,7 @@ public:
 
 //	static const uint8_t OV7670_Reg[OV7670_REG_NUM][2];
 private:
-	mySCCB sccb;
+//	mySCCB sccb;
 	Sccb sccb2;
 	uint8_t Vsync;	 /* ÷°Õ¨≤Ω–≈∫≈ */
 	uint8_t  ReadReg(uint8_t reg);
