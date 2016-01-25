@@ -38,6 +38,8 @@
 INTERCOMM tempComm;
 
 
+
+
 class mainThread : public Thread {
 public:
 	mainThread(const char* name);
@@ -49,6 +51,8 @@ private:
 	ACTIVE_SYSTEM_MODE currentSystemMode;
 
 };
+
+
 
 mainThread mainT("main");
 

@@ -15,6 +15,7 @@ HAL_UART bt_uart(BLUETOOTH_PORT);
 #endif
 uint8_t VSync = 0;
 
+
 //declaring topics for RODOS middleware inter-Thread Communication
 Topic<IMU_DATA_RAW> imu_rawData(1,"IMU Raw Data");
 Topic<IMU_RPY_FILTERED> imu_filtered(2,"IMU Data filtered");
@@ -114,4 +115,12 @@ void shortToChar(uint8_t* _target, uint16_t _number){
 
 uint16_t charToShort(uint8_t* _number){
 	return (_number[0] | (_number[1] << 8));
+}
+
+void delayx(unsigned int ms) {
+	//4694 = 1 ms
+	while (ms > 1) {
+		ms--;
+		asm("nop");
+	}
 }

@@ -20,7 +20,6 @@
 
 
 #define CAMERA_FORMAT	0	// RAW 0, YUV 0, BAW 0, RGB 1
-#define IMAGESIZE		(WIDTH*HEIGHT)
 
 
 

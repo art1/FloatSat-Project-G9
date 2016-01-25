@@ -1,8 +1,8 @@
 /*
  * Sccb.cpp
  *
- *  Created on: 12.01.2015
- *      Author: Andreas Schartel
+ *  Created on: 01.01.2015
+ *      Author: Arthur Scharf
  */
 
 #include "Sccb.h"
@@ -135,11 +135,11 @@ uint8_t Sccb::ov7670_set(uint8_t reg, uint8_t data) {
 	return 0;
 }
 
-void Sccb::delayx(unsigned int ms) {
-	//4694 = 1 ms
-	while (ms > 1) {
-		ms--;
-		asm("nop");
-	}
-}
+//void Sccb::delayx(unsigned int ms) {
+//	//4694 = 1 ms
+//	while (ms > 1) {
+//		ms--;
+//		asm("nop");
+//	}
+//}
 

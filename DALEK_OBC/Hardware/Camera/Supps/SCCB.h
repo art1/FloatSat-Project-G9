@@ -1,8 +1,8 @@
 /*
  * Sccb.h
  *
- *  Created on: 12.01.2015
- *      Author: Andreas Schartel
+ *  Created on: 01.01.2015
+ *      Author: Arthur Scharf
  */
 
 #ifndef PERIPHERAL_SCCB_H_
@@ -12,10 +12,11 @@
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_i2c.h"
+#include "../../../Basic/basic.h"
 
 class Sccb {
 private:
-	void delayx(unsigned int ms);
+//	void delayx(unsigned int ms);
 	void I2C_start(I2C_TypeDef* I2Cx, uint8_t address, uint8_t direction);
 	void I2C_write(I2C_TypeDef* I2Cx, uint8_t data);
 	uint8_t I2C_read_ack(I2C_TypeDef* I2Cx);

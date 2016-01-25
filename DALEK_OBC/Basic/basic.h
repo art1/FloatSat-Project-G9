@@ -168,9 +168,9 @@ struct LUX_DATA{
 #define CAM_READ				0x43
 #define CAM_WRITE				0x42
 #define WIDTH					160
-#define HEIGHT					120
-#define DCMI_CAPTUREMODE		DCMI_CaptureMode_SnapShot
-#define DCMI_CAPTURERATE		DCMI_CaptureRate_All_Frame
+#define HEIGHT					121
+#define CAPTUREMODE				DCMI_CaptureMode_SnapShot
+#define FRAMERATE				DCMI_CaptureRate_All_Frame
 
 struct CAM_DATA{
 	bool activateCamera;
@@ -332,5 +332,6 @@ double charToDouble(uint8_t* _number);
 uint64_t charToLongLong(uint8_t* _number);
 uint16_t charToShort(uint8_t* _number);
 uint32_t charToLong(uint8_t* _number);
+void delayx(unsigned int _ms);
 
 #endif /* BASIC_BASIC_H_ */

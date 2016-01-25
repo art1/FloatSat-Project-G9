@@ -1186,6 +1186,7 @@ ErrorStatus I2C_CheckEvent(I2C_TypeDef* I2Cx, uint32_t I2C_EVENT)
     /* ERROR: last event is different from I2C_EVENT */
     status = ERROR;
   }
+//  xprintf("I2C checkevent status: %d\n",status);
   /* Return status */
   return status;
 }
@@ -1303,6 +1304,7 @@ FlagStatus I2C_GetFlagStatus(I2C_TypeDef* I2Cx, uint32_t I2C_FLAG)
   }
   
   /* Return the I2C_FLAG status */
+//  xprintf("Flagstatus is %d\n",bitstatus);
   return  bitstatus;
 }
 

@@ -7,11 +7,13 @@
 // überschreibt die abgefangenen Interrupts aus RODOS
 // warum werden die überhaupt in rodos an den defaulthandler weitergeleitet????!!!!
 
-#include "basic.h"
-#include "../Hardware/Camera/Supps/ov7670.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_dma.h"
-#include "stm32f4xx_dcmi.h"
+#include "irqHandler.h"
+
+extern "C" Camera camera;
+
+int count = 0;
+int cnt = 0;
+int start = 1;
 
 
 ///**
@@ -62,3 +64,74 @@ extern "C" void EXTI9_5_IRQHandler(void)
 	 EXTI_ClearITPendingBit(EXTI_Line7);
 	}
 }
+
+
+//extern "C" void DMA1_Stream6_IRQHandler(void){
+//	xprintf("Picture IT!\n");
+//	if(DMA_GetITStatus(DMA1_Stream6, DMA_IT_TCIF6) == SET){
+//		//xprintf("Frame send! -> Continue with Payload\n");
+//		DMA_ClearFlag(DMA1_Stream6, DMA_IT_TCIF6);
+//	}
+//}
+
+extern "C" void DMA2_Stream1_IRQHandler(void) {
+	static int K;
+	//Test on DMA2 Channel1 Transfer Complete interrupt
+	if (DMA_GetITStatus(DMA2_Stream1, DMA_IT_TCIF1) == SET) {
+		//xprintf("Frame Complete, detecting Target...\n");
+		camera.sendImage();
+		DMA_ClearFlag(DMA2_Stream1, DMA_IT_TCIF1);
+	}
+	if (DMA_GetITStatus(DMA2_Stream1, DMA_IT_TEIF1) == SET) {
+		xprintf("DMA Error\n");
+		DMA_ClearFlag(DMA2_Stream1, DMA_IT_TEIF1);
+	}
+
+}
+
+extern "C" void DCMI_IRQHandler(void) {
+	if(DCMI_GetITStatus(DCMI_IT_VSYNC) == SET)
+	{
+		if(start == 0)
+		{
+			start = 1;
+		}
+		else
+		{
+			start = 0;
+		}
+		//xprintf("VSYNC");
+		DCMI_ClearFlag(DCMI_IT_VSYNC);
+	}
+	else if(DCMI_GetITStatus(DCMI_IT_LINE) == SET)
+	{
+		if(start == 1)
+		{
+			count++;
+		}
+		else
+		{
+			if(count != 0)
+			{
+				//xprintf("count: %d \n\n", count); //just for counting the number of line
+			}
+			count = 0;
+		}
+		DCMI_ClearFlag(DCMI_IT_LINE);
+	}
+	else if(DCMI_GetITStatus(DCMI_IT_FRAME) == SET){
+		//xprintf("FRAME\n");
+		//sendPic = 1;
+
+		DCMI_ClearFlag(DCMI_IT_FRAME);
+	}
+	else if(DCMI_GetITStatus(DCMI_IT_ERR)== SET){
+		xprintf("DCMI FLAG ERROR\n");
+		DCMI_ClearFlag(DCMI_IT_ERR);
+	}
+	else if(DCMI_GetITStatus(DCMI_IT_OVF) == SET){
+		xprintf("OVERFLOW\n");
+		DCMI_ClearFlag(DCMI_IT_OVF);
+	}
+}
+

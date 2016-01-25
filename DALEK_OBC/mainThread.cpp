@@ -310,7 +310,7 @@ void mainThread::run(){
 	//imu.resume();
 #endif
 #ifdef CAMERA_ENABLE
-	camera.initCamera();
+//	camera.initCamera();
 	while(!camera.initFinished());
 #endif
 
@@ -346,6 +346,7 @@ void mainThread::run(){
 	//	}
 
 	PRINTF("SYSTEM HELLO!\n");
+	suspendCallerUntil(NOW()+5*SECONDS);
 	bool switchedMode = false;
 	while(1){
 		//check which mode
