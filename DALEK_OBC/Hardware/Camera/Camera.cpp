@@ -123,7 +123,7 @@ void Camera::run(){
 			}
 
 			PRINTF("Capturing Done, sending Image:\n");
-			for(int i=0;i< IMAGESIZE;i+=2){
+			for(int i= 0;i< IMAGESIZE;i+=2){
 				PRINTF("%d,",DCMI_Buffer[i]);
 			}
 
