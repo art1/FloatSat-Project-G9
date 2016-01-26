@@ -14,6 +14,8 @@ HAL_ADC adc1(ADC_IDX1);
 HAL_UART bt_uart(BLUETOOTH_PORT);
 #endif
 uint8_t VSync = 0;
+bool imFin = false;
+bool captureDone = false;
 
 
 //declaring topics for RODOS middleware inter-Thread Communication

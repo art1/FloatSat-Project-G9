@@ -8,6 +8,7 @@
 #include "AngleControl.h"
 
 AngleControl::AngleControl() : Thread("Angle Control",97,1000){
+
 	active = false;
 	error = 0.0f;
 	lastError = 0.0f;
@@ -18,9 +19,9 @@ AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 	iPart = 0.0f;
 	dPart = 0.0f;
 
-	pGain = 0.01f;
-	iGain = 0.0f;
-	dGain = 0.0f;
+	pGain = 0.000022015f;
+	iGain = 0.0011007f;
+	dGain = 0.00000011007f;
 
 	i = 0.0f;
 	period = 0.0f;
@@ -50,8 +51,9 @@ void AngleControl::run(){
 
 		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng,rpy.YAW);
 
-
-		i += error*period;
+		if(error > I_ERROR_LIMITATION){
+			i += error*period;
+		}
 		dt = (error - lastError) / period;
 
 		pPart = error * pGain;
@@ -77,17 +79,17 @@ void AngleControl::setNewData(IMU_RPY_FILTERED _imu){
 }
 void AngleControl::setNewData(VAR_CONTROL *_val){
 	switch (_val->changedVal) {
-		case SET_ANGLE_P:
-			pGain = _val->value;
-			break;
-		case SET_ANGLE_I:
-			iGain = _val->value;
-			break;
-		case SET_ANGLE_D:
-			dGain = _val->value;
-			break;
-		default:
-			break;
+	case SET_ANGLE_P:
+		pGain = _val->value;
+		break;
+	case SET_ANGLE_I:
+		iGain = _val->value;
+		break;
+	case SET_ANGLE_D:
+		dGain = _val->value;
+		break;
+	default:
+		break;
 	}
 }
 

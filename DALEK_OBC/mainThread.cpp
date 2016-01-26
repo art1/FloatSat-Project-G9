@@ -143,6 +143,7 @@ struct sensorsCommThread : public Subscriber, public Thread {
 	sensorsCommThread() : Subscriber(interThreadComm,"Inter Thread Communication for Sensors"), Thread("sensor Comm",123,1000) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		INTERCOMM tmp = *(INTERCOMM*)data;
+//		PRINTF("InterThread called with %d\n",tmp.changedVal);
 		switch (tmp.changedVal) {
 		case LUX_CHANGED:
 #ifdef SUNFINDER_ENABLE
@@ -190,9 +191,9 @@ struct sensorsCommThread : public Subscriber, public Thread {
 				camera.setNewData(tmp.camData);
 				camera.resume();
 			} else if (tmp.camData.sendImage){
-#ifdef TELEMETRY_ENABLE
+//#ifdef TELEMETRY_ENABLE
 				tm.sendPayload(tmp.camData);
-#endif
+//#endif
 			}
 #endif
 			break;
@@ -250,7 +251,7 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 #endif
 		break;
 	case ENABLE_TELEMETRY:
-#ifdef TELEMETRY_ENABLE
+//#ifdef TELEMETRY_ENABLE
 		if((int)cmd.commandValue == 1) {
 			PRINTF("Enabling Telemetry\n");
 			tm.setActive(true);
@@ -258,7 +259,7 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 		}else{
 			tm.setActive(false);
 		}
-#endif
+//#endif
 		break;
 	default:
 		break;
@@ -309,8 +310,10 @@ void mainThread::run(){
 	while(!imu.initFinished());
 	//imu.resume();
 #endif
+	suspendCallerUntil(NOW()+2000*MILLISECONDS);
 #ifdef CAMERA_ENABLE
 //	camera.initCamera();
+//	i2c1.init();
 	while(!camera.initFinished());
 #endif
 
@@ -346,7 +349,7 @@ void mainThread::run(){
 	//	}
 
 	PRINTF("SYSTEM HELLO!\n");
-	suspendCallerUntil(NOW()+5*SECONDS);
+	suspendCallerUntil(NOW()+3*SECONDS);
 	bool switchedMode = false;
 	while(1){
 		//check which mode
@@ -404,7 +407,7 @@ void mainThread::run(){
 				case MISSION:
 					// execute mission
 					PRINTF("mission mode!\n");
-					cmd.command = TAKE_PICTURE_AT;
+//					cmd.command = TAKE_PICTURE_AT;
 					switch (cmd.command) {
 					case TAKE_PICTURE_AT:
 						// taking picture at angle!

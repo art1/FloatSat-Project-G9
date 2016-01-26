@@ -8,12 +8,20 @@
 #ifndef CAMERA_HPP_
 
 #include "../../Basic/basic.h"
-#include "Supps/Dcmi.h"
-#include "Supps/mySCCB.h"
-#include "Supps/ov7670.h"
-#include "Supps/initRegister.h"
+//#include "Supps/Dcmi.h"
+//#include "Supps/mySCCB.h"
+//#include "Supps/ov7670.h"
+//#include "Supps/initRegister.h"
+#include "Supps/SCCB.h"
+#include "stm32f4xx.h"
+#include "stm32f4xx_conf.h"
+#include "stm32f4xx_dcmi.h"
+#include "stm32f4xx_dma.h"
 
 
+extern "C" void DCMI_IRQHandler();
+
+//extern "C" uint8_t init_registers[][2];
 
 
 #define DCMI_DR_ADDRESS      		0x50050028
@@ -39,22 +47,36 @@ public:
 	bool initFinished();
 	void sendImage();
 private:
+	int retVal;
+	uint8_t read[2];
+	uint8_t tmp[4];
+	uint8_t startTransmission[13];// = {36, 36, 36, (uint8_t)PL, 0, (uint8_t)160};
+	int startTransmissionLength;
+	uint8_t endTransmission[11];// = {36, 35, 36, 35};
+	int endTransmissionLength;
 	uint8_t DCMI_Buffer[IMAGESIZE];
-	Dcmi dcmi = Dcmi(IMAGESIZE, (uint32_t) DCMI_Buffer, FRAMERATE, CAPTUREMODE);
+//	Dcmi dcmi = Dcmi(IMAGESIZE, (uint32_t) DCMI_Buffer, FRAMERATE, CAPTUREMODE);
 	CAM_DATA daten;
-	ov7670 cam;
+//	ov7670 cam;
+	Sccb sccb;
 	HAL_GPIO ledo;
 	HAL_GPIO reset;
 	HAL_GPIO power;
+
+	void initPeripherals();
 
 	bool initDone;
 	bool isActive;
 	bool captureImage;
 	bool processData;
-	bool captureDone;
 	bool sendPic;
+	uint8_t picture[160];
+	int consFrame;
+	int toSend;
+	void transmitPicture();
 };
 
 //extern Camera camera;
+
 
 #endif /* CAMERA_HPP_ */

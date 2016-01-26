@@ -36,7 +36,7 @@ private:
 	INTERCOMM current;
 	int currentDivider_mA;
 	int powerDivider_mW;
-	uint8_t calVal;
+	uint32_t calVal;
 };
 
 #endif /* HARDWARE_SENSORS_CURRENTSENSORS_H_ */

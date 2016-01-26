@@ -378,8 +378,8 @@ IMU_DATA_RAW IMU::scaleData(){
 	temp[1] = magn_raw[1] - magnOffset[1];
 	temp[2] = magn_raw[2] - magnOffset[2];
 	tmp.MAGNETIC_RAW_X = (magn_values[0][0] * temp[0] + magn_values[0][1] * temp[1] + magn_values[0][2] * temp[2])* magnSensitivity;
-	tmp.MAGNETIC_RAW_Z = (magn_values[1][0] * temp[0] + magn_values[1][1] * temp[1] + magn_values[1][2] * temp[2])* magnSensitivity;
-	tmp.MAGNETIC_RAW_Y = (magn_values[2][0] * temp[0] + magn_values[2][1] * temp[1] + magn_values[2][2] * temp[2])* magnSensitivity*(-1.0);
+	tmp.MAGNETIC_RAW_Y = (magn_values[1][0] * temp[0] + magn_values[1][1] * temp[1] + magn_values[1][2] * temp[2])* magnSensitivity;
+	tmp.MAGNETIC_RAW_Z = (magn_values[2][0] * temp[0] + magn_values[2][1] * temp[1] + magn_values[2][2] * temp[2])* magnSensitivity*(-1.0);
 	/* OLD CALIBRATION METHOD - DEPRECATED
 	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;

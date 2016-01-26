@@ -9,11 +9,9 @@
 
 #include "irqHandler.h"
 
-extern "C" Camera camera;
+//extern "C" Camera camera;
 
-int count = 0;
-int cnt = 0;
-int start = 1;
+
 
 
 ///**
@@ -44,27 +42,14 @@ int start = 1;
 extern "C" void EXTI9_5_IRQHandler(void)
 {
 //	PRINTF("interrupt handler called!\n");
-	test++;
+//	test++;
   if ( EXTI_GetITStatus(EXTI_Line7) != RESET )
   {
-     if( VSync == 0 )
-     {
-
-        FIFO_WE_H();
-
-        VSync = 1;
-        FIFO_WE_H();
-     }
-     else if( VSync == 1 )
-     {
-          FIFO_WE_L();
-          VSync = 2;
-     }
 
 	 EXTI_ClearITPendingBit(EXTI_Line7);
 	}
 }
-
+//
 
 //extern "C" void DMA1_Stream6_IRQHandler(void){
 //	xprintf("Picture IT!\n");
@@ -78,8 +63,8 @@ extern "C" void DMA2_Stream1_IRQHandler(void) {
 	static int K;
 	//Test on DMA2 Channel1 Transfer Complete interrupt
 	if (DMA_GetITStatus(DMA2_Stream1, DMA_IT_TCIF1) == SET) {
-		//xprintf("Frame Complete, detecting Target...\n");
-		camera.sendImage();
+		xprintf("Frame Complete, detecting Target...\n");
+//		camera.sendImage();
 		DMA_ClearFlag(DMA2_Stream1, DMA_IT_TCIF1);
 	}
 	if (DMA_GetITStatus(DMA2_Stream1, DMA_IT_TEIF1) == SET) {
@@ -89,49 +74,68 @@ extern "C" void DMA2_Stream1_IRQHandler(void) {
 
 }
 
-extern "C" void DCMI_IRQHandler(void) {
-	if(DCMI_GetITStatus(DCMI_IT_VSYNC) == SET)
-	{
-		if(start == 0)
-		{
-			start = 1;
-		}
-		else
-		{
-			start = 0;
-		}
-		//xprintf("VSYNC");
-		DCMI_ClearFlag(DCMI_IT_VSYNC);
-	}
-	else if(DCMI_GetITStatus(DCMI_IT_LINE) == SET)
-	{
-		if(start == 1)
-		{
-			count++;
-		}
-		else
-		{
-			if(count != 0)
-			{
-				//xprintf("count: %d \n\n", count); //just for counting the number of line
-			}
-			count = 0;
-		}
-		DCMI_ClearFlag(DCMI_IT_LINE);
-	}
-	else if(DCMI_GetITStatus(DCMI_IT_FRAME) == SET){
-		//xprintf("FRAME\n");
-		//sendPic = 1;
+//extern "C" void DCMI_IRQHandler(void) {
+//	if(DCMI_GetITStatus(DCMI_IT_VSYNC) == SET)
+//	{
+//		if(start == 0)
+//		{
+//			start = 1;
+//		}
+//		else
+//		{
+//			start = 0;
+//		}
+//		//xprintf("VSYNC");
+//		DCMI_ClearFlag(DCMI_IT_VSYNC);
+//	}
+//	else if(DCMI_GetITStatus(DCMI_IT_LINE) == SET)
+//	{
+//		if(start == 1)
+//		{
+//			count++;
+//		}
+//		else
+//		{
+//			if(count != 0)
+//			{
+//				//xprintf("count: %d \n\n", count); //just for counting the number of line
+//			}
+//			count = 0;
+//		}
+//		DCMI_ClearFlag(DCMI_IT_LINE);
+//	}
+//	else if(DCMI_GetITStatus(DCMI_IT_FRAME) == SET){
+//		//xprintf("FRAME\n");
+//		//sendPic = 1;
+//
+//		DCMI_ClearFlag(DCMI_IT_FRAME);
+//	}
+//	else if(DCMI_GetITStatus(DCMI_IT_ERR)== SET){
+//		xprintf("DCMI FLAG ERROR\n");
+//		DCMI_ClearFlag(DCMI_IT_ERR);
+//	}
+//	else if(DCMI_GetITStatus(DCMI_IT_OVF) == SET){
+//		xprintf("OVERFLOW\n");
+//		DCMI_ClearFlag(DCMI_IT_OVF);
+//	}
+//}
 
-		DCMI_ClearFlag(DCMI_IT_FRAME);
+extern "C" void DCMI_IRQHandler() {
+
+	if (DCMI_GetFlagStatus(DCMI_FLAG_FRAMERI) == SET) {
+		DCMI_ClearFlag(DCMI_FLAG_FRAMERI);
+	} else if (DCMI_GetFlagStatus(DCMI_FLAG_OVFRI) == SET) {
+		DCMI_ClearFlag(DCMI_FLAG_OVFRI);
+	} else if (DCMI_GetFlagStatus(DCMI_FLAG_ERRRI) == SET) {
+		DCMI_ClearFlag(DCMI_FLAG_ERRRI);
 	}
-	else if(DCMI_GetITStatus(DCMI_IT_ERR)== SET){
-		xprintf("DCMI FLAG ERROR\n");
-		DCMI_ClearFlag(DCMI_IT_ERR);
-	}
-	else if(DCMI_GetITStatus(DCMI_IT_OVF) == SET){
-		xprintf("OVERFLOW\n");
-		DCMI_ClearFlag(DCMI_IT_OVF);
-	}
+	DCMI_CaptureCmd(DISABLE);
+	DCMI_Cmd(DISABLE);
+	DMA_Cmd(DMA2_Stream1, DISABLE);
+	DCMI_Cmd(DISABLE);
+	DCMI_ITConfig(DCMI_IT_FRAME, DISABLE);
+
+	imFin = true;
+	captureDone = true;
 }
 

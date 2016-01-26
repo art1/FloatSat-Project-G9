@@ -28,6 +28,7 @@ private:
 	int16_t dutyCycle;
 	bool clockwise;
 	int16_t lastDutyCycle;
+	bool ramp;
 
 
 

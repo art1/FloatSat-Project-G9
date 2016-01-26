@@ -7,7 +7,7 @@
 
 #include "telemetry.h"
 
-Telemetry::Telemetry() : Thread("Telemetry",109,2000){
+Telemetry::Telemetry() : Thread("Telemetry",109,2500){
 	this->frameNumber = 0;
 }
 
@@ -110,7 +110,7 @@ void Telemetry::buildFrame(){
 	CURRENT_DATA cur;
 	current.get(cur);
 
-	PRINTF("yaw %f pitch %f roll %f - IR %f %f %f - LUX %d - "
+	PRINTF("\nyaw %f pitch %f roll %f - IR %f %f %f - LUX %d - "
 			"SolVolt %f - BattVolt %f - Current %f\n",rpy.YAW,rpy.PITCH,rpy.ROLL,
 			irData.sensorOne,irData.sensorTwo,irData.sensorThree,
 			l.LUX,s.Voltage,cur.batteryVoltage,cur.batteryCurrent);
@@ -290,51 +290,55 @@ void Telemetry::buildFrame(){
 
 
 void Telemetry::sendPayload(CAM_DATA _camData){
-	uint8_t tmp[2];
-	msg.length = 0;
-	memset(msg.data,0,sizeof(msg.data));
-
-	for(int i=-1; i< 6;i++){
-		switch (i) {
-		case -1:
-			forLoop(j,3){msg.data[msg.length++] = FRAME_START;}// adding $$$
-			break;
-		case PL_FRAMETYPE:
-			msg.data[msg.length++] = PL;
-			break;
-		case PL_FRAMENUMBER:
-			longToChar(tmp,getCurrentFrameNumber());
-			forLoop(j,4) msg.data[msg.length++] = tmp[j];
-			break;
-		case PAYLOAD_NUMBER:
-			longToChar(tmp,_camData.consecutiveFrame);
-			forLoop(j,4) msg.data[msg.length++] = tmp[j];
-			break;
-		case PAYLOAD_SIZE:
-			msg.data[msg.length++] = ((_camData.width * _camData.height )/ 100);
-			break;
-		case PAYLOAD:
-			forLoop(i,100){
-				uint16_t *p = _camData.picture;
-				shortToChar(tmp,p[i]);
-				forLoop(j,2) msg.data[msg.length++] = tmp[j];
-			}
-			break;
-		case PL_LOCALTIME:
-			longLongToChar(tmp,(uint64_t)NOW());
-			forLoop(j,8){
-				msg.data[msg.length++] = tmp[i];
-			}
-			break;
-		default:
-			break;
-		}
+	if(_camData.sendImage){
+		this->setActive(false);
+	}else{
+		this->setActive(true);
 	}
-	forLoop(j,3){msg.data[msg.length++] = FRAME_END;}
+//	uint8_t tmp[2];
+//	msg.length = 0;
+//	memset(msg.data,0,sizeof(msg.data));
+//
+//	for(int i=-1; i< 6;i++){
+//		switch (i) {
+//		case -1:
+//			forLoop(j,3){msg.data[msg.length++] = FRAME_START;}// adding $$$
+//			break;
+//		case PL_FRAMETYPE:
+//			msg.data[msg.length++] = PL;
+//			break;
+//		case PL_FRAMENUMBER:
+//			longToChar(tmp,getCurrentFrameNumber());
+//			forLoop(j,4) msg.data[msg.length++] = tmp[j];
+//			break;
+//		case PAYLOAD_NUMBER:
+//			longToChar(tmp,_camData.consecutiveFrame);
+//			forLoop(j,4) msg.data[msg.length++] = tmp[j];
+//			break;
+//		case PAYLOAD_SIZE:
+//			msg.data[msg.length++] = ((_camData.width * _camData.height )/ 100);
+//			break;
+//		case PAYLOAD:
+//
+//			forLoop(i,200){
+//				msg.data[msg.length++] = _camData.picture[i];
+//			}
+//			break;
+//		case PL_LOCALTIME:
+//			longLongToChar(tmp,(uint64_t)NOW());
+//			forLoop(j,8){
+//				msg.data[msg.length++] = tmp[i];
+//			}
+//			break;
+//		default:
+//			break;
+//		}
+//	}
+//	forLoop(j,3){msg.data[msg.length++] = FRAME_END;}
 //	PRINTF("added %d bytes",msg.length);
-
-	tmPlFrame.publish(msg);
-	frameNumber++;
+//
+//	tmPlFrame.publish(msg);
+//	frameNumber++;
 }
 
 

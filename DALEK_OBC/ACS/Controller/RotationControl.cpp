@@ -15,15 +15,25 @@ RotationControl::RotationControl() : Thread("Rotation Control",98,1000){
 
 	pPart = 0.0f;
 	iPart = 0.0f;
-	dPart = 0.0f;
 
 	pGain = 0.01f;
 	iGain = 0.0f;
-	dGain = 0.0f;
 
-	i = 0.0f;
 	period = 0.0f;
 	dt = 0.0f;
+
+	active = false;
+	desSpeed = 0.0f;
+	error = 0.0f;
+	lastError = 0.0f;
+
+	pPart = 0.0f;
+	iPart = 0.0f;
+
+	pGain = 0.03221f;
+	iGain = 0.15109f;
+
+	i = 0.0f;
 }
 
 RotationControl::~RotationControl() {
@@ -45,16 +55,17 @@ void RotationControl::run(){
 		error = desSpeed - (raw.ANGULAR_RAW_Z*TO_DEG) ;//- desSpeed;
 		period = SECONDS_NOW() - lastTime;
 
-		if(!(cnt % 100)) PRINTF("dps error: %f, des: %f, current: %f\n",error,desSpeed,raw.ANGULAR_RAW_Z);
+		if(!(cnt % 100)) PRINTF("dps error: %f, des: %f, current: %f\n",error,desSpeed,raw.ANGULAR_RAW_Z*TO_DEG);
 
-		i += error * period;
-		dt = (error -lastError) / period;
+		if(error > I_ERROR_LIMITATION){
+			i += error * period;
+		}
+
 
 		pPart = error * pGain;
 		iPart = i * iGain;
-		dPart = dt * dGain;
 
-		controlOut = pPart + iPart + dPart;
+		controlOut = pPart + iPart;
 
 		// control output deckeln
 		if(controlOut > 1000) controlOut = 1000;
@@ -76,17 +87,14 @@ void RotationControl::setRotSpeed(float _speed){
 }
 void RotationControl::setNewData(VAR_CONTROL *_val){
 	switch (_val->changedVal) {
-		case SET_ROTAT_P:
-			pGain = _val->value;
-			break;
-		case SET_ROTAT_I:
-			iGain = _val->value;
-			break;
-		case SET_ROTAT_D:
-			dGain = _val->value;
-			break;
-		default:
-			break;
+	case SET_ROTAT_P:
+		pGain = _val->value;
+		break;
+	case SET_ROTAT_I:
+		iGain = _val->value;
+		break;
+	default:
+		break;
 	}
 }
 

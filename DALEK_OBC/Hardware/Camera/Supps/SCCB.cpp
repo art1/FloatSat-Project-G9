@@ -1,7 +1,7 @@
 /*
  * Sccb.cpp
  *
- *  Created on: 01.01.2015
+ *  Created on: 1.01.2015
  *      Author: Arthur Scharf
  */
 

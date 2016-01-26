@@ -26,13 +26,13 @@
 
 #define TTNC_ENABLE
 //#define TELEMETRY_ENABLE
-//#define FUSION_ENABLE
-//#define LIGHT_ENABLE
-//#define CURRENT_ENABLE
+#define FUSION_ENABLE
+#define LIGHT_ENABLE
+#define CURRENT_ENABLE
 #define CAMERA_ENABLE							// IMPORTANT!!!! CAMERA HAS TO BE INITIALISED BEFORE I2C Channel One!!!!
-//#define MOTOR_ENABLE
-//#define SOLAR_ADC_ENABLE
-//#define IR_ENABLE
+#define MOTOR_ENABLE
+#define SOLAR_ADC_ENABLE
+#define IR_ENABLE
 //#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
 //#define KNIFE_ENABLE
 //#define SUNFINDER_ENABLE
@@ -54,7 +54,6 @@ extern "C" HAL_ADC adc1; 						// ADC one (the one on the extension board)
 #ifndef WIFI_ENABLE
 extern "C" HAL_UART bt_uart;
 #endif
-extern "C" uint8_t VSync;						// camera, for IRQ handler
 
 
 #define ADC1_RESOLUTION			12				// Resolution for ADC Channel 1
@@ -167,6 +166,7 @@ struct LUX_DATA{
 /* ***************************************** Camera STUFF **********************************************/
 #define CAM_READ				0x43
 #define CAM_WRITE				0x42
+#define CAM_ADDRESS				0x21
 #define WIDTH					160
 #define HEIGHT					121
 #define CAPTUREMODE				DCMI_CaptureMode_SnapShot
@@ -176,12 +176,13 @@ struct CAM_DATA{
 	bool activateCamera;
 	bool capture;
 	bool sendImage;
-	uint16_t *picture;
-	int width;
-	int height;
-	uint32_t consecutiveFrame;
+//	uint8_t *picture;
+//	int width;
+//	int height;
+//	uint32_t consecutiveFrame;
 };
-
+extern "C" bool imFin;							// camera, for IRQ handler
+extern "C" bool captureDone;
 
 
 

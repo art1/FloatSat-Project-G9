@@ -37,7 +37,7 @@ void currentSensors::run(){
 
 void currentSensors::configSensors(){
 	// Using 32V
-	txBuf[0] = CURRENT_CONFIG_REG;
+	txBuf[0] = CURRENT_CONFIG_REG; // 3C 1F
 	txBuf[1] = 0x59; 	// upper byte of configuration register -> set range to 32V
 	txBuf[2] = 0x9f;	// lower byte of config register ->continuous
 	i2c1.write(CURRENT_SENSOR_ADRESS,txBuf,3);
@@ -99,7 +99,8 @@ void currentSensors::configSensors(){
 	// MaximumPower = 128W
 
 	// Set multipliers to convert raw current/power values
-	currentDivider_mA = 10;  // Current LSB = 100uA per bit (1000/100 = 10)
+	currentDivider_mA = 1;  // Current LSB = 100uA per bit (1000/100 = 10)
+	/** TODO proper currentDivider to mA */
 	powerDivider_mW = 2;     // Power LSB = 1mW per bit (2/1)
 
 	txBuf[0] = CURRENT_CALIBRATION;
@@ -122,12 +123,17 @@ void currentSensors::readRawData(){
 	// reset the cal register, meaning CURRENT and POWER will
 	// not be available ... avoid this by always setting a cal
 	// value even if it's an unfortunate extra step
-	configSensors();
+//	configSensors();
+
+	txBuf[0] = CURRENT_CALIBRATION;
+	txBuf[1] = (calVal >> 8) & 0xFF;
+	txBuf[2] = calVal & 0xFF;
+	i2c1.write(CURRENT_SENSOR_ADRESS,txBuf,3);
 
 	txBuf[0] = CURRENT_CURRENT_REG;
 	i2c1.writeRead(CURRENT_SENSOR_ADRESS,txBuf,1,rxBuf,2);
 
 	current.currentData.batteryCurrent =
-			(((uint16_t) rxBuf[0] << 8) | rxBuf[1]) / currentDivider_mA;	// Current in mA
+			((float)(((uint16_t) rxBuf[0] << 8) | rxBuf[1])) / (float)currentDivider_mA;	// Current in mA
 }
 

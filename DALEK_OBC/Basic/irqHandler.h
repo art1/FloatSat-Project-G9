@@ -9,7 +9,7 @@
 #define BASIC_SYSDELAY_IRQHANDLER_H_
 
 #include "basic.h"
-#include "../Hardware/Camera/Camera.h"
+//#include "../Hardware/Camera/Camera.h"
 #include "stm32f4xx.h"
 #include "stm32f4xx_dma.h"
 #include "stm32f4xx_dcmi.h"
