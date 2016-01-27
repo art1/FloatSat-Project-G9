@@ -32,7 +32,7 @@ private:
 	float desSpeed;
 	float currentSpeed;
 
-	float error;
+	float err;
 	float lastError;
 	float controlOut;
 	float pPart;

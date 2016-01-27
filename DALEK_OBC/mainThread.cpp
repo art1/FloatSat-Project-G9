@@ -285,7 +285,7 @@ void mainThread::init(){
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin = LED_BLUE;
 	GPIO_Init(GPIOD,&GPIO_InitStruct);
-	currentSystemMode.activeMode = MISSION;
+	currentSystemMode.activeMode = STANDBY;
 	cmd.command = -1;
 
 }
@@ -360,6 +360,7 @@ void mainThread::run(){
 				switchedMode = true;				// going to standby immediately after received command
 				ORANGE_ON;
 			} else ORANGE_OFF;
+			cmd.command = -1;
 		}
 		if(!(cmd.command == GOTO_MODE) || switchedMode) {
 			switchedMode = false;
@@ -399,11 +400,11 @@ void mainThread::run(){
 					motorControl.gotoAngle(cmd.commandValue);
 					break;
 				default:
-
 					break;
 				}
 #endif
 				break;
+//				break;
 				case MISSION:
 					// execute mission
 					PRINTF("mission mode!\n");
@@ -426,6 +427,20 @@ void mainThread::run(){
 					case EXTERMINATE:
 						if((int)cmd.commandValue == 1) laser.setPins(1);
 						else laser.setPins(0);
+						break;
+					case SET_ROTATION_SPEED:
+
+						motorControl.setRotationSpeed(cmd.commandValue);
+						break;
+					case CONTROL_MOTOR:
+						if((int)cmd.commandValue == 1){
+							motorControl.setMotor(true);
+						} else if((int)cmd.commandValue == 0){
+							motorControl.setMotor(false);
+						}
+						break;
+					case GOTO_ANGLE:
+						motorControl.gotoAngle(cmd.commandValue);
 						break;
 					default:
 						break;

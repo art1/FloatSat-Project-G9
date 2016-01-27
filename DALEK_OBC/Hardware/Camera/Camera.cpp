@@ -361,17 +361,21 @@ void Camera::transmitPicture(){
 			forLoop(i,13){
 				k = bt_uart.write((const char*)&startTransmission[i],1);
 				if(k<0)i--;
+				PRINTF("%d ",startTransmission[i]);
 			}
 			forLoop(i,160){
 				k = bt_uart.write((const char*)&picture[i],1);
 				if(k<0)i--;
+				PRINTF("%d ",picture[i]);
 			}
 			forLoop(i,11){
 				k = bt_uart.write((const char*)&endTransmission[i],1);
 				if(k<0)i--;
+				PRINTF("%d ",endTransmission[i]);
 			}
 			consecNumber++;
-			suspendCallerUntil(NOW()+1*MILLISECONDS);
+			PRINTF("send frame %d\n",consecNumber);
+			suspendCallerUntil(NOW()+10*MILLISECONDS);
 		}
 	}
 

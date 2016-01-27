@@ -126,8 +126,8 @@ int Motor::stopMotor(){
 int Motor::switchDirection(int currentSpeed){
 	bool tmp = false;
 
-	if(currentSpeed > 350){
-		spinDownTo(currentSpeed,350);
+	if(currentSpeed > 100){
+		spinDownTo(currentSpeed,100);
 		tmp = true;
 	}
 
@@ -136,7 +136,7 @@ int Motor::switchDirection(int currentSpeed){
 	HBRIDGE_A_INB.setPins(~HBRIDGE_A_INB.readPins());
 
 
-	if(currentSpeed > 350) spinUpTo(350,currentSpeed);
+	if(currentSpeed > 100) spinUpTo(100,currentSpeed);
 	if(tmp) MotorPWM.write(currentSpeed);
 }
 

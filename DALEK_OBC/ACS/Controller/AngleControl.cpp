@@ -19,9 +19,9 @@ AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 	iPart = 0.0f;
 	dPart = 0.0f;
 
-	pGain = 0.000022015f;
-	iGain = 0.0011007f;
-	dGain = 0.00000011007f;
+	pGain = 2.0f;
+	iGain = 0.014243f;
+	dGain = 5.148029f;
 
 	i = 0.0f;
 	period = 0.0f;

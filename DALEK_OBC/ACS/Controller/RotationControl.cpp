@@ -8,30 +8,17 @@
 #include "RotationControl.h"
 
 RotationControl::RotationControl() : Thread("Rotation Control",98,1000){
+
 	active = false;
 	desSpeed = 0.0f;
-	error = 0.0f;
+	err = 0.0f;
 	lastError = 0.0f;
 
 	pPart = 0.0f;
 	iPart = 0.0f;
 
-	pGain = 0.01f;
-	iGain = 0.0f;
-
-	period = 0.0f;
-	dt = 0.0f;
-
-	active = false;
-	desSpeed = 0.0f;
-	error = 0.0f;
-	lastError = 0.0f;
-
-	pPart = 0.0f;
-	iPart = 0.0f;
-
-	pGain = 0.03221f;
-	iGain = 0.15109f;
+	pGain = 2.0f;
+	iGain = 1.4f;
 
 	i = 0.0f;
 }
@@ -52,17 +39,17 @@ void RotationControl::run(){
 		if(!isActive()) suspendCallerUntil(END_OF_TIME);
 
 		imuData.get(raw);
-		error = desSpeed - (raw.ANGULAR_RAW_Z*TO_DEG) ;//- desSpeed;
+		err = (raw.ANGULAR_RAW_Z*TO_DEG) - desSpeed;
 		period = SECONDS_NOW() - lastTime;
 
-		if(!(cnt % 100)) PRINTF("dps error: %f, des: %f, current: %f\n",error,desSpeed,raw.ANGULAR_RAW_Z*TO_DEG);
+		if(!(cnt % 100)) PRINTF("dps error: %f, des: %f, current: %f\n",err,desSpeed,raw.ANGULAR_RAW_Z*TO_DEG);
 
-		if(error > I_ERROR_LIMITATION){
-			i += error * period;
+		if(abs(err) > I_ERROR_LIMITATION){
+			i += (err * period);
 		}
 
 
-		pPart = error * pGain;
+		pPart = err * pGain;
 		iPart = i * iGain;
 
 		controlOut = pPart + iPart;
@@ -70,13 +57,13 @@ void RotationControl::run(){
 		// control output deckeln
 		if(controlOut > 1000) controlOut = 1000;
 
-		if(!(cnt % 100)) PRINTF("control output: %f\n",controlOut);
+		if(!(cnt % 100)) PRINTF("control output: %f, pPart %f, iPart %f\n",controlOut,pPart,iPart);
 		cnt++;
 
 		motor.setspeed(controlOut);
 
 		lastTime = SECONDS_NOW();
-		lastError = error;
+		lastError = err;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
 
 	}

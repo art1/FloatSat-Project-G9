@@ -25,7 +25,7 @@
 #define IMU_ENABLE
 
 #define TTNC_ENABLE
-//#define TELEMETRY_ENABLE
+#define TELEMETRY_ENABLE
 #define FUSION_ENABLE
 #define LIGHT_ENABLE
 #define CURRENT_ENABLE
@@ -64,7 +64,7 @@ extern "C" HAL_UART bt_uart;
 #define COMPL_GAIN				0.98f			// Complementary Filter Gain
 #define forLoop(x,n)			for(int x=0;x<n;x++)
 
-#define I_ERROR_LIMITATION		6				// add integral error only if error is big -> avoid stupid integration of small errors
+#define I_ERROR_LIMITATION		5				// add integral error only if error is big -> avoid stupid integration of small errors
 
 
 /****************************** LED STUFF ************************************************/
@@ -94,7 +94,7 @@ extern "C" HAL_UART bt_uart;
 #define WIFI_IP					0xFF01A8C0 // in hex and reverse
 #define WIFI_PORT				7777
 
-#define TTNC_SAMPLERATE			200				// milliseconds, check if new messages have arrived
+#define TTNC_SAMPLERATE			500				// milliseconds, check if new messages have arrived
 
 #define BLUETOOTH_BAUDRATE		115200
 #define BLUETOOTH_PORT			UART_IDX2
