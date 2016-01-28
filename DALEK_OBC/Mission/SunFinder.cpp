@@ -37,7 +37,10 @@ int SunFinder::setNewData(IMU_RPY_FILTERED _imu){
 			threeSixty = false;
 		}else{
 			tempPos += (heading[currentHeadingIndex-1] - initPos);
-			if( tempPos > 360.0)threeSixty = true;
+			if( tempPos > 360.0) {
+				threeSixty = true;
+				this->resume();
+			}
 		}
 		return 1;
 	}
@@ -68,21 +71,30 @@ void SunFinder::init(){
 }
 
 void SunFinder::run(){
+	COMMAND_FRAME f;
+	f.command = SET_ROTATION_SPEED;
+	f.command = 10.0f;
+	f.frameNumber = 0.0f;
+	f.frameType = CMD;
+	f.localTime = 0.0f;
 	while(1){
 		suspendCallerUntil(END_OF_TIME);
 		/** TODO include the communication stuff for Toms telemetry **/
 		if(isActive()){
-			/** TODO sunFinder Thread */
 			PRINTF("searching for sun...\n");
+			commandFrame.publish(f);
 			while(currentHeadingIndex < 2){
 				Delay_millis(10);
 			}
-			/** TODO set Motor to rotate */
 			while(!threeSixty){
 				suspendCallerUntil(END_OF_TIME);
 			}
+			PRINTF("rotation complete, calculating angle...");
 			float agnel = findSunAngle();
-			/** TODO set Angle for Motor! */
+			PRINTF("sun is at %f\n",agnel);
+			f.command = GOTO_ANGLE;
+			f.commandValue = agnel;
+			commandFrame.publish(f);
 			threeSixty = false;
 			this->setActive(false);
 		}

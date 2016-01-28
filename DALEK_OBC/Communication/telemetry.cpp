@@ -7,7 +7,7 @@
 
 #include "telemetry.h"
 
-Telemetry::Telemetry() : Thread("Telemetry",109,2500){
+Telemetry::Telemetry() : Thread("Telemetry",109,3000){
 	this->frameNumber = 0;
 }
 
@@ -31,6 +31,10 @@ void Telemetry::run(){
 			suspendCallerUntil(END_OF_TIME);
 		}
 		buildFrame();
+//		for(int i=0;i<msg.length;i++){
+//			PRINTF("%d ",msg.data[i]);
+//		}
+//		PRINTF("\n");
 		tmPlFrame.publish(msg);
 		frameNumber++;
 //		PRINTF("sent %d bytes\n",msg.length);
@@ -80,6 +84,7 @@ void Telemetry::setNewData(SUNFINDER_TM _sunTM){
 
 void Telemetry::setNewData(ACTIVE_SYSTEM_MODE _mode){
 	this->systemMode = _mode;
+	PRINTF("current System Mode %d\n",this->systemMode.activeMode);
 }
 
 uint32_t Telemetry::getCurrentFrameNumber(){
@@ -134,6 +139,7 @@ void Telemetry::buildFrame(){
 			break;
 		case SYSTEM_MODE:
 			msg.data[msg.length++] = (uint8_t)this->systemMode.activeMode;
+			PRINTF("debug system mode mem: %d\n",msg.data[msg.length-1]);
 			break;
 		case LIGHT:
 			shortToChar(tmp,l.LUX);
@@ -163,6 +169,7 @@ void Telemetry::buildFrame(){
 			forLoop(j,4){
 				msg.data[msg.length++] = tmp[j];
 			}
+			PRINTF("gyrox %f\n",rpyRaw.ANGULAR_RAW_X);
 			break;
 		case GYRO_Y:
 			floatToChar(tmp,rpyRaw.ANGULAR_RAW_Y);
@@ -227,15 +234,17 @@ void Telemetry::buildFrame(){
 		case BATTERY_VOLTAGE:
 			/** TODO Battery Voltage */
 			// adding dummy values here
+			floatToChar(tmp,cur.batteryVoltage);
 			forLoop(j,4){
-				msg.data[msg.length++] = 0x00;
+				msg.data[msg.length++] = tmp[j];
 			}
 			break;
 		case CURRENT:
 			/** TODO CURRENT Telemetry*/
 			// adding dummy values here
+			floatToChar(tmp,cur.batteryCurrent);
 			forLoop(j,4){
-				msg.data[msg.length++] = 0x00;
+				msg.data[msg.length++] = tmp[j];
 			}
 			break;
 		case MOTOR_SPEED:

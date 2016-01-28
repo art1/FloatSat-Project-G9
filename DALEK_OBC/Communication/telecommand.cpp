@@ -15,7 +15,7 @@
 //HAL_UART uart3(UART_IDX3); // USB-UART
 //WF121 wf121(&uart3);
 
-Telecommand::Telecommand() : Thread("Telecommand",102,1000){
+Telecommand::Telecommand() : Thread("Telecommand",102,2000){
 
 
 

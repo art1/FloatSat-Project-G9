@@ -143,7 +143,7 @@ struct sensorsCommThread : public Subscriber, public Thread {
 	sensorsCommThread() : Subscriber(interThreadComm,"Inter Thread Communication for Sensors"), Thread("sensor Comm",123,1000) {}
 	long put(const long topicId, const long len,const void* data, const NetMsgInfo& netMsgInfo){
 		INTERCOMM tmp = *(INTERCOMM*)data;
-//		PRINTF("InterThread called with %d\n",tmp.changedVal);
+		//		PRINTF("InterThread called with %d\n",tmp.changedVal);
 		switch (tmp.changedVal) {
 		case LUX_CHANGED:
 #ifdef SUNFINDER_ENABLE
@@ -190,11 +190,11 @@ struct sensorsCommThread : public Subscriber, public Thread {
 			if(tmp.camData.activateCamera || tmp.camData.capture){
 				camera.setNewData(tmp.camData);
 				camera.resume();
-			} else if (tmp.camData.sendImage){
-//#ifdef TELEMETRY_ENABLE
+			} else {
+				//#ifdef TELEMETRY_ENABLE
 				tm.sendPayload(tmp.camData);
-//#endif
 			}
+			//#endif
 #endif
 			break;
 		case CURRENT_CHANGED:
@@ -251,7 +251,7 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 #endif
 		break;
 	case ENABLE_TELEMETRY:
-//#ifdef TELEMETRY_ENABLE
+		//#ifdef TELEMETRY_ENABLE
 		if((int)cmd.commandValue == 1) {
 			PRINTF("Enabling Telemetry\n");
 			tm.setActive(true);
@@ -259,7 +259,7 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 		}else{
 			tm.setActive(false);
 		}
-//#endif
+		//#endif
 		break;
 	default:
 		break;
@@ -312,18 +312,18 @@ void mainThread::run(){
 #endif
 	suspendCallerUntil(NOW()+2000*MILLISECONDS);
 #ifdef CAMERA_ENABLE
-//	camera.initCamera();
-//	i2c1.init();
+	//	camera.initCamera();
+	//	i2c1.init();
 	while(!camera.initFinished());
 #endif
 
 #ifdef LIGHT_ENABLE
 	i2c1.init(400000);
-//	LUX_DATA temp;
-//	temp.activated = true;
-//	tempComm.luxData = temp;
-//	tempComm.changedVal = LUX_CHANGED;
-//	interThreadComm.publish(tempComm);
+	//	LUX_DATA temp;
+	//	temp.activated = true;
+	//	tempComm.luxData = temp;
+	//	tempComm.changedVal = LUX_CHANGED;
+	//	interThreadComm.publish(tempComm);
 #endif
 #ifdef CURRENT_ENABLE
 #ifndef LIGHT_ENABLE
@@ -355,6 +355,7 @@ void mainThread::run(){
 		//check which mode
 		if(cmd.command == GOTO_MODE){
 			currentSystemMode.activeMode = (int) cmd.commandValue;
+			tm.setNewData(currentSystemMode);
 			PRINTF("here cmd, going to mode %d\n",currentSystemMode.activeMode);
 			if(currentSystemMode.activeMode == STANDBY){
 				switchedMode = true;				// going to standby immediately after received command
@@ -369,65 +370,41 @@ void mainThread::run(){
 			case STANDBY:
 				// do nothing, only blink a led or some shit
 				PRINTF("DALEK waiting for commands!\n");
-#ifdef MOTOR_ENABLE
-				motorControl.setMotor(false);
+				switch(cmd.command){
+				case TAKE_PICTURE_AT:
+					// taking picture at angle!
+#ifdef CAMERA_ENABLE
+					PRINTF("enabling cam in 1 secs...\n");
+					Delay_millis(100);
+					PRINTF("should be enabled in a few msecs\n");
+					CAM_DATA tmp3;
+					tmp3.activateCamera = true;
+					tmp3.capture = true;
+					tempComm.camData = tmp3;
+					tempComm.changedVal = CAM_CHANGED;
+					interThreadComm.publish(tempComm);
 #endif
-				break;
-			case SUN_FINDING:
-#ifdef SUNFINDER_ENABLE
-				PRINTF("sun finding mode!\n");
-				sunFinder.setActive(true);
-#endif
-				break;
-			case MOTOR_CONTROL:
-#ifdef MOTOR_ENABLE
-				// seting motor speed,
-				PRINTF("motor control mode with command %d\n",cmd.command);
-
-				switch (cmd.command) {
-				case SET_ROTATION_SPEED:
-
-					motorControl.setRotationSpeed(cmd.commandValue);
-					break;
-				case CONTROL_MOTOR:
-					if((int)cmd.commandValue == 1){
-						motorControl.setMotor(true);
-					} else if((int)cmd.commandValue == 0){
-						motorControl.setMotor(false);
-					}
-					break;
-				case GOTO_ANGLE:
-					motorControl.gotoAngle(cmd.commandValue);
 					break;
 				default:
 					break;
 				}
+#ifdef MOTOR_ENABLE
+				motorControl.setMotor(false);
 #endif
 				break;
-//				break;
-				case MISSION:
-					// execute mission
-					PRINTF("mission mode!\n");
-//					cmd.command = TAKE_PICTURE_AT;
-					switch (cmd.command) {
-					case TAKE_PICTURE_AT:
-						// taking picture at angle!
-#ifdef CAMERA_ENABLE
-						PRINTF("enabling cam in 1 secs...\n");
-						Delay_millis(100);
-						PRINTF("should be enabled in a few msecs\n");
-						CAM_DATA tmp3;
-						tmp3.activateCamera = true;
-						tmp3.capture = true;
-						tempComm.camData = tmp3;
-						tempComm.changedVal = CAM_CHANGED;
-						interThreadComm.publish(tempComm);
+				case SUN_FINDING:
+#ifdef SUNFINDER_ENABLE
+					PRINTF("sun finding mode!\n");
+					sunFinder.setActive(true);
+					sunFinder.resume();
 #endif
-						break;
-					case EXTERMINATE:
-						if((int)cmd.commandValue == 1) laser.setPins(1);
-						else laser.setPins(0);
-						break;
+					break;
+				case MOTOR_CONTROL:
+#ifdef MOTOR_ENABLE
+					// seting motor speed,
+					PRINTF("motor control mode with command %d\n",cmd.command);
+
+					switch (cmd.command) {
 					case SET_ROTATION_SPEED:
 
 						motorControl.setRotationSpeed(cmd.commandValue);
@@ -445,9 +422,52 @@ void mainThread::run(){
 					default:
 						break;
 					}
+#endif
 					break;
-					default:
+					//				break;
+					case MISSION:
+						// execute mission
+						PRINTF("mission mode!\n");
+						//					cmd.command = TAKE_PICTURE_AT;
+						switch (cmd.command) {
+						case TAKE_PICTURE_AT:
+							// taking picture at angle!
+#ifdef CAMERA_ENABLE
+							PRINTF("enabling cam in 1 secs...\n");
+							Delay_millis(100);
+							PRINTF("should be enabled in a few msecs\n");
+							CAM_DATA tmp3;
+							tmp3.activateCamera = true;
+							tmp3.capture = true;
+							tempComm.camData = tmp3;
+							tempComm.changedVal = CAM_CHANGED;
+							interThreadComm.publish(tempComm);
+#endif
+							break;
+						case EXTERMINATE:
+							if((int)cmd.commandValue == 1) laser.setPins(1);
+							else laser.setPins(0);
+							break;
+						case SET_ROTATION_SPEED:
+
+							motorControl.setRotationSpeed(cmd.commandValue);
+							break;
+						case CONTROL_MOTOR:
+							if((int)cmd.commandValue == 1){
+								motorControl.setMotor(true);
+							} else if((int)cmd.commandValue == 0){
+								motorControl.setMotor(false);
+							}
+							break;
+						case GOTO_ANGLE:
+							motorControl.gotoAngle(cmd.commandValue);
+							break;
+						default:
+							break;
+						}
 						break;
+						default:
+							break;
 			}
 		}
 		suspendCallerUntil(END_OF_TIME);

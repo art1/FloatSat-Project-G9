@@ -58,9 +58,9 @@
 
 //ACCL CAL: -243.500, -41.000, -377.250
 
-#define MAGN_SCALE_X				3053
-#define MAGN_SCALE_Y				-336
-#define MAGN_SCALE_Z				-1123
+#define MAGN_SCALE_X				2424
+#define MAGN_SCALE_Y				214
+#define MAGN_SCALE_Z				-878
 
 
 

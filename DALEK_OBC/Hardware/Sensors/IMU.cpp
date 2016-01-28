@@ -38,9 +38,9 @@ static const uint8_t setExtAccl[SET_EXT_ACCL_REG][2] = {
 		{EXT_CTRL_REG1_A, 0x2F}	// normal mode, 100Hz 74Hz cutoff, all axes
 };
 float magn_values[3][3] =
-{{     0.1862,   -0.7518   ,-0.2254},
-		{-0.7518    ,1.3808    ,0.8755},
-		{-0.2254    ,0.8755    ,9.3809}};
+{{     1.2130,   -0.0060   ,0.2696},
+		{-0.0060    ,1.2162    ,0.0200},
+		{0.2696    ,0.0200    ,3.2354}};
 
 
 
@@ -377,9 +377,9 @@ IMU_DATA_RAW IMU::scaleData(){
 	temp[0] = magn_raw[0] - magnOffset[0];
 	temp[1] = magn_raw[1] - magnOffset[1];
 	temp[2] = magn_raw[2] - magnOffset[2];
-	tmp.MAGNETIC_RAW_X = (magn_values[0][0] * temp[0] + magn_values[0][1] * temp[1] + magn_values[0][2] * temp[2])* magnSensitivity;
+	tmp.MAGNETIC_RAW_Z = (magn_values[0][0] * temp[0] + magn_values[0][1] * temp[1] + magn_values[0][2] * temp[2])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Y = (magn_values[1][0] * temp[0] + magn_values[1][1] * temp[1] + magn_values[1][2] * temp[2])* magnSensitivity;
-	tmp.MAGNETIC_RAW_Z = (magn_values[2][0] * temp[0] + magn_values[2][1] * temp[1] + magn_values[2][2] * temp[2])* magnSensitivity*(-1.0);
+	tmp.MAGNETIC_RAW_X = (magn_values[2][0] * temp[0] + magn_values[2][1] * temp[1] + magn_values[2][2] * temp[2])* magnSensitivity*(-1.0);
 	/* OLD CALIBRATION METHOD - DEPRECATED
 	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity;
 	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;

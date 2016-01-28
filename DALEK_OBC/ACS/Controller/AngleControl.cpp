@@ -7,6 +7,7 @@
 
 #include "AngleControl.h"
 
+
 AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 
 	active = false;
@@ -19,13 +20,23 @@ AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 	iPart = 0.0f;
 	dPart = 0.0f;
 
-	pGain = 2.0f;
-	iGain = 0.014243f;
-	dGain = 5.148029f;
+	pGain = -1060.2792518954f;
+	iGain = -283.266890153188f;
+	dGain = -160.381399303853;
 
-	i = 0.0f;
-	period = 0.0f;
-	dt = 0.0f;
+	//i = 0.0f;
+    //period = 0.0f;
+	//dt = 0.0f;
+
+	U_1 = 0.0f;
+	e_1= 0.0f;
+	e_2 = 0.0f;
+    Ts = 0.02f;
+
+	a = 0.0f;
+	b = 0.0f;
+	c = 0.0f;
+	pidOut = 0.0f;
 
 }
 
@@ -37,6 +48,20 @@ void AngleControl::init(){
 
 }
 
+float AngleControl::PID(float setPoint, float feedback){
+	e = feedback - setPoint;
+	a= pGain + (iGain*(Ts/2)) + (dGain/Ts);
+	b= -pGain + (iGain*(Ts/2)) - (2*dGain/Ts);
+	c= dGain/Ts;
+	pidOut = U_1 + a*e + b*e_1 + c*e_2;
+	PRINTF(" ae %f be %f ce %f", a*e,b*e_1,c*e_2);
+	U_1 = pidOut;
+	e_1 = e;
+	e_2 = e_1;
+//	PRINTF("e: %f a %f b %f c %f U1 %fpidOut %f\n",e,a,b,c,U_1,pidOut);
+	return pidOut;
+}
+
 void AngleControl::run(){
 	IMU_RPY_FILTERED rpy;
 	int cnt = 0;
@@ -46,7 +71,11 @@ void AngleControl::run(){
 		if(!isActive()) suspendCallerUntil(END_OF_TIME);
 
 		imuData.get(rpy);
-		error = rpy.YAW - desAng;
+
+		controlOut = PID(rpy.YAW,desAng);
+		period = SECONDS_NOW() - lastTime;
+
+		/*error = rpy.YAW - desAng;
 		period = SECONDS_NOW() - lastTime;
 
 		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng,rpy.YAW);
@@ -60,7 +89,15 @@ void AngleControl::run(){
 		iPart = i * iGain;
 		dPart = dt * dGain;
 
-		controlOut = pPart + iPart + dPart;
+		controlOut = pPart + iPart + dPart;*/
+
+		//Saturation filter
+		if (controlOut > MAX) {
+			controlOut = MAX;
+		}
+		else if (controlOut < MIN) {
+			controlOut = MIN;
+		}
 
 		if(!(cnt % 100)) PRINTF("control output: %f\n",controlOut);
 		cnt++;

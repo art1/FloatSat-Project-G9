@@ -87,6 +87,8 @@ extern "C" HAL_UART bt_uart;
 #define BLUE_TOGGLE				GPIOD->ODR ^= LED_BLUE
 
 
+#define MAX			700
+#define MIN			-700
 
 /****************************** WIFI & BT STUFF ******************************************/
 #define WIFI_SSID				"THE_DALEK"

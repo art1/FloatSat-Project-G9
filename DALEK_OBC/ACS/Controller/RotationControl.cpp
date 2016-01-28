@@ -55,7 +55,14 @@ void RotationControl::run(){
 		controlOut = pPart + iPart;
 
 		// control output deckeln
-		if(controlOut > 1000) controlOut = 1000;
+//		if(controlOut > 1000) controlOut = 1000;
+        //Saturation filter
+        if (controlOut > MAX) {
+            controlOut = MAX;
+        }
+        else if (controlOut < MIN) {
+            controlOut = MIN;
+        }
 
 		if(!(cnt % 100)) PRINTF("control output: %f, pPart %f, iPart %f\n",controlOut,pPart,iPart);
 		cnt++;
