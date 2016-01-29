@@ -37,7 +37,7 @@ void Telemetry::run(){
 //		PRINTF("\n");
 		tmPlFrame.publish(msg);
 		frameNumber++;
-//		PRINTF("sent %d bytes\n",msg.length);
+		PRINTF("sent %d bytes\n",msg.length);
 		suspendCallerUntil(NOW()+TM_SAMPLERATE*MILLISECONDS);
 	}
 }
@@ -121,7 +121,7 @@ void Telemetry::buildFrame(){
 			l.LUX,s.Voltage,cur.batteryVoltage,cur.batteryCurrent);
 
 
-	for(int i=-1;i<15;i++){
+	for(int i=-1;i<27;i++){
 		switch (i) {
 		case -1:
 			forLoop(j,3){

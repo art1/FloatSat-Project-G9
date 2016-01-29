@@ -119,7 +119,8 @@ enum commands{
 	SET_ROTAT_P,
 	SET_ROTAT_I,
 	SET_ROTAT_D,
-	ENABLE_TELEMETRY
+	ENABLE_TELEMETRY,
+	CALIBRATE_IMU
 };
 
 enum system_mode{

@@ -13,7 +13,7 @@ HAL_GPIO HBRIDGE_C_INA (GPIO_072);
 HAL_PWM knifePWM(PWM_IDX14);
 
 
-ThermalKnife::ThermalKnife() : Thread("Thermal Knife",105, 500){
+ThermalKnife::ThermalKnife() : Thread("Thermal Knife",105, 1000){
 	data.activated = false;
 }
 
@@ -43,14 +43,16 @@ void ThermalKnife::run(){
 			PRINTF("cutting wire\n");
 			suspendCallerUntil(NOW()+500*MILLISECONDS);
 			knifePWM.write(999);
+			knifePWM.write(999);
 			HBRIDGE_C_INA.setPins(1);
-			suspendCallerUntil(NOW()+5000*MILLISECONDS);
-			suspendCallerUntil(NOW()+5000*MILLISECONDS);
-			suspendCallerUntil(NOW()+5000*MILLISECONDS);
+			suspendCallerUntil(NOW()+10*SECONDS);
+//			suspendCallerUntil(NOW()+5000*MILLISECONDS);
+//			suspendCallerUntil(NOW()+5000*MILLISECONDS);
+//			suspendCallerUntil(NOW()+5000*MILLISECONDS);
 			HBRIDGE_C_INA.setPins(0);
 			knifePWM.write(0);
 			PRINTF("stopping\n");
-			suspendCallerUntil(END_OF_TIME);
+			data.activated = false;
 		}
 	}
 

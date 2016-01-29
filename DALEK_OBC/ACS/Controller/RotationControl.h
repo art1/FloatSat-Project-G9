@@ -27,7 +27,7 @@ public:
 	void setNewData(VAR_CONTROL *_val);
 	void setNewData(IMU_DATA_RAW _val);
 private:
-
+	float PI(float setPoint, float feedback);
 	bool active;
 	float desSpeed;
 	float currentSpeed;
@@ -47,6 +47,15 @@ private:
 	float period;
 
 	float lastTime;
+
+	float U_1;
+	float e;
+	float e_1;
+	float e_2;
+	float a,b,c;
+	float Ts;
+
+	float piOut;
 
 
 	CommBuffer<IMU_DATA_RAW> imuData;

@@ -73,25 +73,33 @@ int Motor::setspeed(int16_t duty){
 		startMotor();
 	}
 
+
 	if((duty < 0) && (lastDutyCycle > 0)){
-		switchDirection(duty);
+//		switchDirection(duty);
+		PRINTF("changing direction\n");
+		HBRIDGE_A_INA.setPins(~HBRIDGE_A_INA.readPins());
+		HBRIDGE_A_INB.setPins(~HBRIDGE_A_INB.readPins());
 		clockwise = false;
 	} else if( (duty > 0 )&&(lastDutyCycle < 0)){
-		switchDirection(duty);
+		PRINTF("changing direction\n");
+//		switchDirection(duty);
+		HBRIDGE_A_INA.setPins(~HBRIDGE_A_INA.readPins());
+		HBRIDGE_A_INB.setPins(~HBRIDGE_A_INB.readPins());
 		clockwise = true;
-	} else MotorPWM.write(duty);
+	}
+	MotorPWM.write(abs(duty));
 
 
 	// rampe fahren falls duty cycle zu stark springt (-> big wheel draws too much current if sudden hcnage in duty cycle)
-	if(abs((duty - lastDutyCycle)) >= MOTOR_RAMP_THRESHOLD){
-		ramp = true;
-		PRINTF("too sudden change in control! current %d controlVal %d\n",duty,lastDutyCycle);
-		if(duty < lastDutyCycle){
-			spinDownTo(lastDutyCycle,duty);
-		} else if(duty > lastDutyCycle){
-			spinUpTo(lastDutyCycle,duty);
-		}
-	}
+//	if(abs((duty - lastDutyCycle)) >= MOTOR_RAMP_THRESHOLD){
+//		ramp = true;
+//		PRINTF("too sudden change in control! current %d controlVal %d\n",duty,lastDutyCycle);
+//		if(duty < lastDutyCycle){
+//			spinDownTo(lastDutyCycle,duty);
+//		} else if(duty > lastDutyCycle){
+//			spinUpTo(lastDutyCycle,duty);
+//		}
+//	}
 
 	lastDutyCycle = duty;
 //	if(duty != 0){
@@ -121,6 +129,7 @@ int Motor::startMotor(){
 
 int Motor::stopMotor(){
 	hbridge_enable.setPins(0);
+	this->setspeed(0);
 }
 
 int Motor::switchDirection(int currentSpeed){

@@ -61,6 +61,10 @@ IMU::IMU() : Thread ("IMU Thread",90){
 	calMagn = false;
 	calMagnSpinning = false;
 	initDone = false;
+	useRotCal = true;
+	magnOffsetOld[0] = (float) 6516.0f;
+	magnOffsetOld[1] = (float) 3885.0f;
+	magnOffsetOld[2] = (float) -597.5;
 }
 
 IMU::~IMU() {
@@ -377,13 +381,16 @@ IMU_DATA_RAW IMU::scaleData(){
 	temp[0] = magn_raw[0] - magnOffset[0];
 	temp[1] = magn_raw[1] - magnOffset[1];
 	temp[2] = magn_raw[2] - magnOffset[2];
-	tmp.MAGNETIC_RAW_Z = (magn_values[0][0] * temp[0] + magn_values[0][1] * temp[1] + magn_values[0][2] * temp[2])* magnSensitivity;
-	tmp.MAGNETIC_RAW_Y = (magn_values[1][0] * temp[0] + magn_values[1][1] * temp[1] + magn_values[1][2] * temp[2])* magnSensitivity;
-	tmp.MAGNETIC_RAW_X = (magn_values[2][0] * temp[0] + magn_values[2][1] * temp[1] + magn_values[2][2] * temp[2])* magnSensitivity*(-1.0);
-	/* OLD CALIBRATION METHOD - DEPRECATED
-	tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffset[0])* magnSensitivity;
-	tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffset[1])* magnSensitivity;
-	tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffset[2])* magnSensitivity;*/
+	if(!useRotCal){
+		tmp.MAGNETIC_RAW_Z = (magn_values[0][0] * temp[0] + magn_values[0][1] * temp[1] + magn_values[0][2] * temp[2])* magnSensitivity;
+		tmp.MAGNETIC_RAW_Y = (magn_values[1][0] * temp[0] + magn_values[1][1] * temp[1] + magn_values[1][2] * temp[2])* magnSensitivity;
+		tmp.MAGNETIC_RAW_X = (magn_values[2][0] * temp[0] + magn_values[2][1] * temp[1] + magn_values[2][2] * temp[2])* magnSensitivity*(-1.0);
+	} else {
+		/* OLD CALIBRATION METHOD - DEPRECATED */
+		tmp.MAGNETIC_RAW_X = (magn_raw[0] - magnOffsetOld[0])* magnSensitivity;
+		tmp.MAGNETIC_RAW_Y = (magn_raw[1] - magnOffsetOld[1])* magnSensitivity;
+		tmp.MAGNETIC_RAW_Z = (magn_raw[2] - magnOffsetOld[2])* magnSensitivity;
+	}
 #endif
 
 
@@ -398,6 +405,8 @@ IMU_DATA_RAW IMU::scaleData(){
 }
 
 IMU_DATA_RAW IMU::readIMU_Data(){
+
+
 	int k = 0;
 #ifdef AUTO_RESET_IMU
 	oldData = newData;
@@ -411,11 +420,13 @@ IMU_DATA_RAW IMU::readIMU_Data(){
 #endif
 
 
+	if(!calMagnSpinning){
 #ifdef USE_EXTERN_MAGN
-	k = read_multiple_Register(IMU_EXT_MAG,EXT_OUT_X_H_M,6,magn_raw);
+		k = read_multiple_Register(IMU_EXT_MAG,EXT_OUT_X_H_M,6,magn_raw);
 #else
-	k = read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,magn_raw);
+		k = read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,magn_raw);
 #endif
+	}
 
 
 	k = read_multiple_Register(IMU_ACCMAG,TEMP_L,2,temp_raw);
@@ -775,6 +786,15 @@ void IMU::calibrateSensors(){
 	}
 	if(calMagnSpinning){
 		int cnt = 0;
+		//		COMMAND_FRAME f;
+		//		f.command = SET_ROTATION_SPEED;
+		//		f.commandValue = 3.0f;
+		//		f.frameNumber = 0;
+		//		f.frameType = CMD;
+		//		f.localTime = 0;
+		//		PRINTF("sending motor cmd from calibration\n");
+		//		commandFrame.publish(f);
+		//		suspendCallerUntil(NOW()+200*MILLISECONDS);
 		while(cnt <= CALIBRAION_SAMPLES){
 			read_multiple_Register(IMU_ACCMAG,X_MAGNETIC_L,6,temp);
 			if(temp[0] < minX) minX = temp[0];
@@ -789,12 +809,17 @@ void IMU::calibrateSensors(){
 			BLUE_TOGGLE;
 			cnt++;
 		}
+		useRotCal = true;
 		BLUE_OFF; ORANGE_OFF;
-		PRINTF("calibration finished, calculating values.., min x %d, max x %d\n",minX,maxX);
-		magnOffset[0] = ((float)minX + (float)maxX) / 2.0;
-		magnOffset[1] = ((float)minY + (float)maxY) / 2.0;
-		magnOffset[2] = ((float)minZ + (float)maxZ) / 2.0;
-		PRINTF("MAGN CAL: %d, %d, %d\n",magnOffset[0],magnOffset[1],magnOffset[2]);
+		//00, current: -1.296
+		//control output: -113.222, pPart 70.374, iPart -183.596
+		//calibration finished, calculating values.., min x -2944, max x 15976, min y -422 max y 8192, min z -1195 max z 0
+		PRINTF("calibration finished, calculating values.., min x %d, max x %d, min y %d max y %d, min z %d max z %d\n",minX,maxX,minY,maxY,minZ,maxZ);
+		magnOffsetOld[0] = ((float)minX + (float)maxX) / 2.0;
+		magnOffsetOld[1] = ((float)minY + (float)maxY) / 2.0;
+		magnOffsetOld[2] = ((float)minZ + (float)maxZ) / 2.0;
+
+		PRINTF("MAGN CAL: %d, %d, %d\n",magnOffsetOld[0],magnOffsetOld[1],magnOffsetOld[2]);
 		calMagnSpinning = false;
 	}
 
@@ -813,6 +838,11 @@ void IMU::run(){
 	//	suspendCallerUntil(END_OF_TIME);
 	while(!this->initDone);
 
+
+	while(!calibrationFinished){
+		suspendCallerUntil(NOW()+100*MILLISECONDS);
+	}
+
 	while(1){
 		cnt++;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
@@ -823,7 +853,7 @@ void IMU::run(){
 		this->convertToRPY();
 #endif
 		if(cnt>printValues){
-//				PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
+			//				PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 			//	PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
 			//	PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
 
@@ -831,7 +861,7 @@ void IMU::run(){
 			//			PRINTF("\nSamples: %d\nGYRO:   %f   %f   %f  degree/sec\nACCL:   %f   %f   %f   G\nMAGN:   %f   %f   %f   gauss\n",samples,newData.ANGULAR_RAW_X,newData.ANGULAR_RAW_Y,newData.ANGULAR_RAW_Z,newData.ACCEL_RAW_X,newData.ACCEL_RAW_Y,newData.ACCEL_RAW_Z,newData.MAGNETIC_RAW_X,newData.MAGNETIC_RAW_Y,newData.MAGNETIC_RAW_Z);
 			//			PRINTF("\n\nGYRO YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.GYRO_YAW*TO_DEG,angleRPY.GYRO_PITCH*TO_DEG,angleRPY.GYRO_ROLL*TO_DEG);
 			//			PRINTF("\nACCL YAW:   %f   PITCH:    %f   ROLL:   %f   ",angleRPY.MAG_YAW*TO_DEG,angleRPY.ACCL_PITCH*TO_DEG,angleRPY.ACCL_ROLL*TO_DEG);
-//			PRINTF("heading: %f\n",angleRPY.MAG_YAW);
+			//			PRINTF("heading: %f\n",angleRPY.MAG_YAW);
 
 #endif
 			cnt =0;

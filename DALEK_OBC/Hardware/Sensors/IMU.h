@@ -240,8 +240,12 @@ public:
 	void calibrateSensors();
 	bool initFinished();
 	IMU_DATA_RAW readIMU_Data();
+	bool calibrationFinished;
+	bool calMagnSpinning;
+
 
 private:
+	bool useRotCal;
 	bool initDone;
 	uint8_t time;
 	int read_multiple_Register(int cs, uint8_t reg,int valuesToRead,int16_t *dest);
@@ -256,6 +260,7 @@ private:
 	float gyroOffset[3];
 	float acclOffset[3];
 	float magnOffset[3];
+	float magnOffsetOld[3];
 	uint8_t recBuf[512];
 	uint8_t transBuf[512];
 	int16_t gyro_raw[3];
@@ -283,14 +288,13 @@ private:
 	float deltaRoll;
 	//more stuff
 	int cnt_failedReads;
-	bool calibrationFinished;
 	int k =0;
 	int debugTime =0;
 
 	bool calGyro;
 	bool calAccl;
 	bool calMagn;
-	bool calMagnSpinning;
+
 
 
 

@@ -261,6 +261,11 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 		}
 		//#endif
 		break;
+	case CALIBRATE_IMU:
+		PRINTF("calibrating Magnetometer\n");
+		imu.calMagnSpinning = true;
+		imu.calibrateSensors();
+		break;
 	default:
 		break;
 	}
@@ -305,9 +310,16 @@ void mainThread::run(){
 	//enable ADC1 channel with 12 Bit Resolution
 	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);
 #ifdef IMU_ENABLE
+//	if(imu.calMagnSpinning){
+//		motorControl.setRotationSpeed(10);
+//	}
 	i2c2.init(400000);
 	imu.regInit();
 	while(!imu.initFinished());
+//	if(imu.calMagnSpinning){
+//		motorControl.setMotor(false);
+//	}
+//	while(!imu.calibrationFinished);
 	//imu.resume();
 #endif
 	suspendCallerUntil(NOW()+2000*MILLISECONDS);
@@ -339,6 +351,11 @@ void mainThread::run(){
 	tempComm.irData = tmp2;
 	tempComm.changedVal = IR_CHANGED;
 	interThreadComm.publish(tempComm);
+#endif
+#ifdef KNIFE_ENABLE
+//	tempComm.knifeData.activated = true;
+//	tempComm.changedVal = KNIFE_CHANGED;
+//	interThreadComm.publish(tempComm);
 #endif
 
 	//	while(1){

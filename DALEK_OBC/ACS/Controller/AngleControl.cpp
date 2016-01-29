@@ -20,23 +20,27 @@ AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 	iPart = 0.0f;
 	dPart = 0.0f;
 
-	pGain = -1060.2792518954f;
-	iGain = -283.266890153188f;
-	dGain = -160.381399303853;
+	pGain = 125.0f;//-1060.2792518954f / 1000.0f;
+	iGain = 0.0f;//0.009f;//-283.266890153188f/ 1000.0f;
+	dGain = 0.5f;//-160.381399303853/ 1000.0f;
 
-	//i = 0.0f;
-    //period = 0.0f;
-	//dt = 0.0f;
+	//	    MAX = 700;
+	//	    MIN = -700;
+
+	i = 0.0f;
+	period = 0.0f;
+	dt = 0.0f;
 
 	U_1 = 0.0f;
 	e_1= 0.0f;
 	e_2 = 0.0f;
-    Ts = 0.02f;
+	Ts = 0.02f;
 
 	a = 0.0f;
 	b = 0.0f;
 	c = 0.0f;
 	pidOut = 0.0f;
+
 
 }
 
@@ -49,16 +53,21 @@ void AngleControl::init(){
 }
 
 float AngleControl::PID(float setPoint, float feedback){
-	e = feedback - setPoint;
+	e = setPoint - feedback;
 	a= pGain + (iGain*(Ts/2)) + (dGain/Ts);
 	b= -pGain + (iGain*(Ts/2)) - (2*dGain/Ts);
 	c= dGain/Ts;
+
+	//if(abs(e) > I_ERROR_LIMITATION){
+	//    i += error*period;
+	//}
+
 	pidOut = U_1 + a*e + b*e_1 + c*e_2;
 	PRINTF(" ae %f be %f ce %f", a*e,b*e_1,c*e_2);
 	U_1 = pidOut;
 	e_1 = e;
 	e_2 = e_1;
-//	PRINTF("e: %f a %f b %f c %f U1 %fpidOut %f\n",e,a,b,c,U_1,pidOut);
+	//	PRINTF("e: %f a %f b %f c %f U1 %fpidOut %f\n",e,a,b,c,U_1,pidOut);
 	return pidOut;
 }
 
@@ -72,24 +81,31 @@ void AngleControl::run(){
 
 		imuData.get(rpy);
 
-		controlOut = PID(rpy.YAW,desAng);
+		//		controlOut = PID(rpy.YAW,desAng);
+		//		controlOut = PID(desAng, rpy.YAW);
 		period = SECONDS_NOW() - lastTime;
 
-		/*error = rpy.YAW - desAng;
+		error = desAng*TO_RAD - rpy.YAW*TO_RAD;
+
+		if(error > 180.0) error -= 360.0;
+		else if(error < -180.0) error += 360.0;
+
 		period = SECONDS_NOW() - lastTime;
 
-		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng,rpy.YAW);
+		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng*TO_RAD,rpy.YAW*TO_RAD);
 
-		if(error > I_ERROR_LIMITATION){
+		if((error > 0.5) || (error < 0.5)){
 			i += error*period;
 		}
+
 		dt = (error - lastError) / period;
 
 		pPart = error * pGain;
 		iPart = i * iGain;
 		dPart = dt * dGain;
 
-		controlOut = pPart + iPart + dPart;*/
+		controlOut = pPart + iPart + dPart;
+		if(!(cnt % 100)) PRINTF("pPart %f iPart %f dPart %f\n",pPart,iPart,dPart);
 
 		//Saturation filter
 		if (controlOut > MAX) {

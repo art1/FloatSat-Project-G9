@@ -34,8 +34,8 @@
 #define SOLAR_ADC_ENABLE
 #define IR_ENABLE
 //#define WIFI_ENABLE								// enables Communication via Wifi -> comment to use Bluetooth
-//#define KNIFE_ENABLE
-//#define SUNFINDER_ENABLE
+#define KNIFE_ENABLE
+#define SUNFINDER_ENABLE
 
 #ifdef FUSION_ENABLE
 //#define MADGWICK								// enables the madgwick filter
@@ -64,7 +64,7 @@ extern "C" HAL_UART bt_uart;
 #define COMPL_GAIN				0.98f			// Complementary Filter Gain
 #define forLoop(x,n)			for(int x=0;x<n;x++)
 
-#define I_ERROR_LIMITATION		5				// add integral error only if error is big -> avoid stupid integration of small errors
+#define I_ERROR_LIMITATION		1				// add integral error only if error is big -> avoid stupid integration of small errors
 
 
 /****************************** LED STUFF ************************************************/
