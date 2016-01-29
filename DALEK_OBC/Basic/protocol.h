@@ -120,7 +120,8 @@ enum commands{
 	SET_ROTAT_I,
 	SET_ROTAT_D,
 	ENABLE_TELEMETRY,
-	CALIBRATE_IMU
+	CALIBRATE_IMU,
+	CUT_THERMAL_KNIFE
 };
 
 enum system_mode{

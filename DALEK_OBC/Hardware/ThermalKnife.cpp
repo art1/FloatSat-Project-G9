@@ -47,7 +47,7 @@ void ThermalKnife::run(){
 			HBRIDGE_C_INA.setPins(1);
 			suspendCallerUntil(NOW()+10*SECONDS);
 			suspendCallerUntil(NOW()+5000*MILLISECONDS);
-//			suspendCallerUntil(NOW()+5000*MILLISECONDS);
+			suspendCallerUntil(NOW()+5000*MILLISECONDS);
 //			suspendCallerUntil(NOW()+5000*MILLISECONDS);
 			HBRIDGE_C_INA.setPins(0);
 			knifePWM.write(0);

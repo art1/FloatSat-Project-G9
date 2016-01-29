@@ -266,6 +266,11 @@ void mainThread::setNewData(COMMAND_FRAME _t){
 		imu.calMagnSpinning = true;
 		imu.calibrateSensors();
 		break;
+	case CUT_THERMAL_KNIFE:
+		tempComm.knifeData.activated = true;
+		tempComm.changedVal = KNIFE_CHANGED;
+		interThreadComm.publish(tempComm);
+		break;
 	default:
 		break;
 	}
@@ -353,9 +358,9 @@ void mainThread::run(){
 	interThreadComm.publish(tempComm);
 #endif
 #ifdef KNIFE_ENABLE
-	//	tempComm.knifeData.activated = true;
-	//	tempComm.changedVal = KNIFE_CHANGED;
-	//	interThreadComm.publish(tempComm);
+//		tempComm.knifeData.activated = true;
+//		tempComm.changedVal = KNIFE_CHANGED;
+//		interThreadComm.publish(tempComm);
 #endif
 
 	//	while(1){
