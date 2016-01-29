@@ -310,16 +310,16 @@ void mainThread::run(){
 	//enable ADC1 channel with 12 Bit Resolution
 	adc1.config(ADC_PARAMETER_RESOLUTION,ADC1_RESOLUTION);
 #ifdef IMU_ENABLE
-//	if(imu.calMagnSpinning){
-//		motorControl.setRotationSpeed(10);
-//	}
+	//	if(imu.calMagnSpinning){
+	//		motorControl.setRotationSpeed(10);
+	//	}
 	i2c2.init(400000);
 	imu.regInit();
 	while(!imu.initFinished());
-//	if(imu.calMagnSpinning){
-//		motorControl.setMotor(false);
-//	}
-//	while(!imu.calibrationFinished);
+	//	if(imu.calMagnSpinning){
+	//		motorControl.setMotor(false);
+	//	}
+	//	while(!imu.calibrationFinished);
 	//imu.resume();
 #endif
 	suspendCallerUntil(NOW()+2000*MILLISECONDS);
@@ -353,9 +353,9 @@ void mainThread::run(){
 	interThreadComm.publish(tempComm);
 #endif
 #ifdef KNIFE_ENABLE
-//	tempComm.knifeData.activated = true;
-//	tempComm.changedVal = KNIFE_CHANGED;
-//	interThreadComm.publish(tempComm);
+	//	tempComm.knifeData.activated = true;
+	//	tempComm.changedVal = KNIFE_CHANGED;
+	//	interThreadComm.publish(tempComm);
 #endif
 
 	//	while(1){
@@ -414,24 +414,11 @@ void mainThread::run(){
 					PRINTF("sun finding mode!\n");
 					sunFinder.setActive(true);
 					sunFinder.resume();
-#endif
-					break;
-				case MOTOR_CONTROL:
-#ifdef MOTOR_ENABLE
-					// seting motor speed,
-					PRINTF("motor control mode with command %d\n",cmd.command);
 
 					switch (cmd.command) {
 					case SET_ROTATION_SPEED:
 
 						motorControl.setRotationSpeed(cmd.commandValue);
-						break;
-					case CONTROL_MOTOR:
-						if((int)cmd.commandValue == 1){
-							motorControl.setMotor(true);
-						} else if((int)cmd.commandValue == 0){
-							motorControl.setMotor(false);
-						}
 						break;
 					case GOTO_ANGLE:
 						motorControl.gotoAngle(cmd.commandValue);
@@ -441,30 +428,12 @@ void mainThread::run(){
 					}
 #endif
 					break;
-					//				break;
-					case MISSION:
-						// execute mission
-						PRINTF("mission mode!\n");
-						//					cmd.command = TAKE_PICTURE_AT;
+					case MOTOR_CONTROL:
+#ifdef MOTOR_ENABLE
+						// seting motor speed,
+						PRINTF("motor control mode with command %d\n",cmd.command);
+
 						switch (cmd.command) {
-						case TAKE_PICTURE_AT:
-							// taking picture at angle!
-#ifdef CAMERA_ENABLE
-							PRINTF("enabling cam in 1 secs...\n");
-							Delay_millis(100);
-							PRINTF("should be enabled in a few msecs\n");
-							CAM_DATA tmp3;
-							tmp3.activateCamera = true;
-							tmp3.capture = true;
-							tempComm.camData = tmp3;
-							tempComm.changedVal = CAM_CHANGED;
-							interThreadComm.publish(tempComm);
-#endif
-							break;
-						case EXTERMINATE:
-							if((int)cmd.commandValue == 1) laser.setPins(1);
-							else laser.setPins(0);
-							break;
 						case SET_ROTATION_SPEED:
 
 							motorControl.setRotationSpeed(cmd.commandValue);
@@ -482,9 +451,52 @@ void mainThread::run(){
 						default:
 							break;
 						}
+#endif
 						break;
-						default:
+						//				break;
+						case MISSION:
+							// execute mission
+							PRINTF("mission mode!\n");
+							//					cmd.command = TAKE_PICTURE_AT;
+							switch (cmd.command) {
+							case TAKE_PICTURE_AT:
+								// taking picture at angle!
+#ifdef CAMERA_ENABLE
+								PRINTF("enabling cam in 1 secs...\n");
+								Delay_millis(100);
+								PRINTF("should be enabled in a few msecs\n");
+								CAM_DATA tmp3;
+								tmp3.activateCamera = true;
+								tmp3.capture = true;
+								tempComm.camData = tmp3;
+								tempComm.changedVal = CAM_CHANGED;
+								interThreadComm.publish(tempComm);
+#endif
+								break;
+							case EXTERMINATE:
+								if((int)cmd.commandValue == 1) laser.setPins(1);
+								else laser.setPins(0);
+								break;
+							case SET_ROTATION_SPEED:
+
+								motorControl.setRotationSpeed(cmd.commandValue);
+								break;
+							case CONTROL_MOTOR:
+								if((int)cmd.commandValue == 1){
+									motorControl.setMotor(true);
+								} else if((int)cmd.commandValue == 0){
+									motorControl.setMotor(false);
+								}
+								break;
+							case GOTO_ANGLE:
+								motorControl.gotoAngle(cmd.commandValue);
+								break;
+							default:
+								break;
+							}
 							break;
+							default:
+								break;
 			}
 		}
 		suspendCallerUntil(END_OF_TIME);

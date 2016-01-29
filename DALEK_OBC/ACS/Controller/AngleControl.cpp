@@ -81,31 +81,31 @@ void AngleControl::run(){
 
 		imuData.get(rpy);
 
-		//		controlOut = PID(rpy.YAW,desAng);
+				controlOut = PID(rpy.YAW,desAng);
 		//		controlOut = PID(desAng, rpy.YAW);
 		period = SECONDS_NOW() - lastTime;
-
-		error = desAng*TO_RAD - rpy.YAW*TO_RAD;
-
-		if(error > 180.0) error -= 360.0;
-		else if(error < -180.0) error += 360.0;
-
-		period = SECONDS_NOW() - lastTime;
-
-		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng*TO_RAD,rpy.YAW*TO_RAD);
-
-		if((error > 0.5) || (error < 0.5)){
-			i += error*period;
-		}
-
-		dt = (error - lastError) / period;
-
-		pPart = error * pGain;
-		iPart = i * iGain;
-		dPart = dt * dGain;
-
-		controlOut = pPart + iPart + dPart;
-		if(!(cnt % 100)) PRINTF("pPart %f iPart %f dPart %f\n",pPart,iPart,dPart);
+//
+//		error = desAng*TO_RAD - rpy.YAW*TO_RAD;
+//
+//		if(error > 180.0) error -= 360.0;
+//		else if(error < -180.0) error += 360.0;
+//
+//		period = SECONDS_NOW() - lastTime;
+//
+//		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng*TO_RAD,rpy.YAW*TO_RAD);
+//
+//		if((error > 0.5) || (error < 0.5)){
+//			i += error*period;
+//		}
+//
+//		dt = (error - lastError) / period;
+//
+//		pPart = error * pGain;
+//		iPart = i * iGain;
+//		dPart = dt * dGain;
+//
+//		controlOut = pPart + iPart + dPart;
+//		if(!(cnt % 100)) PRINTF("pPart %f iPart %f dPart %f\n",pPart,iPart,dPart);
 
 		//Saturation filter
 		if (controlOut > MAX) {
@@ -121,7 +121,7 @@ void AngleControl::run(){
 		motor.setspeed((int16_t)controlOut);
 
 		lastTime = SECONDS_NOW();
-		lastError = error;
+//		lastError = error;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
 	}
 }
