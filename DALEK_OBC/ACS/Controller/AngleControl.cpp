@@ -20,9 +20,9 @@ AngleControl::AngleControl() : Thread("Angle Control",97,1000){
 	iPart = 0.0f;
 	dPart = 0.0f;
 
-	pGain = 125.0f;//-1060.2792518954f / 1000.0f;
-	iGain = 0.0f;//0.009f;//-283.266890153188f/ 1000.0f;
-	dGain = 0.5f;//-160.381399303853/ 1000.0f;
+	pGain = 106.03f; //1
+	iGain = 28.3f; //5
+	dGain = 1.6f;
 
 	//	    MAX = 700;
 	//	    MIN = -700;
@@ -81,31 +81,30 @@ void AngleControl::run(){
 
 		imuData.get(rpy);
 
-//				controlOut = PID(rpy.YAW,desAng);
-		//		controlOut = PID(desAng, rpy.YAW);
+				controlOut = PID(desAng, rpy.YAW);
 		period = SECONDS_NOW() - lastTime;
 //
-		error = desAng*TO_RAD - rpy.YAW*TO_RAD;
-
-		if(error > 180.0) error -= 360.0;
-		else if(error < -180.0) error += 360.0;
-
-		period = SECONDS_NOW() - lastTime;
-
-		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng*TO_RAD,rpy.YAW*TO_RAD);
-
-		if((error > 0.5) || (error < 0.5)){
-			i += error*period;
-		}
-
-		dt = (error - lastError) / period;
-
-		pPart = error * pGain;
-		iPart = i * iGain;
-		dPart = dt * dGain;
-
-		controlOut = pPart + iPart + dPart;
-		if(!(cnt % 100)) PRINTF("pPart %f iPart %f dPart %f\n",pPart,iPart,dPart);
+//		error = desAng*TO_RAD - rpy.YAW*TO_RAD;
+//
+//		if(error > 180.0) error -= 360.0;
+//		else if(error < -180.0) error += 360.0;
+//
+//		period = SECONDS_NOW() - lastTime;
+//
+//		if(!(cnt % 100)) PRINTF("angle error: %f, des: %f, current: %f\n",error,desAng*TO_RAD,rpy.YAW*TO_RAD);
+//
+//		if((error > 0.5) || (error < 0.5)){
+//			i += error*period;
+//		}
+//
+//		dt = (error - lastError) / period;
+//
+//		pPart = error * pGain;
+//		iPart = i * iGain;
+//		dPart = dt * dGain;
+//
+//		controlOut = pPart + iPart + dPart;
+//		if(!(cnt % 100)) PRINTF("pPart %f iPart %f dPart %f\n",pPart,iPart,dPart);
 
 		//Saturation filter
 		if (controlOut > MAX) {
@@ -121,7 +120,7 @@ void AngleControl::run(){
 		motor.setspeed((int16_t)controlOut);
 
 		lastTime = SECONDS_NOW();
-		lastError = error;
+//		lastError = error;
 		suspendCallerUntil(NOW()+IMU_SAMPLERATE*MILLISECONDS);
 	}
 }

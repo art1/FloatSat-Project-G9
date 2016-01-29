@@ -88,10 +88,10 @@ void sensorFusion::run(){
 #else
 		dataFusion(&gyro,&accl,&magn);
 #endif
-		float head;
-		if((filtered.YAW) < 0) head = 360.0 + filtered.YAW;
-		else head = filtered.YAW;
-		filtered.YAW = head;
+//		float head;
+//		if((filtered.YAW) < 0) head = 360.0 + filtered.YAW;
+//		else head = filtered.YAW;
+//		filtered.YAW = head;
 		imu_filtered.publish(filtered);
 //		PRINTF("%f\n",head);
 		if(cnt>printValues){

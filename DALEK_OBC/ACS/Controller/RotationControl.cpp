@@ -21,9 +21,9 @@ RotationControl::RotationControl() : Thread("Rotation Control",98,1000){
 	iPart = 0.0f;
 	dPart = 0.0f;
 
-	pGain = 1.0f; //1
-	iGain = 1.0f; //5
-	dGain = 0.1f;
+	pGain = 106.03f; //1
+	iGain = 28.3f; //5
+	dGain = 1.6f;
 
 
 	//i = 0.0f;
@@ -71,40 +71,40 @@ void RotationControl::run(){
 		if(!isActive()) suspendCallerUntil(END_OF_TIME);
 
 		imuData.get(raw);
-//		controlOut = PI(desSpeed, raw.ANGULAR_RAW_Z);
+		controlOut = PI(desSpeed, raw.ANGULAR_RAW_Z);
 
 //
-		err = desSpeed - (raw.ANGULAR_RAW_Z);
+//		err = desSpeed - (raw.ANGULAR_RAW_Z);
 		period = SECONDS_NOW() - lastTime;
 //
-		if(!(cnt % 100)) PRINTF("dps error: %f, des: %f, current: %f\n",err,desSpeed,raw.ANGULAR_RAW_Z);
-
-		if((err > 0.1) || (err < -0.1)){
-			i += (err * period);
-		}
-
-		dt = (err - lastError) / period;
-
-		pPart = err * pGain;
-		iPart = i * iGain;
-		dPart = dt * dGain;
-
-
-		controlOut = pPart + iPart + dPart;
-
-		// control output deckeln
-		//		if(controlOut > 1000) controlOut = 1000;
-		//Saturation filter
-		if (controlOut > MAX) {
-			controlOut = MAX;
-		}
-		else if (controlOut < MIN) {
-			controlOut = MIN;
-		}
-
-		if(!(cnt % 100)) PRINTF("control output: %f, pPart %f, iPart %f, dPart %f\n",controlOut,pPart,iPart,dPart);
-		if(!(cnt%100)) PRINTF("p: %f, i: %f, d: %f\n",pGain,iGain,dGain);
-		cnt++;
+//		if(!(cnt % 100)) PRINTF("dps error: %f, des: %f, current: %f\n",err,desSpeed,raw.ANGULAR_RAW_Z);
+//
+//		if((err > 0.1) || (err < -0.1)){
+//			i += (err * period);
+//		}
+//
+//		dt = (err - lastError) / period;
+//
+//		pPart = err * pGain;
+//		iPart = i * iGain;
+//		dPart = dt * dGain;
+//
+//
+//		controlOut = pPart + iPart + dPart;
+//
+//		// control output deckeln
+//		//		if(controlOut > 1000) controlOut = 1000;
+//		//Saturation filter
+//		if (controlOut > MAX) {
+//			controlOut = MAX;
+//		}
+//		else if (controlOut < MIN) {
+//			controlOut = MIN;
+//		}
+//
+//		if(!(cnt % 100)) PRINTF("control output: %f, pPart %f, iPart %f, dPart %f\n",controlOut,pPart,iPart,dPart);
+//		if(!(cnt%100)) PRINTF("p: %f, i: %f, d: %f\n",pGain,iGain,dGain);
+//		cnt++;
 
 
 		motor.setspeed(controlOut);
